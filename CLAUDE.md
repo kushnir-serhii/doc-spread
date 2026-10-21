@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `doc-spread` is an early-stage pnpm + Turborepo monorepo. Workspaces are declared in `pnpm-workspace.yaml` as `apps/*` and `packages/*`.
 
-- `apps/web` — React 19 + Vite 8 SPA (package name `web`), currently still the Vite starter template.
+- `apps/web` — React 19 + Vite 8 SPA (package name `@docspread/web`). Layout follows `.claude/agents/designer.md` → Structure.
 - `packages/shared` — `@docspread/shared`, code shared across apps.
 
 ## Commands
@@ -20,9 +20,9 @@ pnpm build    # turbo run build (dependencies built first via ^build; outputs di
 pnpm lint     # turbo run lint
 ```
 
-Scope to one workspace with a filter, e.g. `pnpm --filter web dev` or `pnpm turbo run build --filter=web`.
+Scope to one workspace with a filter, e.g. `pnpm --filter @docspread/web dev` or `pnpm turbo run build --filter=@docspread/web`.
 
-Inside `apps/web`: `pnpm build` runs `tsc -b && vite build` (type-checking is part of build — there is no separate typecheck script), `pnpm preview` serves the build.
+Inside `apps/web`: `pnpm build` runs `tsc -b && vite build` (type-checking is part of build; `pnpm typecheck` runs `tsc -b` alone), `pnpm preview` serves the build.
 
 There is no test runner configured yet; the root `test` script is a placeholder that exits with an error.
 

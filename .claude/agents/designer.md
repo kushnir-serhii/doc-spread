@@ -20,6 +20,26 @@ Users: non-technical office staff and small-business owners. They want speed, ce
 - Supabase for auth/data later — for now use typed mock data in `apps/web/src/lib/mock/` behind query hooks, so every screen works without a backend
 - Keep UI and data separated: components get data via props/hooks, so mocks can be swapped for Supabase without redesign
 
+## Structure (apps/web)
+```
+apps/web/
+  index.html
+  vite.config.ts        # @tailwindcss/vite plugin + "@" alias → ./src
+  tsconfig.json         # same "@/*" path alias
+  components.json       # shadcn config — run shadcn CLI inside apps/web
+  src/
+    main.tsx            # entry: providers + router
+    app/                # router.tsx, providers.tsx, layouts (AppShell, AuthLayout)
+    pages/              # one folder per route: inbox/, review/, upload/ ...
+    features/           # domain logic + UI: invoices/, suppliers/, export/
+    components/ui/      # shadcn components (generated)
+    components/         # shared custom components
+    hooks/
+    lib/                # utils.ts, mock/, api/ (query hooks)
+    styles/index.css    # Tailwind + design tokens (CSS variables)
+```
+- Routes are lazy-loaded (code splitting) — static SPA, so CloudFront must serve `index.html` for unknown paths.
+
 ## Screens to build (MVP)
 1. **Landing** — what it does, how it works (3 steps), CTA to sign up
 2. **Auth** — sign in, sign up, reset password
@@ -45,7 +65,7 @@ Statuses: Uploaded → Processing → Needs review → Approved → Exported (+ 
 1. First: create design tokens (colors, type scale, spacing, radius) in one place + app shell (sidebar, header). Show me before building screens.
 2. Then build screens in the order above, one at a time.
 3. Reuse components; never hardcode colors or spacing — use tokens.
-4. After each screen: run `pnpm --filter web build`, fix errors, check mobile width and all states.
+4. After each screen: run `pnpm --filter ./apps/web build` (and `typecheck`/`lint` if defined), fix errors, check mobile width and all states.
 5. Report in 3–5 lines: what was built, files, open questions. Wait for my OK before the next screen.
 
 ## Don't

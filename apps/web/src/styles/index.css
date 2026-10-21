@@ -1,0 +1,359 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * DocSpread design tokens — the ONLY place colors, type, radius, shadows and
+ * layout sizes are defined. Components use the Tailwind utilities generated
+ * from @theme below (bg-status-approved-bg, text-confidence-low-fg, shadow-md…),
+ * never raw values.
+ *
+ * Palette: cool neutral (slate, hue ~260) + one accent (blue, hue ~255).
+ * All text/background pairs below are chosen for WCAG 2.1 AA (>= 4.5:1 for
+ * text, >= 3:1 for UI boundaries and focus rings) in both themes.
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------- Light -- */
+:root {
+  color-scheme: light;
+
+  /* Radius base — all radii derive from this */
+  --radius: 0.5rem;
+
+  /* Surfaces & text */
+  --background: oklch(0.985 0.002 260);
+  --foreground: oklch(0.21 0.02 262);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+  --muted: oklch(0.955 0.005 260);
+  --muted-foreground: oklch(0.47 0.02 260); /* 6.6:1 on background */
+  --border: oklch(0.91 0.007 260);
+  --input: oklch(0.66 0.015 260); /* >= 3:1 boundary on card */
+
+  /* Accent (brand). "primary" in shadcn terms. */
+  --primary: oklch(0.5 0.17 258); /* white text 6.3:1 */
+  --primary-foreground: oklch(0.99 0 0);
+  --primary-soft: oklch(0.95 0.025 258);
+  --primary-soft-foreground: oklch(0.42 0.16 258);
+
+  /* Secondary button & hover surfaces (neutral) */
+  --secondary: oklch(0.95 0.006 260);
+  --secondary-foreground: var(--foreground);
+  --accent: oklch(0.945 0.008 260); /* shadcn: hover/selected surface */
+  --accent-foreground: var(--foreground);
+
+  --ring: oklch(0.55 0.17 258);
+
+  /* Semantic: solid (bg + fg) and soft (tinted bg + strong text) */
+  --success: oklch(0.52 0.13 155);
+  --success-foreground: oklch(0.99 0 0);
+  --success-soft: oklch(0.955 0.04 155);
+  --success-soft-foreground: oklch(0.4 0.1 155);
+
+  --warning: oklch(0.75 0.15 75);
+  --warning-foreground: oklch(0.25 0.05 60);
+  --warning-soft: oklch(0.965 0.05 85);
+  --warning-soft-foreground: oklch(0.43 0.1 60);
+
+  --danger: oklch(0.53 0.2 27);
+  --danger-foreground: oklch(0.99 0 0);
+  --danger-soft: oklch(0.96 0.025 25);
+  --danger-soft-foreground: oklch(0.45 0.17 27);
+
+  --info: oklch(0.51 0.12 232);
+  --info-foreground: oklch(0.99 0 0);
+  --info-soft: oklch(0.955 0.025 230);
+  --info-soft-foreground: oklch(0.42 0.1 235);
+
+  --neutral-soft: oklch(0.945 0.006 260);
+  --neutral-soft-foreground: oklch(0.4 0.02 260);
+
+  --destructive: var(--danger);
+
+  /* Sidebar */
+  --sidebar: oklch(0.97 0.004 260);
+  --sidebar-foreground: oklch(0.3 0.02 262);
+  --sidebar-accent: oklch(0.925 0.01 260);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+
+  /* Shadows */
+  --shadow-color: 222 30% 20%;
+  --elev-xs: 0 1px 2px hsl(var(--shadow-color) / 0.06);
+  --elev-sm: 0 1px 3px hsl(var(--shadow-color) / 0.08), 0 1px 2px hsl(var(--shadow-color) / 0.05);
+  --elev-md: 0 4px 10px -2px hsl(var(--shadow-color) / 0.1), 0 2px 4px -2px hsl(var(--shadow-color) / 0.06);
+  --elev-lg: 0 12px 28px -6px hsl(var(--shadow-color) / 0.16), 0 4px 8px -4px hsl(var(--shadow-color) / 0.08);
+}
+
+/* ----------------------------------------------------------------- Dark -- */
+.dark {
+  color-scheme: dark;
+
+  --background: oklch(0.17 0.008 262);
+  --foreground: oklch(0.95 0.005 260);
+  --card: oklch(0.205 0.01 262);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.225 0.01 262);
+  --popover-foreground: var(--foreground);
+  --muted: oklch(0.25 0.01 262);
+  --muted-foreground: oklch(0.72 0.015 260); /* 7:1 on background */
+  --border: oklch(0.3 0.012 262);
+  --input: oklch(0.52 0.015 262);
+
+  --primary: oklch(0.7 0.14 256); /* dark text on it 7:1 */
+  --primary-foreground: oklch(0.17 0.03 262);
+  --primary-soft: oklch(0.29 0.06 258);
+  --primary-soft-foreground: oklch(0.85 0.08 256);
+
+  --secondary: oklch(0.26 0.01 262);
+  --secondary-foreground: var(--foreground);
+  --accent: oklch(0.27 0.012 262);
+  --accent-foreground: var(--foreground);
+
+  --ring: oklch(0.7 0.14 256);
+
+  --success: oklch(0.72 0.14 155);
+  --success-foreground: oklch(0.18 0.03 155);
+  --success-soft: oklch(0.28 0.05 155);
+  --success-soft-foreground: oklch(0.86 0.1 155);
+
+  --warning: oklch(0.8 0.14 80);
+  --warning-foreground: oklch(0.22 0.04 60);
+  --warning-soft: oklch(0.3 0.055 70);
+  --warning-soft-foreground: oklch(0.88 0.11 85);
+
+  --danger: oklch(0.68 0.18 25);
+  --danger-foreground: oklch(0.17 0.03 25);
+  --danger-soft: oklch(0.29 0.07 25);
+  --danger-soft-foreground: oklch(0.86 0.08 25);
+
+  --info: oklch(0.72 0.11 230);
+  --info-foreground: oklch(0.17 0.03 235);
+  --info-soft: oklch(0.29 0.05 235);
+  --info-soft-foreground: oklch(0.86 0.07 230);
+
+  --neutral-soft: oklch(0.28 0.01 262);
+  --neutral-soft-foreground: oklch(0.85 0.01 260);
+
+  --sidebar: oklch(0.19 0.009 262);
+  --sidebar-foreground: oklch(0.86 0.01 260);
+  --sidebar-accent: oklch(0.27 0.012 262);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+
+  --shadow-color: 222 40% 2%;
+  --elev-xs: 0 1px 2px hsl(var(--shadow-color) / 0.4);
+  --elev-sm: 0 1px 3px hsl(var(--shadow-color) / 0.5), 0 1px 2px hsl(var(--shadow-color) / 0.3);
+  --elev-md: 0 4px 10px -2px hsl(var(--shadow-color) / 0.55), 0 2px 4px -2px hsl(var(--shadow-color) / 0.35);
+  --elev-lg: 0 12px 28px -6px hsl(var(--shadow-color) / 0.6), 0 4px 8px -4px hsl(var(--shadow-color) / 0.4);
+}
+
+/* ------------------------------------------- Domain tokens (both themes) -- */
+:root,
+.dark {
+  /* Invoice statuses — each has bg / fg / dot. Always paired with an icon + label. */
+  --status-uploaded-bg: var(--neutral-soft);
+  --status-uploaded-fg: var(--neutral-soft-foreground);
+  --status-uploaded-dot: var(--muted-foreground);
+
+  --status-processing-bg: var(--info-soft);
+  --status-processing-fg: var(--info-soft-foreground);
+  --status-processing-dot: var(--info);
+
+  --status-needs-review-bg: var(--warning-soft);
+  --status-needs-review-fg: var(--warning-soft-foreground);
+  --status-needs-review-dot: var(--warning);
+
+  --status-approved-bg: var(--success-soft);
+  --status-approved-fg: var(--success-soft-foreground);
+  --status-approved-dot: var(--success);
+
+  --status-exported-bg: var(--primary-soft);
+  --status-exported-fg: var(--primary-soft-foreground);
+  --status-exported-dot: var(--primary);
+
+  --status-rejected-bg: var(--neutral-soft);
+  --status-rejected-fg: var(--danger-soft-foreground);
+  --status-rejected-dot: var(--danger);
+
+  --status-error-bg: var(--danger-soft);
+  --status-error-fg: var(--danger-soft-foreground);
+  --status-error-dot: var(--danger);
+
+  /* AI confidence */
+  --confidence-high-bg: var(--success-soft);
+  --confidence-high-fg: var(--success-soft-foreground);
+  --confidence-high-dot: var(--success);
+  --confidence-medium-bg: var(--warning-soft);
+  --confidence-medium-fg: var(--warning-soft-foreground);
+  --confidence-medium-dot: var(--warning);
+  --confidence-low-bg: var(--danger-soft);
+  --confidence-low-fg: var(--danger-soft-foreground);
+  --confidence-low-dot: var(--danger);
+}
+
+/* ------------------------------------------------- Tailwind theme mapping -- */
+@theme inline {
+  /* Fonts */
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+
+  /* Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-foreground: var(--danger-soft-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-foreground: var(--info-soft-foreground);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-neutral-soft-foreground: var(--neutral-soft-foreground);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-status-uploaded-bg: var(--status-uploaded-bg);
+  --color-status-uploaded-fg: var(--status-uploaded-fg);
+  --color-status-uploaded-dot: var(--status-uploaded-dot);
+  --color-status-processing-bg: var(--status-processing-bg);
+  --color-status-processing-fg: var(--status-processing-fg);
+  --color-status-processing-dot: var(--status-processing-dot);
+  --color-status-needs-review-bg: var(--status-needs-review-bg);
+  --color-status-needs-review-fg: var(--status-needs-review-fg);
+  --color-status-needs-review-dot: var(--status-needs-review-dot);
+  --color-status-approved-bg: var(--status-approved-bg);
+  --color-status-approved-fg: var(--status-approved-fg);
+  --color-status-approved-dot: var(--status-approved-dot);
+  --color-status-exported-bg: var(--status-exported-bg);
+  --color-status-exported-fg: var(--status-exported-fg);
+  --color-status-exported-dot: var(--status-exported-dot);
+  --color-status-rejected-bg: var(--status-rejected-bg);
+  --color-status-rejected-fg: var(--status-rejected-fg);
+  --color-status-rejected-dot: var(--status-rejected-dot);
+  --color-status-error-bg: var(--status-error-bg);
+  --color-status-error-fg: var(--status-error-fg);
+  --color-status-error-dot: var(--status-error-dot);
+
+  --color-confidence-high-bg: var(--confidence-high-bg);
+  --color-confidence-high-fg: var(--confidence-high-fg);
+  --color-confidence-high-dot: var(--confidence-high-dot);
+  --color-confidence-medium-bg: var(--confidence-medium-bg);
+  --color-confidence-medium-fg: var(--confidence-medium-fg);
+  --color-confidence-medium-dot: var(--confidence-medium-dot);
+  --color-confidence-low-bg: var(--confidence-low-bg);
+  --color-confidence-low-fg: var(--confidence-low-fg);
+  --color-confidence-low-dot: var(--confidence-low-dot);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Shadows */
+  --shadow-xs: var(--elev-xs);
+  --shadow-sm: var(--elev-sm);
+  --shadow-md: var(--elev-md);
+  --shadow-lg: var(--elev-lg);
+}
+
+/* Static theme values (type scale, spacing, layout) */
+@theme {
+  /* Type scale — compact app scale, 14px body for dense tables */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.625rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 1.15;
+
+  /* Spacing — 4px grid (p-1 = 4px, p-4 = 16px …) */
+  --spacing: 0.25rem;
+
+  /* Layout sizes (use as h-header, w-sidebar, min-h-touch …) */
+  --spacing-header: 3.5rem;
+  --spacing-sidebar: 15rem;
+  --spacing-sidebar-collapsed: 4rem;
+  --spacing-touch: 2.75rem; /* 44px minimum touch target */
+}
+
+/* Amounts: always tabular, right-aligned in tables */
+@utility amount {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-background text-foreground text-sm;
+    min-height: 100dvh;
+  }
+  /* Visible keyboard focus everywhere (components may refine with ring utilities) */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
