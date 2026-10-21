@@ -33,3 +33,7 @@ There is no test runner configured yet; the root `test` script is a placeholder 
 - `apps/web` TypeScript is strict about unused locals/params and uses `verbatimModuleSyntax` (use `import type` for type-only imports) and `erasableSyntaxOnly` (no enums, namespaces, or parameter properties).
 - TypeScript versions differ: root devDependency is `typescript ^7`, while `apps/web` pins `~6.0.3`. Builds in `apps/web` use its local version.
 - ESLint (flat config, `apps/web/eslint.config.js`) uses typescript-eslint recommended, react-hooks, and react-refresh (Vite) rules.
+
+## Specs and process
+
+Work is driven by `docs/specs/` (one spec per task, split into slices; process and index in `docs/specs/README.md`). Implement one slice at a time, check it against `docs/conventions.md`, run typecheck/lint/build, mark the slice `[x]`, log it in the spec, then stop and wait for approval before the next slice.
