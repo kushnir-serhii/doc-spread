@@ -8,6 +8,8 @@ Run from anywhere (Python 3 + Pillow, no other dependencies):
 Writes:
   apps/web/public/mock/sample-invoice.pdf          3 pages, page 2 has /Rotate 90
   apps/web/public/mock/sample-invoice.tokens.json  DocumentPage[] (points, after rotation)
+  apps/web/public/mock/sample-long.pdf            30 pages, a fictional service agreement (spec 013)
+  apps/web/public/mock/sample-long.tokens.json    DocumentPage[] (points)
   apps/web/public/mock/sample-receipt.jpg          upright "scan"
   apps/web/public/mock/sample-receipt.tokens.json  DocumentPage[] (pixels)
   apps/web/src/lib/mock/showcase-sources.ts        bboxes of the printed values
@@ -297,6 +299,41 @@ def build_invoice(sources):
     return inv, pages
 
 
+# ---------- long contract (30 pages, spec 013) ----------
+LONG_PAGES = 30
+LONG_CLAUSES = [
+    "Wykonawca zobowiazuje sie do swiadczenia uslug opisanych w zalaczniku nr 1.",
+    "Zamawiajacy zobowiazuje sie do terminowej zaplaty wynagrodzenia ustalonego w umowie.",
+    "Strony zachowaja poufnosc informacji uzyskanych w zwiazku z wykonaniem umowy.",
+    "Kazda ze stron moze wypowiedziec umowe z zachowaniem miesiecznego okresu wypowiedzenia.",
+    "Wszelkie zmiany umowy wymagaja formy pisemnej pod rygorem niewaznosci.",
+    "W sprawach nieuregulowanych stosuje sie przepisy Kodeksu cywilnego.",
+]
+
+
+def build_long():
+    pages = []
+    for n in range(LONG_PAGES):
+        p = PdfPage()
+        M, R = 50, 545
+        p.text(M, 50, "UMOWA O SWIADCZENIE USLUG - WZOR", 9, True)
+        p.text(R, 50, f"UMO/2026/{n + 1:03d}", 9, False, "r")
+        p.rule(M, 58, R, 58, 0.5)
+        p.text(M, 100, f"Rozdzial {n // 3 + 1}. Postanowienia czesc {n % 3 + 1}", 14, True)
+        base = 130
+        for k in range(14):
+            num = n * 14 + k + 1
+            clause = LONG_CLAUSES[(n + k) % len(LONG_CLAUSES)]
+            p.text(M, base, f"{num}. {clause}", 9)
+            base += 22 if k % 4 == 3 else 16
+        p.text(300, 810, f"Strona {n + 1}/{LONG_PAGES}", 8, False, "c")
+        pages.append(p)
+    write_pdf(pages, OUT / "sample-long.pdf")
+    (OUT / "sample-long.tokens.json").write_text(
+        json.dumps([p.json(i) for i, p in enumerate(pages)], indent=1) + "\n", encoding="utf-8"
+    )
+
+
 # ---------- receipt ----------
 RCP_ITEMS = [
     ("Chleb pszenny", "1", "4,50"),
@@ -425,6 +462,7 @@ def main():
     s = Sources()
     inv, _ = build_invoice(s)
     rc, _, _ = build_receipt(s)
+    build_long()
     emit_sources(inv, rc)
     print("wrote", OUT, "and", SOURCES_TS)
 

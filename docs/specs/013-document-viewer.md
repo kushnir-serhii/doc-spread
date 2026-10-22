@@ -1,6 +1,6 @@
 # 013 — Document viewer
 
-**Status:** ready · **Depends on:** 002, 012 · **Route(s):** — (component; demoed on `/design`)
+**Status:** in-progress · **Depends on:** 002, 012 · **Route(s):** — (component; demoed on `/design`)
 
 ## Goal
 One component shows any document (a digital PDF, a scanned PDF, a photo), draws boxes where field values came from, and lets the user point at words or a region. The type builder (014, 015) and Review (008) both use it.
@@ -18,13 +18,13 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
 
 ## Slices
 
-### [ ] 1. Pages + zoom
+### [x] 1. Pages + zoom
 - **Build:** first extend `apps/web/scripts/generate-mock-files.py` to produce a 30-page `public/mock/sample-long.pdf` (no real data) with its token JSON, and add one seed document backed by it. Then a `DocumentViewer` with a vertical page list. Add `pdfjs-dist` (and list it under **Stack** in `docs/conventions.md`) with its worker imported via `?url`, loaded lazily so it only lands in chunks that use the viewer. Only visible pages are rendered (IntersectionObserver); others are placeholders sized from `width/height`. Zoom: fit width, 100%, +/−.
 - **Files:** `src/features/documents/viewer/`, `scripts/generate-mock-files.py`, `public/mock/sample-long*`, `src/lib/mock/{documents-seed,pages}.ts`, the `/design` demo
 - **Accept:**
-  - [ ] the 30-page mock PDF scrolls smoothly; no canvases exist for pages far off-screen
-  - [ ] HiDPI screens get sharp canvases (device pixel ratio)
-  - [ ] the build shows pdf.js only in the viewer's chunk; skeleton while a page renders; error with retry
+  - [x] the 30-page mock PDF scrolls smoothly; no canvases exist for pages far off-screen
+  - [x] HiDPI screens get sharp canvases (device pixel ratio)
+  - [x] the build shows pdf.js only in the viewer's chunk; skeleton while a page renders; error with retry
 
 ### [ ] 2. Highlights
 - **Build:** props `highlights: { id, page, bbox, tone, label }[]`, `activeHighlightId`, `onHighlightClick`. Boxes are positioned in % of the page, so zoom never shifts them. `scrollToHighlight(id)` through a ref.
@@ -46,6 +46,8 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
 For each document: the source file URL (CORS on the S3 bucket for pdf.js), or page images for scans and photos; OCR tokens with bboxes normalized after rotation; the page count and the size of each page.
 
 ## Open questions
+- Fit width uses the widest page, so on a document with a landscape page the portrait pages show narrower than the container. Per-page fit instead?
+- `sample-long.tokens.json` is 793 KB (indented like the others). Minify the generated token JSON?
 - Is a thumbnail strip worth having for long documents?
 - Do touch devices need pointing in the MVP, or is the builder desktop-only?
 
@@ -56,3 +58,4 @@ For each document: the source file URL (CORS on the S3 bucket for pdf.js), or pa
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-23 | — | ready | checked against the code after 002: added the 30-page mock, the viewer's props and backdrop rule, the 002 dependency, Files lines, design-token wording |
+| 2026-10-23 | 1 | done | `DocumentViewer` + toolbar/page/pdf canvas/image page/status, `useVisiblePages` (one IntersectionObserver, 1-viewport margin), `load-pdfjs` (pdf.js + worker as lazy chunks, one proxy per URL). Headless Chrome at DPR 2: ≤2 canvases of 30, canvas = 2× CSS size, no console errors, 375px dark OK. Fixed in review: fit width now uses the widest page (the rotated invoice page overflowed). 30-page `sample-long.pdf` + tokens from the generator, seed `doc-028`. `pdfjs-dist` added to conventions · `features/documents/viewer/*`, `pages/design/{design-page,viewer-section}.tsx`, `lib/mock/{documents-seed,pages}.ts`, `scripts/generate-mock-files.py`, `public/mock/sample-long*` |

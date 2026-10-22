@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { DOCUMENT_STATUSES } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
 import { FieldTypesSection } from './field-types-section'
+import { ViewerSection } from './viewer-section'
 
 /* Class strings are written out in full so Tailwind can see them. */
 
@@ -174,6 +175,10 @@ const DesignPage = () => {
         description="Every type a document field can have, and how its value is formatted."
       >
         <FieldTypesSection />
+      </Section>
+
+      <Section id="viewer" title="Document viewer" description="Pages render only near the viewport. Zoom: fit width, 100%, steps from 50% to 300%.">
+        <ViewerSection />
       </Section>
 
       <Section id="amounts" title="Amounts" description="Use the `amount` utility (tabular-nums), right-align in tables, always show currency.">

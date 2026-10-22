@@ -30,6 +30,8 @@ export const SAMPLE_PDF_URL = '/mock/sample-invoice.pdf'
 export const SAMPLE_JPG_URL = '/mock/sample-receipt.jpg'
 export const SAMPLE_PDF_TOKENS_URL = '/mock/sample-invoice.tokens.json'
 export const SAMPLE_JPG_TOKENS_URL = '/mock/sample-receipt.tokens.json'
+export const SAMPLE_LONG_PDF_URL = '/mock/sample-long.pdf'
+export const SAMPLE_LONG_TOKENS_URL = '/mock/sample-long.tokens.json'
 
 type Kind = 'invoice' | 'receipt' | 'contract'
 
@@ -49,6 +51,8 @@ interface DocPlan {
   showcase?: boolean
   fileType?: FileType
   fileName?: string
+  /** the document is backed by the 30-page sample-long.pdf (its values are synthetic) */
+  long?: boolean
   /** unclassified only; omitted means no classification at all */
   classification?: number
 }
@@ -88,6 +92,7 @@ const PLAN: DocPlan[] = [
   /* 025 */ { status: 'rejected', kind: 'receipt' },
   /* 026 */ { status: 'error', kind: null, fileType: 'pdf' },
   /* 027 */ { status: 'error', kind: null, fileType: 'jpg' },
+  /* 028 */ { status: 'needs_review', kind: 'contract', supplier: 2, long: true },
 ]
 
 const ERROR_MESSAGES = [
@@ -403,7 +408,9 @@ export const buildSeedDocuments = (
           : plan.kind === 'receipt'
             ? 'paragon'
             : 'scan'
-    const file = plan.showcase
+    const file = plan.long
+      ? { name: 'sample-long.pdf', type: fileType, pageCount: 30, url: SAMPLE_LONG_PDF_URL }
+      : plan.showcase
       ? plan.kind === 'receipt'
         ? { name: 'sample-receipt.jpg', type: fileType, pageCount: 1, url: SAMPLE_JPG_URL }
         : { name: 'sample-invoice.pdf', type: fileType, pageCount: 3, url: SAMPLE_PDF_URL }

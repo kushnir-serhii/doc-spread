@@ -1,9 +1,9 @@
 // Page sources for the mock documents, for getDocumentPages (slice 3).
-// Two documents are backed by the sample files and have hand-made OCR tokens to fetch.
+// Three documents are backed by the sample files and have hand-made OCR tokens to fetch.
 // Every other document gets deterministic synthetic pages: no image, a few tokens laid out from its values.
 import { seedDocuments } from './data'
 import { seedDocumentTypeVersions } from './document-types-seed'
-import { SAMPLE_JPG_TOKENS_URL, SAMPLE_PDF_TOKENS_URL } from './documents-seed'
+import { SAMPLE_JPG_TOKENS_URL, SAMPLE_LONG_TOKENS_URL, SAMPLE_PDF_TOKENS_URL } from './documents-seed'
 import type { AnyExtractedValue, Document, DocumentPage, DocumentType, Token } from './types'
 
 export type PageSource =
@@ -14,6 +14,7 @@ export type PageSource =
 const FILE_TOKENS: Record<string, string> = {
   'doc-001': SAMPLE_PDF_TOKENS_URL,
   'doc-002': SAMPLE_JPG_TOKENS_URL,
+  'doc-028': SAMPLE_LONG_TOKENS_URL,
 }
 
 const PAGE_WIDTH = 595

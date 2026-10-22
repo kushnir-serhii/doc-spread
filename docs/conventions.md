@@ -3,7 +3,7 @@
 Every slice is checked against these rules. If a rule gets in the way, raise it in the spec's open questions instead of breaking it quietly.
 
 ## Stack (don't add libraries without asking)
-React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 · Tailwind 4 (`@tailwindcss/vite`) · shadcn/ui (Radix) · lucide-react.
+React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 · Tailwind 4 (`@tailwindcss/vite`) · shadcn/ui (Radix) · lucide-react · pdfjs-dist (document viewer only, loaded lazily).
 
 ## Files and folders
 **One rule: every file and folder name is `kebab-case`. Case only changes inside the code.** This matches what the shadcn CLI generates (`components/ui/button.tsx`, `hooks/use-mobile.ts`), so there are no exceptions, and no file is ever renamed by case alone, which breaks on Windows and macOS.
