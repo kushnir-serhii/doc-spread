@@ -6,15 +6,24 @@ Every slice is checked against these rules. If a rule gets in the way, raise it 
 React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 · Tailwind 4 (`@tailwindcss/vite`) · shadcn/ui (Radix) · lucide-react.
 
 ## Files and folders
-- Components: `PascalCase.tsx` (`DocumentTable.tsx`). The file name matches the component inside.
-- Hooks: `useSomething.ts` (`useDebounce.ts`). The file name matches the hook inside.
-- Utilities, services and types: `kebab-case.ts` (`format-money.ts`, `field-types.ts`).
-- Variables and functions: `camelCase`.
-- Types and interfaces: `PascalCase`.
-- Directories: `kebab-case`.
-- shadcn primitives in `src/components/ui/` keep the kebab-case names the CLI generates (`button.tsx`). This is the one exception.
-- Use named exports only. No default exports.
-- `src/pages/<route>/`: route components only. They read params, call query hooks and compose features. Little logic.
+**One rule: every file and folder name is `kebab-case`. Case only changes inside the code.** This matches what the shadcn CLI generates (`components/ui/button.tsx`, `hooks/use-mobile.ts`), so there are no exceptions, and no file is ever renamed by case alone, which breaks on Windows and macOS.
+
+| What | File | Inside |
+| --- | --- | --- |
+| Component | `auth-layout.tsx` | `export const AuthLayout = () => …` |
+| Page | `pages/auth/sign-in-page.tsx` | `const SignInPage = () => …` + `export default SignInPage` |
+| Hook | `hooks/use-debounce.ts` | `export const useDebounce = …` |
+| Utility / service / types | `format-money.ts`, `field-types.ts` | `formatMoney`, `type FieldType` |
+| shadcn primitive | `components/ui/button.tsx` | as the CLI generated it |
+| Folder | `not-found/`, `document-types/` | |
+| Route path (URL) | `/reset-password` | |
+
+- The file name is the kebab-case form of its main export: `AuthLayout` → `auth-layout.tsx`, `useDebounce` → `use-debounce.ts`.
+- One exported component per file. Small private helpers used only by that file (not exported) may live next to it, like `Section` in `design-page.tsx`. Once a helper is needed elsewhere, give it its own file.
+- Our own components are arrow functions: `export const DocumentTable = ({ rows }: DocumentTableProps) => { … }`. shadcn files in `components/ui/` keep the `function` declarations the CLI generates; don't restyle them.
+- Identifiers: components, types and interfaces `PascalCase`; variables, functions and hooks `camelCase`; constants `UPPER_SNAKE_CASE` (`DOCUMENT_STATUSES`).
+- Use named exports only. The one exception is pages: see below.
+- `src/pages/<route>/`: route components only. They read params, call query hooks and compose features. Little logic. One page per file, named `<name>-page.tsx`, and the page is the file's **default export** (it keeps `lazy` routes short: `m.default`). Each route gets its own folder (`pages/auth/sign-in-page.tsx`, `pages/onboarding/onboarding-page.tsx`). Layouts and helpers used by pages don't live in `pages/`; they go in `components/layout/` or `features/<domain>/`.
 - `src/features/<domain>/`: domain UI and logic (`documents/`, `document-types/`, `groups/`, `export/`).
 - `src/components/ui/`: shadcn primitives. Add them with `pnpm dlx shadcn@latest add <name>` inside `apps/web` and don't hand-edit them unless necessary.
 - `src/components/`: shared custom components (`layout/`, `domain/`).

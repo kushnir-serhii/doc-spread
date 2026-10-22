@@ -15,7 +15,7 @@ The user drops several documents of any kind (PDF/JPG/PNG), sees each file's pro
 ## Slices
 
 ### [ ] 1. Drop zone + validation
-- **Files:** `src/pages/upload/`, `src/features/upload/DropZone.tsx`
+- **Files:** `src/pages/upload/`, `src/features/upload/drop-zone.tsx`
 - **Accept:**
   - [ ] drag-and-drop plus a keyboard-accessible "Choose files" button (a real `<input type="file" multiple accept>`)
   - [ ] a wrong file type or a too-large file is rejected per file with a reason; valid files still go through

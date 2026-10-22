@@ -7,7 +7,7 @@ interface PlaceholderPageProps {
 }
 
 /** Temporary page body for screens not built yet. */
-export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
+const PlaceholderPage = ({ title, description }: PlaceholderPageProps) => {
   return (
     <>
       <PageHeader title={title} description={description} />
@@ -19,3 +19,5 @@ export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
     </>
   )
 }
+
+export default PlaceholderPage

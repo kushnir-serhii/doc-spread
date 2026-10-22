@@ -15,7 +15,7 @@ The user maintains company data, the saved export recipients, the team and the p
 ## Slices
 
 ### [ ] 1. Company + export recipients
-- **Build:** reuse `CompanyForm.tsx` from 005. Recipients: add, edit, remove, with email validation.
+- **Build:** reuse `company-form.tsx` from 005. Recipients: add, edit, remove, with email validation.
 - **Files:** `src/pages/settings/`
 - **Accept:**
   - [ ] the tab is in the URL (`?tab=`); save shows pending and announces success or error

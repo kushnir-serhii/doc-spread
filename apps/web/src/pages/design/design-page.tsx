@@ -67,7 +67,14 @@ const SHADOWS = [
   { token: 'shadow-lg', className: 'shadow-lg' },
 ]
 
-function Section({ id, title, description, children }: { id: string; title: string; description?: string; children: ReactNode }) {
+interface SectionProps {
+  id: string
+  title: string
+  description?: string
+  children: ReactNode
+}
+
+const Section = ({ id, title, description, children }: SectionProps) => {
   return (
     <section aria-labelledby={id} className="rounded-xl border bg-card p-4 shadow-xs md:p-6">
       <h2 id={id} className="text-lg font-semibold">
@@ -79,11 +86,15 @@ function Section({ id, title, description, children }: { id: string; title: stri
   )
 }
 
-function TokenName({ children }: { children: ReactNode }) {
+interface TokenNameProps {
+  children: ReactNode
+}
+
+const TokenName = ({ children }: TokenNameProps) => {
   return <code className="font-mono text-xs text-muted-foreground">{children}</code>
 }
 
-export function DesignPage() {
+const DesignPage = () => {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <PageHeader
@@ -258,3 +269,5 @@ export function DesignPage() {
     </div>
   )
 }
+
+export default DesignPage

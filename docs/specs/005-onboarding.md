@@ -15,7 +15,7 @@ A new user sets up the company and their first document type, then lands in the 
 ## Slices
 
 ### [ ] 1. Company step
-- **Files:** `src/pages/onboarding/`, `src/features/company/CompanyForm.tsx` (reused by Settings)
+- **Files:** `src/pages/onboarding/`, `src/features/company/company-form.tsx` (reused by Settings)
 - **Accept:**
   - [ ] fields: company name, tax ID (optional), default currency (select from `CURRENCIES`)
   - [ ] an empty name blocks submit with a linked message
