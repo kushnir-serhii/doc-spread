@@ -17,7 +17,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 009 | [Export](specs/009-export.md) | draft | 002, 006 |
 | 010 | [Groups](specs/010-groups.md) | draft | 002, 014 |
 | 011 | [Settings](specs/011-settings.md) | draft | 002 |
-| 012 | [Document model](specs/012-document-model.md) | draft | — |
+| 012 | [Document model](specs/012-document-model.md) | in-progress | — |
 | 013 | [Document viewer](specs/013-document-viewer.md) | draft | 012 |
 | 014 | [Document types (builder)](specs/014-document-types.md) | draft | 002, 012 |
 | 015 | [Type from a sample](specs/015-type-from-sample.md) | draft | 013, 014 |
