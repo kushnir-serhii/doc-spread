@@ -154,10 +154,15 @@
 /* ------------------------------------------- Domain tokens (both themes) -- */
 :root,
 .dark {
-  /* Invoice statuses — each has bg / fg / dot. Always paired with an icon + label. */
+  /* Document statuses — each has bg / fg / dot. Always paired with an icon + label. */
   --status-uploaded-bg: var(--neutral-soft);
   --status-uploaded-fg: var(--neutral-soft-foreground);
   --status-uploaded-dot: var(--muted-foreground);
+
+  /* Neutral bg + warning text: distinct from uploaded (neutral) and needs-review (warning bg) */
+  --status-unclassified-bg: var(--neutral-soft);
+  --status-unclassified-fg: var(--warning-soft-foreground);
+  --status-unclassified-dot: var(--warning);
 
   --status-processing-bg: var(--info-soft);
   --status-processing-fg: var(--info-soft-foreground);
@@ -251,6 +256,9 @@
   --color-status-uploaded-bg: var(--status-uploaded-bg);
   --color-status-uploaded-fg: var(--status-uploaded-fg);
   --color-status-uploaded-dot: var(--status-uploaded-dot);
+  --color-status-unclassified-bg: var(--status-unclassified-bg);
+  --color-status-unclassified-fg: var(--status-unclassified-fg);
+  --color-status-unclassified-dot: var(--status-unclassified-dot);
   --color-status-processing-bg: var(--status-processing-bg);
   --color-status-processing-fg: var(--status-processing-fg);
   --color-status-processing-dot: var(--status-processing-dot);

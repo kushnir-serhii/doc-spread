@@ -1,3 +1,4 @@
+import { confidenceLevel } from '@/lib/mock/format'
 import type { Confidence } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
 
@@ -14,18 +15,19 @@ const CONFIDENCE_META: Record<Confidence, { label: string; className: string; do
 
 const BAR_HEIGHTS = ['h-1.5', 'h-2.5', 'h-3.5']
 
-export interface ConfidenceBadgeProps {
-  level: Confidence
-  /** 0–1 score; shown as a percentage when provided */
-  score?: number
+interface ConfidenceBadgeBaseProps {
   className?: string
 }
+
+/** Pass `level`, `score` (0-1; level is derived), or both. The score is shown as a percentage. */
+export type ConfidenceBadgeProps = ConfidenceBadgeBaseProps &
+  ({ level: Confidence; score?: number } | { level?: Confidence; score: number })
 
 /**
  * AI confidence indicator. A 3-bar meter + text label, so it reads without color.
  */
-export function ConfidenceBadge({ level, score, className }: ConfidenceBadgeProps) {
-  const meta = CONFIDENCE_META[level]
+export const ConfidenceBadge = ({ level, score, className }: ConfidenceBadgeProps) => {
+  const meta = CONFIDENCE_META[level ?? confidenceLevel(score ?? 0)]
   return (
     <span
       className={cn(

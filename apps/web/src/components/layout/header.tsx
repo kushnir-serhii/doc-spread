@@ -17,7 +17,7 @@ export function Header({ companyName, user }: HeaderProps) {
       {/* Search — placeholder until global search is built */}
       <form role="search" className="relative min-w-0 flex-1 md:max-w-md" onSubmit={(e) => e.preventDefault()}>
         <label htmlFor="global-search" className="sr-only">
-          Search invoices and suppliers
+          Search documents
         </label>
         <Search
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -26,7 +26,7 @@ export function Header({ companyName, user }: HeaderProps) {
         <Input
           id="global-search"
           type="search"
-          placeholder="Search invoices, suppliers…"
+          placeholder="Search documents…"
           className="h-10 bg-card pl-9 md:h-9"
           autoComplete="off"
         />

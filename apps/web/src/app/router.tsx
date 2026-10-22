@@ -43,18 +43,33 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { path: '/app', element: <Navigate to="/inbox" replace /> },
-          { path: '/inbox', lazy: placeholder('Inbox', 'All invoices, their status and AI confidence.') },
-          { path: '/upload', lazy: placeholder('Upload', 'Drop PDF, JPG or PNG invoices to process them.') },
+          { path: '/inbox', lazy: placeholder('Inbox', 'All documents, their status and AI confidence.') },
+          { path: '/upload', lazy: placeholder('Upload', 'Drop PDF, JPG or PNG files to process them.') },
           {
-            path: '/invoices/:invoiceId',
-            lazy: placeholder('Review invoice', 'Check extracted fields and approve.'),
+            path: '/types',
+            lazy: placeholder('Document types', 'The kinds of documents you collect and their fields.'),
           },
-          { path: '/export', lazy: placeholder('Export', 'Send approved invoices to your accountant.') },
-          { path: '/suppliers', lazy: placeholder('Suppliers', 'Everyone who sends you invoices.') },
           {
-            path: '/suppliers/:supplierId',
-            lazy: placeholder('Supplier', 'Supplier details and their invoices.'),
+            path: '/types/new',
+            lazy: placeholder('New document type', 'Start from a template, from scratch, or from a sample.'),
           },
+          {
+            path: '/types/:typeId',
+            lazy: placeholder('Document type', 'Fields, list columns and how AI reads them.'),
+          },
+          {
+            path: '/documents/:documentId',
+            lazy: placeholder('Review document', 'Check extracted fields and approve.'),
+          },
+          {
+            path: '/groups',
+            lazy: placeholder('Groups', 'Documents grouped by a field, like company or counterparty.'),
+          },
+          {
+            path: '/groups/:typeId/:fieldId',
+            lazy: placeholder('Group', 'Every value of this field and its documents.'),
+          },
+          { path: '/export', lazy: placeholder('Export', 'Send approved documents as a spreadsheet.') },
           { path: '/settings', lazy: placeholder('Settings', 'Company, accountant, team and plan.') },
           { path: '/design', lazy: () => import('@/pages/design/design-page').then((m) => ({ Component: m.default })) },
           {

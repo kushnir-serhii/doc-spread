@@ -1,16 +1,3 @@
-/** @deprecated replaced by DOCUMENT_STATUSES (spec 012); removed in slice 5 */
-export const INVOICE_STATUSES = [
-  'uploaded',
-  'processing',
-  'needs_review',
-  'approved',
-  'exported',
-  'rejected',
-  'error',
-] as const
-/** @deprecated replaced by DocumentStatus (spec 012); removed in slice 5 */
-export type InvoiceStatus = (typeof INVOICE_STATUSES)[number]
-
 export type Confidence = 'high' | 'medium' | 'low'
 
 export const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP'] as const
