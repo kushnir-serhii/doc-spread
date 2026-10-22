@@ -27,14 +27,14 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
   - [x] HiDPI screens get sharp canvases (device pixel ratio)
   - [x] the build shows pdf.js only in the viewer's chunk; skeleton while a page renders; error with retry
 
-### [ ] 2. Rotate view
+### [x] 2. Rotate view
 - **Build:** a rotate button on each page (clockwise, 90° steps) and a "Rotate all" in the toolbar. View only: nothing is saved, and it resets when the document changes. The backdrop is rendered at the rotation (pdf.js `rotation` for PDFs, so it stays sharp; a CSS transform for images); the page box swaps width and height at 90°/270°. Everything drawn on a page (highlights, tokens, selections) lives in one overlay layer in page coordinates that rotates with the backdrop, plus one helper that maps view ↔ page coordinates for 0/90/180/270. Slices 3 and 4 use both.
 - **Files:** `src/features/documents/viewer/`, the `/design` demo
 - **Accept:**
-  - [ ] the sideways page 2 of the sample invoice reads upright after rotating it; the canvas is re-rendered (sharp), not a scaled bitmap
-  - [ ] fit width uses the widest page *after* rotation
-  - [ ] a page keeps its rotation while it scrolls out of the render window and back
-  - [ ] rotate buttons have an `aria-label` ("Rotate page 2"), 44px targets, and are reachable by keyboard; touch devices see them without hover
+  - [x] the sideways page 2 of the sample invoice reads upright after rotating it; the canvas is re-rendered (sharp), not a scaled bitmap
+  - [x] fit width uses the widest page *after* rotation
+  - [x] a page keeps its rotation while it scrolls out of the render window and back
+  - [x] rotate buttons have an `aria-label` ("Rotate page 2"), 44px targets, and are reachable by keyboard; touch devices see them without hover
 
 ### [ ] 3. Highlights
 - **Build:** props `highlights: { id, page, bbox, tone, label }[]`, `activeHighlightId`, `onHighlightClick`. Boxes are positioned in % of the page, so zoom never shifts them. `scrollToHighlight(id)` through a ref.
@@ -56,11 +56,11 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
 For each document: the source file URL (CORS on the S3 bucket for pdf.js), or page images for scans and photos; OCR tokens with bboxes normalized after rotation; the page count and the size of each page.
 
 ## Open questions
-- Should a user's rotation be saved per document (a backend field), or is view-only enough?
 - Is a thumbnail strip worth having for long documents?
 - Do touch devices need pointing in the MVP, or is the builder desktop-only?
 
 ## Decisions
+- Rotation is view-only; it is never saved (no backend field).
 - Fit width uses the widest page (after rotation), so nothing overflows sideways; a sideways page is fixed by rotating it, not by per-page fit.
 - `sample-long.tokens.json` stays indented: it's mock-only, fetched on demand for `doc-028` only, and 45 KB gzipped (43 KB minified).
 - Seed documents other than the sample-backed ones show the sample file of their kind under synthetic tokens, so their boxes won't match the backdrop (open question from 012). Accepted for the mocks; the viewer always sizes pages from `DocumentPage`, never from the file.
@@ -71,3 +71,4 @@ For each document: the source file URL (CORS on the S3 bucket for pdf.js), or pa
 | 2026-10-23 | — | ready | checked against the code after 002: added the 30-page mock, the viewer's props and backdrop rule, the 002 dependency, Files lines, design-token wording |
 | 2026-10-23 | 1 | done | `DocumentViewer` + toolbar/page/pdf canvas/image page/status, `useVisiblePages` (one IntersectionObserver, 1-viewport margin), `load-pdfjs` (pdf.js + worker as lazy chunks, one proxy per URL). Headless Chrome at DPR 2: ≤2 canvases of 30, canvas = 2× CSS size, no console errors, 375px dark OK. Fixed in review: fit width now uses the widest page (the rotated invoice page overflowed). 30-page `sample-long.pdf` + tokens from the generator, seed `doc-028`. `pdfjs-dist` added to conventions · `features/documents/viewer/*`, `pages/design/{design-page,viewer-section}.tsx`, `lib/mock/{documents-seed,pages}.ts`, `scripts/generate-mock-files.py`, `public/mock/sample-long*` |
 | 2026-10-23 | — | rescoped | added slice 2 Rotate view (view-only, before highlights so they're built rotation-aware); highlights → 3, pointing → 4. Decided: fit width = widest page; token JSON stays indented |
+| 2026-10-23 | 2 | done | Per-page rotate + "Rotate all" (view-only, reset on document change, kept above virtualization). PDF re-rendered at `page.rotate + view` (canvas 1784×2524 at DPR 2 after rotating, not scaled); images by CSS. `PageOverlay` (unrotated page box, rotates with the backdrop) and `rotation.ts` (`pageToView`/`viewToPage`/bbox variants, DEV round-trip check) for slices 3–4. `showTokens` prop + demo toggle: headless Chrome shows invoice page 2 upright and the receipt at 90° with OCR outlines on the words. Toolbar label is now "Document view" · `features/documents/viewer/{rotation,page-overlay,token-outlines,document-viewer,viewer-page,pdf-page-canvas,image-page,viewer-toolbar}`, `pages/design/viewer-section.tsx` |

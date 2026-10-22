@@ -1,4 +1,4 @@
-import { Maximize2, Minus, Plus } from 'lucide-react'
+import { Maximize2, Minus, Plus, RotateCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface ViewerToolbarProps {
@@ -10,6 +10,7 @@ interface ViewerToolbarProps {
   onActualSize: () => void
   onZoomOut: () => void
   onZoomIn: () => void
+  onRotateAll: () => void
 }
 
 export const ViewerToolbar = ({
@@ -21,8 +22,9 @@ export const ViewerToolbar = ({
   onActualSize,
   onZoomOut,
   onZoomIn,
-}: ViewerToolbarProps) => (
-  <div role="toolbar" aria-label="Zoom" className="flex flex-wrap items-center gap-1 border-b bg-card p-1">
+  onRotateAll,
+}:ViewerToolbarProps) => (
+  <div role="toolbar" aria-label="Document view" className="flex flex-wrap items-center gap-1 border-b bg-card p-1">
     <Button variant="ghost" size="icon" className="size-touch" aria-label="Zoom out" disabled={!canZoomOut} onClick={onZoomOut}>
       <Minus aria-hidden="true" />
     </Button>
@@ -37,6 +39,9 @@ export const ViewerToolbar = ({
     </Button>
     <Button variant={!fit && percent === 100 ? 'secondary' : 'ghost'} className="min-h-touch" onClick={onActualSize}>
       100%
+    </Button>
+    <Button variant="ghost" className="min-h-touch" onClick={onRotateAll}>
+      <RotateCw aria-hidden="true" /> Rotate all
     </Button>
   </div>
 )

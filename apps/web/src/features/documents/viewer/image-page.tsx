@@ -1,14 +1,19 @@
 import { useState } from 'react'
+import type { ViewRotation } from './rotation'
 import { PageError, PageSkeleton } from './viewer-page-status'
 
 interface ImagePageProps {
   src: string
   pageNumber: number
+  /** the UNROTATED page box in CSS px */
+  width: number
+  height: number
+  rotation: ViewRotation
 }
 
 type ImageState = { step: 'loading' } | { step: 'ready' } | { step: 'error' }
 
-export const ImagePage = ({ src, pageNumber }: ImagePageProps) => {
+export const ImagePage = ({ src, pageNumber, width, height, rotation }: ImagePageProps) => {
   const [attempt, setAttempt] = useState(0)
   const [state, setState] = useState<ImageState>({ step: 'loading' })
 
@@ -19,7 +24,9 @@ export const ImagePage = ({ src, pageNumber }: ImagePageProps) => {
         src={src}
         alt={`Page ${pageNumber}`}
         draggable={false}
-        className="absolute inset-0 size-full object-contain"
+        className="absolute top-1/2 left-1/2 object-contain"
+        // dynamic size and angle: the unrotated page box, centred in the (swapped) page box, turned by CSS
+        style={{ width, height, transform: `translate(-50%, -50%) rotate(${rotation}deg)` }}
         onLoad={() => setState({ step: 'ready' })}
         onError={() => setState({ step: 'error' })}
       />

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { useDocumentPages } from '@/lib/api'
 import { useElementWidth } from './use-element-width'
 import { useVisiblePages } from './use-visible-pages'
+import { nextRotation, rotatedSize, type ViewRotation } from './rotation'
 import { ViewerPage } from './viewer-page'
 import { ViewerToolbar } from './viewer-toolbar'
 import type { ViewerFile, ViewerZoom } from './viewer-types'
@@ -10,6 +11,8 @@ import type { ViewerFile, ViewerZoom } from './viewer-types'
 interface DocumentViewerProps {
   documentId: string
   file: ViewerFile
+  /** draw faint OCR token outlines (demo / debug aid) */
+  showTokens?: boolean
 }
 
 const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3]
@@ -19,15 +22,27 @@ const Message = ({ children }: { children: ReactNode }) => (
   <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center text-sm">{children}</div>
 )
 
-export const DocumentViewer = ({ documentId, file }: DocumentViewerProps) => {
+export const DocumentViewer = ({ documentId, file, showTokens = false }: DocumentViewerProps) => {
   const pagesQuery = useDocumentPages(documentId)
   const pages = pagesQuery.data
   const [zoom, setZoom] = useState<ViewerZoom>({ mode: 'fit' })
+  // view-only rotation per page, kept above virtualization; tied to the document so it resets when that changes
+  const [rotationState, setRotationState] = useState<{ documentId: string; byPage: Record<number, ViewRotation> }>({
+    documentId,
+    byPage: {},
+  })
+  const rotations = rotationState.documentId === documentId ? rotationState.byPage : {}
+  const rotationOf = (index: number): ViewRotation => rotations[index] ?? 0
+  const rotatePages = (indexes: number[]) => {
+    const byPage = { ...rotations }
+    for (const i of indexes) byPage[i] = nextRotation(rotationOf(i))
+    setRotationState({ documentId, byPage })
+  }
   const { containerRef, visible } = useVisiblePages(pages?.length ?? 0)
   const containerWidth = useElementWidth(containerRef)
 
-  // the widest page sets fit width, so a rotated (landscape) page never overflows sideways
-  const widest = Math.max(1, ...(pages ?? []).map((p) => p.width))
+  // the widest page after rotation sets fit width, so nothing overflows sideways
+  const widest = Math.max(1, ...(pages ?? []).map((p) => rotatedSize(p.width, p.height, rotationOf(p.index)).width))
   const fitScale = Math.max(containerWidth - PAGE_PADDING, 0) / widest
   const scale = zoom.mode === 'fit' ? fitScale : zoom.value
   const percent = Math.round(scale * 100)
@@ -49,6 +64,7 @@ export const DocumentViewer = ({ documentId, file }: DocumentViewerProps) => {
         onActualSize={() => setZoom({ mode: 'scale', value: 1 })}
         onZoomOut={() => stepZoom(-1)}
         onZoomIn={() => stepZoom(1)}
+        onRotateAll={() => rotatePages((pages ?? []).map((p) => p.index))}
       />
       <div ref={containerRef} className="flex min-h-0 flex-1 flex-col overflow-auto">
         {pagesQuery.isPending ? (
@@ -72,7 +88,16 @@ export const DocumentViewer = ({ documentId, file }: DocumentViewerProps) => {
         ) : (
           <div className="mx-auto flex w-max min-w-full flex-col items-center gap-4 p-4">
             {pagesQuery.data.map((page) => (
-              <ViewerPage key={page.index} page={page} file={file} scale={scale} visible={visible.has(page.index)} />
+              <ViewerPage
+                key={page.index}
+                page={page}
+                file={file}
+                scale={scale}
+                visible={visible.has(page.index)}
+                rotation={rotationOf(page.index)}
+                showTokens={showTokens}
+                onRotate={() => rotatePages([page.index])}
+              />
             ))}
           </div>
         )}

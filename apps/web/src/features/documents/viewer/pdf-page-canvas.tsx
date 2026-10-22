@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadPdfDocument } from './load-pdfjs'
+import type { ViewRotation } from './rotation'
 import { PageError, PageSkeleton } from './viewer-page-status'
 
 interface PdfPageCanvasProps {
@@ -9,16 +10,18 @@ interface PdfPageCanvasProps {
   /** the page box in CSS px (from DocumentPage width/height and the zoom) */
   boxWidth: number
   boxHeight: number
+  /** the view rotation, added to the PDF page's own /Rotate */
+  rotation: ViewRotation
 }
 
 type RenderState = { key: string; step: 'ready' | 'error' }
 
-export const PdfPageCanvas = ({ url, pageIndex, boxWidth, boxHeight }: PdfPageCanvasProps) => {
+export const PdfPageCanvas = ({ url, pageIndex, boxWidth, boxHeight, rotation }: PdfPageCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState<RenderState | null>(null)
   const [canvasSize, setCanvasSize] = useState({ width: boxWidth, height: boxHeight })
-  const key = `${url}|${pageIndex}|${boxWidth}|${boxHeight}|${attempt}`
+  const key = `${url}|${pageIndex}|${boxWidth}|${boxHeight}|${rotation}|${attempt}`
 
   useEffect(() => {
     let cancelled = false
@@ -28,12 +31,13 @@ export const PdfPageCanvas = ({ url, pageIndex, boxWidth, boxHeight }: PdfPageCa
         const pdf = await loadPdfDocument(url)
         const page = await pdf.getPage(pageIndex + 1)
         if (cancelled) return
-        // the viewport already applies the page's own /Rotate
-        const natural = page.getViewport({ scale: 1 })
+        // pdf.js takes an absolute angle: the page's own /Rotate plus the view rotation (re-rendered, so it stays sharp)
+        const angle = (page.rotate + rotation) % 360
+        const natural = page.getViewport({ scale: 1, rotation: angle })
         // the PDF page may differ in aspect from the box: fit it inside
         const fit = Math.min(boxWidth / natural.width, boxHeight / natural.height)
         const dpr = window.devicePixelRatio || 1
-        const viewport = page.getViewport({ scale: fit * dpr })
+        const viewport = page.getViewport({ scale: fit * dpr, rotation: angle })
         const canvas = canvasRef.current
         if (!canvas) return
         canvas.width = Math.floor(viewport.width)
@@ -53,7 +57,7 @@ export const PdfPageCanvas = ({ url, pageIndex, boxWidth, boxHeight }: PdfPageCa
       cancelled = true
       cancelRender?.()
     }
-  }, [url, pageIndex, boxWidth, boxHeight, attempt, key])
+  }, [url, pageIndex, boxWidth, boxHeight, rotation, attempt, key])
 
   const step = result?.key === key ? result.step : 'loading'
 

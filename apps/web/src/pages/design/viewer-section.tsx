@@ -11,6 +11,7 @@ const DEMO_DOCUMENTS = [
 
 export const ViewerSection = () => {
   const [documentId, setDocumentId] = useState(DEMO_DOCUMENTS[0].id)
+  const [showTokens, setShowTokens] = useState(false)
   const { data: doc, isError, refetch } = useDocument(documentId)
 
   return (
@@ -27,10 +28,18 @@ export const ViewerSection = () => {
             {d.label}
           </Button>
         ))}
+        <Button
+          variant={showTokens ? 'secondary' : 'outline'}
+          className="min-h-touch"
+          aria-pressed={showTokens}
+          onClick={() => setShowTokens((v) => !v)}
+        >
+          Show OCR tokens
+        </Button>
       </div>
       <div className="h-[32rem]">
         {doc ? (
-          <DocumentViewer key={doc.id} documentId={doc.id} file={doc.file} />
+          <DocumentViewer key={doc.id} documentId={doc.id} file={doc.file} showTokens={showTokens} />
         ) : isError ? (
           <div role="alert" className="text-sm">
             Could not load the document.{' '}
