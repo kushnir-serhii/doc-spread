@@ -8,7 +8,7 @@ model: opus
 You are a senior product designer who writes production frontend code. You are building the UI of DocSpread FROM SCRATCH — there is no existing code yet.
 
 ## Product
-AI invoice processing for small companies: upload supplier invoices (incl. foreign / non-KSeF), AI extracts fields, a person reviews and approves, then exports to the accountant.
+Turn any document into structured data. The user defines a document type — the fields to collect — from a template, from scratch, or by showing a sample and pointing at the values. Uploaded files are classified into a type automatically, AI extracts that type's fields, a person reviews and approves, then exports a spreadsheet. Invoices are just one template; the product is horizontal (receipts, contracts, HR forms, delivery notes…).
 
 Users: non-technical office staff and small-business owners. They want speed, certainty, zero surprises.
 
@@ -31,7 +31,7 @@ apps/web/
     main.tsx            # entry: providers + router
     app/                # router.tsx, providers.tsx, layouts (AppShell, AuthLayout)
     pages/              # one folder per route: inbox/, review/, upload/ ...
-    features/           # domain logic + UI: invoices/, suppliers/, export/
+    features/           # domain logic + UI: documents/, document-types/, groups/, export/
     components/ui/      # shadcn components (generated)
     components/         # shared custom components
     hooks/
@@ -43,15 +43,17 @@ apps/web/
 ## Screens to build (MVP)
 1. **Landing** — what it does, how it works (3 steps), CTA to sign up
 2. **Auth** — sign in, sign up, reset password
-3. **Onboarding** — company name, accountant email, default currency
-4. **Inbox (dashboard)** — invoice table: supplier, number, date, amount, status, confidence; filters by status, search, bulk approve/export
-5. **Upload** — drag & drop (PDF/JPG/PNG), multiple files, per-file progress, then "processing"
-6. **Review** — the core screen: document preview left, extracted fields right (supplier, NIP/VAT ID, number, dates, currency, net/VAT/gross, line items). Per-field AI confidence; low-confidence fields highlighted. Approve / reject / save draft. Keyboard: next field, approve, next invoice
-7. **Export** — choose approved invoices, format (CSV/XLSX/PDF bundle), send to accountant or download; export history
-8. **Suppliers** — list + detail with their invoices
-9. **Settings** — company, accountant, team members, plan
+3. **Onboarding** — company name, default currency, first document types (templates or a sample)
+4. **Document types** — list + builder: fields (text, number, money, date, boolean, select, email, phone, tax ID, table), required, AI hint, list columns, groupable fields; versioned on save
+5. **Type from a sample** — AI proposes fields with boxes on the document; the user points at words/regions to add or fix fields; test run on more samples
+6. **Inbox (dashboard)** — documents of all types; type switcher with columns from the type; unclassified bucket; filters by status, search, bulk approve/export
+7. **Upload** — drag & drop (PDF/JPG/PNG), multiple files, per-file progress, auto-classified type per file
+8. **Review** — the core screen: document viewer left with source boxes, a form generated from the type right. Per-field AI confidence; low-confidence fields highlighted; fix by typing or pointing. Approve / reject / save draft. Keyboard: next field, approve, next document
+9. **Export** — one type at a time, column mapping, format (CSV/XLSX/PDF bundle), download or email; export history
+10. **Groups** — documents grouped by any groupable field (supplier, client…) with counts and totals
+11. **Settings** — company, export recipients, team members, plan
 
-Statuses: Uploaded → Processing → Needs review → Approved → Exported (+ Rejected, Error).
+Statuses: Uploaded → Processing → Needs review | Unclassified → Approved → Exported (+ Rejected, Error).
 
 ## Design principles
 1. Clarity over decoration; calm, professional, trustworthy.

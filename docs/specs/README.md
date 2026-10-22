@@ -7,16 +7,23 @@ Every task gets one spec file. Every spec is split into **slices**. A slice is t
 | # | Spec | Status | Depends on |
 | --- | --- | --- | --- |
 | 001 | [Lazy-loaded routes](001-lazy-routes.md) | ready | — |
-| 002 | [Query layer (lib/api)](002-query-layer.md) | ready | — |
+| 002 | [Query layer (lib/api)](002-query-layer.md) | draft | 012 |
 | 003 | [Landing](003-landing.md) | draft | 001 |
 | 004 | [Auth](004-auth.md) | draft | 001 |
-| 005 | [Onboarding](005-onboarding.md) | draft | 002 |
-| 006 | [Inbox](006-inbox.md) | draft | 002 |
-| 007 | [Upload](007-upload.md) | draft | 002 |
-| 008 | [Review](008-review.md) | draft | 002, 006 |
+| 005 | [Onboarding](005-onboarding.md) | draft | 002, 014 |
+| 006 | [Inbox](006-inbox.md) | draft | 002, 012 |
+| 007 | [Upload](007-upload.md) | draft | 002, 012 |
+| 008 | [Review](008-review.md) | draft | 002, 006, 013 |
 | 009 | [Export](009-export.md) | draft | 002, 006 |
-| 010 | [Suppliers](010-suppliers.md) | draft | 002 |
+| 010 | [Groups](010-groups.md) | draft | 002, 014 |
 | 011 | [Settings](011-settings.md) | draft | 002 |
+| 012 | [Document model](012-document-model.md) | draft | — |
+| 013 | [Document viewer](013-document-viewer.md) | draft | 012 |
+| 014 | [Document types (builder)](014-document-types.md) | draft | 002, 012 |
+| 015 | [Type from a sample](015-type-from-sample.md) | draft | 013, 014 |
+| 016 | [Field actions](016-field-actions.md) | draft | 008, 014 |
+
+Suggested build order: 001 → 012 → 002 → 013 → 014 → 015 → 006 → 007 → 008 → 016 → 009 → 010 → 005 → 011, with 003/004 at any point.
 
 New spec: copy [_template.md](_template.md), take the next number, add a row here.
 

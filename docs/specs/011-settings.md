@@ -3,10 +3,10 @@
 **Status:** draft · **Depends on:** 002 · **Route(s):** `/settings`
 
 ## Goal
-The user maintains company data, the accountant's address, the team and the plan.
+The user maintains company data, the saved export recipients, the team and the plan.
 
 ## Scope
-- In: sections or tabs for Company, Accountant, Team (list plus invite form, mock), Plan (read-only).
+- In: sections or tabs for Company, Export recipients (a list of name plus email, e.g. the accountant), Team (list plus invite form, mock), Plan (read-only).
 - Out: billing checkout, SSO.
 
 ## Data
@@ -14,8 +14,8 @@ The user maintains company data, the accountant's address, the team and the plan
 
 ## Slices
 
-### [ ] 1. Company + accountant
-- **Build:** reuse `company-form.tsx` from 005.
+### [ ] 1. Company + export recipients
+- **Build:** reuse `CompanyForm.tsx` from 005. Recipients: add, edit, remove, with email validation.
 - **Files:** `src/pages/settings/`
 - **Accept:**
   - [ ] the tab is in the URL (`?tab=`); save shows pending and announces success or error
@@ -26,7 +26,7 @@ The user maintains company data, the accountant's address, the team and the plan
 
 ### [ ] 3. Plan
 - **Accept:**
-  - [ ] current plan and usage (invoices this month) shown read-only
+  - [ ] current plan and usage (documents processed this month, number of types) shown read-only
 
 ## Backend needs
 Team invites and roles, plan and usage endpoints.
@@ -37,3 +37,4 @@ Team invites and roles, plan and usage endpoints.
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-22 | — | rescoped | accountant → export recipients; usage counts documents |
