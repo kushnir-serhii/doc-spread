@@ -2,6 +2,8 @@
 
 | Path | What it is |
 | --- | --- |
-| [specs/](specs/README.md) | One spec per task, split into slices. The process and the task index live in `specs/README.md`. |
+| [product.md](product.md) | What the product is: users, core concepts, flow, screens, design principles, technical frame. |
+| [roadmap.md](roadmap.md) | Status of every spec and the build plan. What's done, what's next. |
+| [process.md](process.md) | How work moves from a spec to code: statuses, slices, models, the `/run-implement` loop, Definition of Done. |
 | [conventions.md](conventions.md) | React + TypeScript rules every slice is checked against. |
-| [../.claude/agents/designer.md](../.claude/agents/designer.md) | Product scope, screens, design principles, folder structure. |
+| [specs/](specs/) | One spec per task, split into slices. New ones start from [specs/_template.md](specs/_template.md). |

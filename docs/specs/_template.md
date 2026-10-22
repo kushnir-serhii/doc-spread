@@ -17,6 +17,7 @@ Types and mock functions used (from `src/lib/mock`), and query hooks added or us
 ### [ ] 1. Short name
 - **Build:** what changes
 - **Files:** expected paths
+- **Model:** sonnet (optional; `haiku` for mechanical work: moves, renames, copy, adding a shadcn primitive)
 - **Accept:**
   - [ ] verifiable criterion
   - [ ] verifiable criterion

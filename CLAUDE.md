@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `doc-spread` is an early-stage pnpm + Turborepo monorepo. Workspaces are declared in `pnpm-workspace.yaml` as `apps/*` and `packages/*`.
 
-- `apps/web` — React 19 + Vite 8 SPA (package name `@docspread/web`). Layout follows `.claude/agents/designer.md` → Structure.
+- `apps/web` — React 19 + Vite 8 SPA (package name `@docspread/web`). Product and layout: `docs/product.md`.
 - `packages/shared` — `@docspread/shared`, code shared across apps.
 
 ## Commands
@@ -36,11 +36,12 @@ There is no test runner configured yet; the root `test` script is a placeholder 
 
 ## Specs and process
 
-Work is driven by `docs/specs/` (one spec per task, split into slices; process and index in `docs/specs/README.md`). Implement one slice at a time, check it against `docs/conventions.md`, run typecheck/lint/build, mark the slice `[x]`, log it in the spec, then stop and wait for approval before the next slice.
+All process documents live in `docs/`:
 
-### Models and delegation
+- `docs/product.md`: what the product is, core concepts, screens, design principles, technical frame.
+- `docs/roadmap.md`: status of every spec and the build plan (waves, order). The single source of truth for what's next.
+- `docs/process.md`: statuses, what a slice is, models and delegation, the loop, Definition of Done.
+- `docs/conventions.md`: the rules every slice is checked against.
+- `docs/specs/`: one spec per task, split into slices (`_template.md` for new ones).
 
-- The main session (Opus) orchestrates: it picks and plans slices, delegates the implementation to subagents, reviews their diffs against the spec and `docs/conventions.md`, runs the verification, and records the result. It does not write slice code itself unless a fix is trivial.
-- Implementation goes to subagents on **Sonnet** (`model: "sonnet"`): building components, hooks, mocks, and slices in general.
-- The simplest mechanical tasks go to **Haiku** (`model: "haiku"`): moving or renaming files, copy changes, adding a shadcn primitive, updating a spec's log and checkboxes.
-- Subagents can run in parallel when their slices are independent: the dependencies are `done` and they don't touch the same files. Use `isolation: "worktree"` when parallel agents might overlap. The approval loop still holds: report the batch together and wait for the OK before the next one.
+`/run-implement` (short: `/run-i`) runs one step of the loop in `docs/process.md`. Key rules: one slice at a time, stop for approval after each; Opus orchestrates, Sonnet implements, Haiku takes mechanical work; the user makes all commits and branches — never run `git commit` or create branches, suggest the message instead.
