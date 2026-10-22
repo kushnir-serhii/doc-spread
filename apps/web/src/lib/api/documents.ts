@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 import {
   approveDocuments,
@@ -47,10 +47,11 @@ export const useDocument = (id: string) =>
     refetchInterval: pollWhilePending,
   })
 
-export const useDocumentPages = (id: string) =>
+/** null id skips the request */
+export const useDocumentPages = (id: string | null) =>
   useQuery({
-    queryKey: documentKeys.pages(id),
-    queryFn: () => getDocumentPages(id),
+    queryKey: documentKeys.pages(id ?? ''),
+    queryFn: id === null ? skipToken : () => getDocumentPages(id),
     staleTime: Infinity,
   })
 

@@ -40,7 +40,6 @@ Every function in `src/lib/mock/api.ts` after 012: document types, templates, do
 Mirrors the comment block at the top of `src/lib/mock/api.ts`.
 
 ## Open questions
-- `useDocumentType(id)` has no `enabled` guard; a page with an optional id (e.g. a document still `unclassified`) needs one. Add it when the first consumer lands?
 - Polling refreshes documents but not group values: when a pipeline finishes, group counts stay stale until their own `staleTime` runs out. Invalidate groups when a polled document leaves `processing`, or accept it?
 - Should `formatMoney`/`formatDate` move from `lib/mock` to `lib/format.ts`, since they aren't mocks?
 

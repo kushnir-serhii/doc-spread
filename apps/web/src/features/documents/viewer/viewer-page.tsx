@@ -6,6 +6,8 @@ import { PageOverlay } from './page-overlay'
 import { PdfPageCanvas } from './pdf-page-canvas'
 import { rotatedSize, type ViewRotation } from './rotation'
 import { TokenOutlines } from './token-outlines'
+import { HighlightBox } from './highlight-box'
+import type { ViewerHighlight } from './viewer-highlights'
 import type { ViewerFile } from './viewer-types'
 
 interface ViewerPageProps {
@@ -17,10 +19,29 @@ interface ViewerPageProps {
   visible: boolean
   rotation: ViewRotation
   showTokens: boolean
+  /** only this page's highlights */
+  highlights: ViewerHighlight[]
+  activeHighlightId?: string | null
+  focusHighlightId: string | null
+  onHighlightFocused: () => void
+  onHighlightClick?: (id: string) => void
   onRotate: () => void
 }
 
-export const ViewerPage = ({ page, file, scale, visible, rotation, showTokens, onRotate }: ViewerPageProps) => {
+export const ViewerPage = ({
+  page,
+  file,
+  scale,
+  visible,
+  rotation,
+  showTokens,
+  highlights,
+  activeHighlightId,
+  focusHighlightId,
+  onHighlightFocused,
+  onHighlightClick,
+  onRotate,
+}: ViewerPageProps) => {
   // the unrotated page box; the page box swaps width and height at 90 and 270 degrees
   const pageWidth = page.width * scale
   const pageHeight = page.height * scale
@@ -42,9 +63,19 @@ export const ViewerPage = ({ page, file, scale, visible, rotation, showTokens, o
       ) : page.imageUrl ? (
         <ImagePage src={page.imageUrl} pageNumber={pageNumber} width={pageWidth} height={pageHeight} rotation={rotation} />
       ) : null}
-      {visible && showTokens && (
+      {visible && (showTokens || highlights.length > 0) && (
         <PageOverlay width={pageWidth} height={pageHeight} rotation={rotation}>
-          <TokenOutlines tokens={page.tokens} />
+          {showTokens && <TokenOutlines tokens={page.tokens} />}
+          {highlights.map((h) => (
+            <HighlightBox
+              key={h.id}
+              highlight={h}
+              active={h.id === activeHighlightId}
+              focusRequested={h.id === focusHighlightId}
+              onFocused={onHighlightFocused}
+              onClick={onHighlightClick}
+            />
+          ))}
         </PageOverlay>
       )}
       <Button

@@ -198,6 +198,15 @@
   --confidence-low-bg: var(--danger-soft);
   --confidence-low-fg: var(--danger-soft-foreground);
   --confidence-low-dot: var(--danger);
+
+  /* Viewer highlights sit on the page, which is white in both themes, so these are fixed (not theme-flipped).
+     Borders are >= 3:1 on white; fills are faint so the text underneath stays readable. */
+  --highlight-bg: oklch(0.5 0.17 258 / 0.12);
+  --highlight-border: oklch(0.5 0.17 258);
+  --highlight-active-bg: oklch(0.5 0.17 258 / 0.26);
+  --highlight-active-border: oklch(0.38 0.17 258);
+  --highlight-low-bg: oklch(0.53 0.2 27 / 0.14);
+  --highlight-low-border: oklch(0.53 0.2 27);
 }
 
 /* ------------------------------------------------- Tailwind theme mapping -- */
@@ -287,6 +296,13 @@
   --color-confidence-low-bg: var(--confidence-low-bg);
   --color-confidence-low-fg: var(--confidence-low-fg);
   --color-confidence-low-dot: var(--confidence-low-dot);
+
+  --color-highlight-bg: var(--highlight-bg);
+  --color-highlight-border: var(--highlight-border);
+  --color-highlight-active-bg: var(--highlight-active-bg);
+  --color-highlight-active-border: var(--highlight-active-border);
+  --color-highlight-low-bg: var(--highlight-low-bg);
+  --color-highlight-low-border: var(--highlight-low-border);
 
   /* Radius */
   --radius-sm: calc(var(--radius) - 4px);

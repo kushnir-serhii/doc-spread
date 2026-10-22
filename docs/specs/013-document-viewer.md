@@ -36,13 +36,13 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
   - [x] a page keeps its rotation while it scrolls out of the render window and back
   - [x] rotate buttons have an `aria-label` ("Rotate page 2"), 44px targets, and are reachable by keyboard; touch devices see them without hover
 
-### [ ] 3. Highlights
+### [x] 3. Highlights
 - **Build:** props `highlights: { id, page, bbox, tone, label }[]`, `activeHighlightId`, `onHighlightClick`. Boxes are positioned in % of the page, so zoom never shifts them. `scrollToHighlight(id)` through a ref.
 - **Files:** `src/features/documents/viewer/`, `src/styles/index.css` (new highlight tokens go here first), the `/design` demo
 - **Accept:**
-  - [ ] on the rotated mock page, the boxes line up with the text, both as delivered and after rotating it in the view
-  - [ ] tones come from design tokens in `src/styles/index.css` (normal / active / low confidence) and also differ by border style, not color alone
-  - [ ] each highlight is a focusable button with an `aria-label` ("Issue date: 12.03.2026")
+  - [x] on the rotated mock page, the boxes line up with the text, both as delivered and after rotating it in the view
+  - [x] tones come from design tokens in `src/styles/index.css` (normal / active / low confidence) and also differ by border style, not color alone
+  - [x] each highlight is a focusable button with an `aria-label` ("Issue date: 12.03.2026")
 
 ### [ ] 4. Pointing: words + region
 - **Build:** a `mode` prop: `view | select-words | select-region`. In `select-words`, a click picks a token and a drag or Shift+click extends the selection in reading order. In `select-region`, the user draws a rectangle. Either way it calls `onSelect({ page, bbox, tokens, text })`. Esc cancels.
@@ -60,6 +60,8 @@ For each document: the source file URL (CORS on the S3 bucket for pdf.js), or pa
 - Do touch devices need pointing in the MVP, or is the builder desktop-only?
 
 ## Decisions
+- Highlight boxes match the text and are not inflated to 44px (accepted exception to the touch-target rule); keyboard focus and a label list are the other way in.
+- Highlight colours are fixed, not theme-flipped: the page is white in both themes.
 - Rotation is view-only; it is never saved (no backend field).
 - Fit width uses the widest page (after rotation), so nothing overflows sideways; a sideways page is fixed by rotating it, not by per-page fit.
 - `sample-long.tokens.json` stays indented: it's mock-only, fetched on demand for `doc-028` only, and 45 KB gzipped (43 KB minified).
@@ -72,3 +74,4 @@ For each document: the source file URL (CORS on the S3 bucket for pdf.js), or pa
 | 2026-10-23 | 1 | done | `DocumentViewer` + toolbar/page/pdf canvas/image page/status, `useVisiblePages` (one IntersectionObserver, 1-viewport margin), `load-pdfjs` (pdf.js + worker as lazy chunks, one proxy per URL). Headless Chrome at DPR 2: ≤2 canvases of 30, canvas = 2× CSS size, no console errors, 375px dark OK. Fixed in review: fit width now uses the widest page (the rotated invoice page overflowed). 30-page `sample-long.pdf` + tokens from the generator, seed `doc-028`. `pdfjs-dist` added to conventions · `features/documents/viewer/*`, `pages/design/{design-page,viewer-section}.tsx`, `lib/mock/{documents-seed,pages}.ts`, `scripts/generate-mock-files.py`, `public/mock/sample-long*` |
 | 2026-10-23 | — | rescoped | added slice 2 Rotate view (view-only, before highlights so they're built rotation-aware); highlights → 3, pointing → 4. Decided: fit width = widest page; token JSON stays indented |
 | 2026-10-23 | 2 | done | Per-page rotate + "Rotate all" (view-only, reset on document change, kept above virtualization). PDF re-rendered at `page.rotate + view` (canvas 1784×2524 at DPR 2 after rotating, not scaled); images by CSS. `PageOverlay` (unrotated page box, rotates with the backdrop) and `rotation.ts` (`pageToView`/`viewToPage`/bbox variants, DEV round-trip check) for slices 3–4. `showTokens` prop + demo toggle: headless Chrome shows invoice page 2 upright and the receipt at 90° with OCR outlines on the words. Toolbar label is now "Document view" · `features/documents/viewer/{rotation,page-overlay,token-outlines,document-viewer,viewer-page,pdf-page-canvas,image-page,viewer-toolbar}`, `pages/design/viewer-section.tsx` |
+| 2026-10-23 | 3 | done | `highlights`/`activeHighlightId`/`onHighlightClick`, `ref` → `scrollToHighlight` (scrolls to unrendered pages via `bboxToView`, then focuses the box). Tones: normal solid, low-confidence dashed (kept when active), active 2px + stronger fill; `--highlight-*` tokens. Fixed in review: `useDocumentType`/`useDocumentPages` take `null` and skip the request (`skipToken`), closing 002's guard question. Headless Chrome: jump to the sideways page focuses the box; it sits on "2026-10-14" as delivered and after rotating · `features/documents/viewer/{highlight-box,viewer-highlights,document-viewer,viewer-page}`, `styles/index.css`, `pages/design/{viewer-section,use-demo-highlights}`, `lib/api/{document-types,documents}.ts` |

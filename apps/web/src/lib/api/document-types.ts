@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createDocumentType,
   getDocumentType,
@@ -29,10 +29,11 @@ export const useDocumentTypes = () =>
     queryFn: listDocumentTypes,
   })
 
-export const useDocumentType = (id: string, version?: number) =>
+/** null id (e.g. an unclassified document) skips the request */
+export const useDocumentType = (id: string | null, version?: number) =>
   useQuery({
-    queryKey: documentTypeKeys.detail(id, version),
-    queryFn: () => getDocumentType(id, version),
+    queryKey: documentTypeKeys.detail(id ?? '', version),
+    queryFn: id === null ? skipToken : () => getDocumentType(id, version),
   })
 
 export const useCreateDocumentType = () => {
