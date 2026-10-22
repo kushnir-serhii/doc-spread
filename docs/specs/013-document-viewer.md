@@ -7,7 +7,8 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
 
 ## Scope
 - In: page rendering behind the `DocumentPage` contract, zoom, highlights, word selection that snaps to OCR tokens, a rectangle mode for tables.
-- Out: annotations, rotating pages in the UI, text search inside the document.
+- In (added): view-only page rotation in 90° steps.
+- Out: annotations, saving a rotation, text search inside the document.
 
 ## Data
 `DocumentPage`, `Token`, `BBox`, `getDocumentPages(id)` through `useDocumentPages(id)` (002). New dependency: `pdfjs-dist` (approved).
@@ -26,19 +27,28 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
   - [x] HiDPI screens get sharp canvases (device pixel ratio)
   - [x] the build shows pdf.js only in the viewer's chunk; skeleton while a page renders; error with retry
 
-### [ ] 2. Highlights
+### [ ] 2. Rotate view
+- **Build:** a rotate button on each page (clockwise, 90° steps) and a "Rotate all" in the toolbar. View only: nothing is saved, and it resets when the document changes. The backdrop is rendered at the rotation (pdf.js `rotation` for PDFs, so it stays sharp; a CSS transform for images); the page box swaps width and height at 90°/270°. Everything drawn on a page (highlights, tokens, selections) lives in one overlay layer in page coordinates that rotates with the backdrop, plus one helper that maps view ↔ page coordinates for 0/90/180/270. Slices 3 and 4 use both.
+- **Files:** `src/features/documents/viewer/`, the `/design` demo
+- **Accept:**
+  - [ ] the sideways page 2 of the sample invoice reads upright after rotating it; the canvas is re-rendered (sharp), not a scaled bitmap
+  - [ ] fit width uses the widest page *after* rotation
+  - [ ] a page keeps its rotation while it scrolls out of the render window and back
+  - [ ] rotate buttons have an `aria-label` ("Rotate page 2"), 44px targets, and are reachable by keyboard; touch devices see them without hover
+
+### [ ] 3. Highlights
 - **Build:** props `highlights: { id, page, bbox, tone, label }[]`, `activeHighlightId`, `onHighlightClick`. Boxes are positioned in % of the page, so zoom never shifts them. `scrollToHighlight(id)` through a ref.
 - **Files:** `src/features/documents/viewer/`, `src/styles/index.css` (new highlight tokens go here first), the `/design` demo
 - **Accept:**
-  - [ ] on the rotated mock page, the boxes line up with the text
+  - [ ] on the rotated mock page, the boxes line up with the text, both as delivered and after rotating it in the view
   - [ ] tones come from design tokens in `src/styles/index.css` (normal / active / low confidence) and also differ by border style, not color alone
   - [ ] each highlight is a focusable button with an `aria-label` ("Issue date: 12.03.2026")
 
-### [ ] 3. Pointing: words + region
+### [ ] 4. Pointing: words + region
 - **Build:** a `mode` prop: `view | select-words | select-region`. In `select-words`, a click picks a token and a drag or Shift+click extends the selection in reading order. In `select-region`, the user draws a rectangle. Either way it calls `onSelect({ page, bbox, tokens, text })`. Esc cancels.
 - **Files:** `src/features/documents/viewer/`, the `/design` demo
 - **Accept:**
-  - [ ] the selection snaps to whole tokens; the combined bbox wraps them
+  - [ ] the selection snaps to whole tokens; the combined bbox wraps them; it works the same on a page rotated in the view, and `onSelect` always gets page coordinates
   - [ ] keyboard: Tab into the page, arrows move between tokens, Shift+arrows extend, Enter confirms
   - [ ] the cursor and a hint bar make the active mode obvious
 
@@ -46,12 +56,13 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
 For each document: the source file URL (CORS on the S3 bucket for pdf.js), or page images for scans and photos; OCR tokens with bboxes normalized after rotation; the page count and the size of each page.
 
 ## Open questions
-- Fit width uses the widest page, so on a document with a landscape page the portrait pages show narrower than the container. Per-page fit instead?
-- `sample-long.tokens.json` is 793 KB (indented like the others). Minify the generated token JSON?
+- Should a user's rotation be saved per document (a backend field), or is view-only enough?
 - Is a thumbnail strip worth having for long documents?
 - Do touch devices need pointing in the MVP, or is the builder desktop-only?
 
 ## Decisions
+- Fit width uses the widest page (after rotation), so nothing overflows sideways; a sideways page is fixed by rotating it, not by per-page fit.
+- `sample-long.tokens.json` stays indented: it's mock-only, fetched on demand for `doc-028` only, and 45 KB gzipped (43 KB minified).
 - Seed documents other than the sample-backed ones show the sample file of their kind under synthetic tokens, so their boxes won't match the backdrop (open question from 012). Accepted for the mocks; the viewer always sizes pages from `DocumentPage`, never from the file.
 
 ## Log
@@ -59,3 +70,4 @@ For each document: the source file URL (CORS on the S3 bucket for pdf.js), or pa
 | --- | --- | --- | --- |
 | 2026-10-23 | — | ready | checked against the code after 002: added the 30-page mock, the viewer's props and backdrop rule, the 002 dependency, Files lines, design-token wording |
 | 2026-10-23 | 1 | done | `DocumentViewer` + toolbar/page/pdf canvas/image page/status, `useVisiblePages` (one IntersectionObserver, 1-viewport margin), `load-pdfjs` (pdf.js + worker as lazy chunks, one proxy per URL). Headless Chrome at DPR 2: ≤2 canvases of 30, canvas = 2× CSS size, no console errors, 375px dark OK. Fixed in review: fit width now uses the widest page (the rotated invoice page overflowed). 30-page `sample-long.pdf` + tokens from the generator, seed `doc-028`. `pdfjs-dist` added to conventions · `features/documents/viewer/*`, `pages/design/{design-page,viewer-section}.tsx`, `lib/mock/{documents-seed,pages}.ts`, `scripts/generate-mock-files.py`, `public/mock/sample-long*` |
+| 2026-10-23 | — | rescoped | added slice 2 Rotate view (view-only, before highlights so they're built rotation-aware); highlights → 3, pointing → 4. Decided: fit width = widest page; token JSON stays indented |
