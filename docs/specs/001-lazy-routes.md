@@ -1,6 +1,6 @@
 # 001 — Lazy-loaded routes
 
-**Status:** in-progress · **Depends on:** — · **Route(s):** all
+**Status:** done · **Depends on:** — · **Route(s):** all
 
 ## Goal
 Each page loads as its own chunk, so the first load stays small (the build currently warns about a chunk over 500 kB). Required by docs/product.md → Technical frame.
@@ -39,14 +39,14 @@ None.
   - [x] no "No HydrateFallback" console warning on first load
   - [x] the pending indicator is announced (`role="status"`) and respects `prefers-reduced-motion`
 
-### [ ] 4. Sliding pending bar
+### [x] 4. Sliding pending bar
 - **Build:** replace the bar's `animate-pulse` with a sliding indeterminate bar: a new `--animate-route-progress` token plus `@keyframes route-progress` in `src/styles/index.css`. A `w-1/3` segment slides across a clipped track. With reduced motion it's a static full-width bar.
 - **Files:** `src/styles/index.css`, `src/components/layout/route-pending.tsx`
 - **Model:** haiku
 - **Accept:**
-  - [ ] the bar slides left to right while a route loads; it uses only token-based utilities
-  - [ ] with `prefers-reduced-motion: reduce` it shows a static full-width bar
-  - [ ] typecheck, lint and build green
+  - [x] the bar slides left to right while a route loads; it uses only token-based utilities
+  - [x] with `prefers-reduced-motion: reduce` it shows a static full-width bar
+  - [x] typecheck, lint and build green
 
 ## Backend needs
 None. Hosting note: CloudFront must serve `index.html` for unknown paths.
@@ -64,3 +64,4 @@ None. Hosting note: CloudFront must serve `index.html` for unknown paths.
 | 2026-10-22 | 2 | built, then reopened | First built with `PascalCase.tsx` file names (sonnet); the naming rule changed to kebab-case for all files the same day, before any commit, so the files are being renamed. |
 | 2026-10-22 | 2 | done (haiku) | Renamed with `git mv` to kebab-case: `pages/auth/{sign-in,sign-up,reset-password}-page.tsx`, `pages/onboarding/onboarding-page.tsx`, `pages/{landing,not-found,design,placeholder}/*-page.tsx`, `components/layout/auth-layout.tsx`, `features/auth/auth-placeholder.tsx`; imports updated. No uppercase file names under `src/`. Typecheck, lint, build green. |
 | 2026-10-22 | 3 | done (sonnet) | Every page route is `lazy` (`m.default`); placeholder routes go through a private `placeholder(title, description)` helper whose lazy returns an `element`. A pathless root route renders `<RoutePending />` + `<Outlet />`, with `hydrateFallbackElement: <RoutePending forceVisible />`. New `components/layout/route-pending.tsx` (`role="status"`, sr-only "Loading page…", `motion-safe:animate-pulse`). One chunk per page; main chunk 464 kB, no size warning. HydrateFallback warning ruled out by reading React Router's `lib/hooks.js` (root fallback → `fallbackIndex` 0), not tested in a browser. Typecheck, lint, build green. Files: `src/app/router.tsx`, `src/components/layout/route-pending.tsx`. |
+| 2026-10-22 | 4 | done (haiku) | Token `--animate-route-progress` + `@keyframes route-progress` (translateX -100% → 300%) in the static `@theme` block of `src/styles/index.css`. `route-pending.tsx`: track gets `overflow-hidden`; the bar is `w-full` and becomes `motion-safe:w-1/3 motion-safe:animate-route-progress`. Keyframes confirmed in the built CSS. Typecheck, lint, build green; main chunk 464 kB, no warning. |
