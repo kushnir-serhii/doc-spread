@@ -1,6 +1,6 @@
 # 002 — Query layer (lib/api)
 
-**Status:** in-progress · **Depends on:** 012 · **Route(s):** —
+**Status:** done · **Depends on:** 012 · **Route(s):** —
 
 ## Goal
 Screens get data only through typed TanStack Query hooks, so swapping the mocks for the real API later means changing `src/lib/api` and nothing else.
@@ -29,12 +29,12 @@ Every function in `src/lib/mock/api.ts` after 012: document types, templates, do
   - [x] `useDocuments` and `useDocument` poll (about every 1.5 s) while a returned document is `uploaded` or `processing`, and stop when none is
   - [x] pages are cached with a long `staleTime` (they never change)
 
-### [ ] 3. Builder AI, groups, export, company, team
+### [x] 3. Builder AI, groups, export, company, team
 - **Build:** `useProposeFields(documentId)`, `useTestExtract()` (mutation: saves nothing), `useAddFieldExample()` (invalidates that type's list and current detail, not documents), `useGroupValues(typeId, fieldId)` with `groupKeys`, plus `exportKeys` + `useExportJobs()` + `useCreateExportJob()`, `companyKeys` + `useCompany()` + `useUpdateCompany()`, `teamKeys` + `useTeam()`. `useCreateExportJob()` also invalidates documents and group values, because exporting changes their status.
 - **Files:** `src/lib/api/{builder,groups,export,company,team}.ts`
 - **Accept:**
-  - [ ] every mock function has exactly one hook
-  - [ ] `grep "@/lib/mock" src --include=*.tsx` only hits type imports and formatters
+  - [x] every mock function has exactly one hook
+  - [x] `grep "@/lib/mock" src --include=*.tsx` only hits type imports and formatters
 
 ## Backend needs
 Mirrors the comment block at the top of `src/lib/mock/api.ts`.
@@ -51,3 +51,4 @@ Mirrors the comment block at the top of `src/lib/mock/api.ts`.
 | 2026-10-22 | — | ready | checked against `lib/mock/api.ts` after 012: versioned type detail, no type-counts endpoint (dropped), polling for the upload pipeline, group-value invalidation, explicit export/company/team hooks |
 | 2026-10-22 | 1 | done | `documentTypeKeys` (current detail keyed `'current'`, pinned versions by number, so updates invalidate only the current one), `templateKeys`, 5 hooks · `lib/api/document-types.ts`, `lib/api/index.ts` |
 | 2026-10-22 | 2 | done | `documentKeys` (pages on their own branch, `staleTime: Infinity`), 8 hooks, polling at 1.5 s while any document is `uploaded`/`processing`, one helper invalidates lists + groups + touched details · `lib/api/documents.ts`, `lib/api/groups.ts` (keys only), `lib/api/index.ts` |
+| 2026-10-22 | 3 | done | 22 mock functions ↔ 22 hooks; `builderKeys` (proposals `staleTime: Infinity`), `useGroupValues`, `exportKeys` (create also invalidates documents + groups), `companyKeys` (update seeds the cache), `teamKeys`. Spec done · `lib/api/{builder,groups,export,company,team,index}.ts` |
