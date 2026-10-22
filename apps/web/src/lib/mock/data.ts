@@ -1,6 +1,7 @@
 import type {
   Company,
   CurrencyCode,
+  Document,
   ExportJob,
   ExtractedField,
   FileType,
@@ -10,18 +11,13 @@ import type {
   Supplier,
   TeamMember,
 } from './types'
+import { seedDocumentTypeVersions } from './document-types-seed'
+import { buildSeedDocuments } from './documents-seed'
+import { BASE_NOW, DAY, isoDate, makeRng } from './seed-utils'
+import { findValueMismatches } from './value-check'
 
-// ---------- deterministic PRNG (mulberry32) ----------
-function makeRng(seed: number) {
-  let a = seed >>> 0
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0
-    let t = a
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
+export { seedDocumentTypes, seedDocumentTypeVersions } from './document-types-seed'
+export { findValueMismatches } from './value-check'
 
 // ---------- company & team ----------
 export const seedCompany: Company = {
@@ -39,6 +35,7 @@ export const seedTeam: TeamMember[] = [
 ]
 
 // ---------- suppliers ----------
+/** @deprecated the invoice model is replaced by seedDocuments (spec 012); removed in slice 3 */
 export const seedSuppliers: Supplier[] = [
   { id: 's1', name: 'Orange Polska S.A.', taxId: '5260250995', country: 'PL', address: 'al. Jerozolimskie 160, 02-326 Warszawa', email: 'faktury@orange.pl' },
   { id: 's2', name: 'Biuro Rachunkowe Eurosoft Sp. z o.o.', taxId: '7010123456', country: 'PL', address: 'ul. Marszałkowska 12/4, 00-590 Warszawa', email: 'biuro@eurosoft.pl' },
@@ -80,10 +77,6 @@ const VAT_BY_COUNTRY: Record<string, number[]> = {
   LU: [0],
   US: [0],
 }
-
-const BASE_NOW = Date.UTC(2026, 9, 20, 9, 30) // 2026-10-20 09:30Z
-const DAY = 86_400_000
-const isoDate = (ms: number) => new Date(ms).toISOString().slice(0, 10)
 
 function makeLines(rng: () => number, count: number, vatChoices: number[], idPrefix: string): LineItem[] {
   const lines: LineItem[] = []
@@ -240,6 +233,7 @@ function buildInvoice(i: number): Invoice {
   }
 }
 
+/** @deprecated the invoice model is replaced by seedDocuments (spec 012); removed in slice 3 */
 export const seedInvoices: Invoice[] = STATUS_PLAN.map((_, i) => buildInvoice(i))
 
 // ---------- export jobs ----------
@@ -252,3 +246,14 @@ export const seedExportJobs: ExportJob[] = [
   { id: 'exp_004', createdAt: '2026-09-28T11:00:00.000Z', format: 'csv', invoiceIds: exportedIds.slice(0, 2), destination: 'email', recipient: 'stary-ksiegowy@example.pl', status: 'failed' },
   { id: 'exp_005', createdAt: '2026-09-21T08:15:00.000Z', format: 'xlsx', invoiceIds: exportedIds.slice(2, 4), destination: 'download', status: 'completed' },
 ]
+
+// ---------- documents (spec 012) ----------
+export const seedDocuments: Document[] = buildSeedDocuments(seedSuppliers, seedCompany)
+
+// The types can't tie a value to its field id, so check the seeds in dev (log only, never throw)
+if (import.meta.env.DEV) {
+  for (const doc of seedDocuments) {
+    const type = seedDocumentTypeVersions.find((t) => t.id === doc.typeId && t.version === doc.typeVersion)
+    for (const problem of findValueMismatches(doc, type)) console.error(`[mock seed] ${problem}`)
+  }
+}

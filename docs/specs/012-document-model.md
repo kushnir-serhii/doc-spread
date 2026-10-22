@@ -102,15 +102,16 @@ export interface Document {
   - [x] `ExtractedValue<'money'>['value']` is `Money | null`, so the compiler catches a mismatched value type (no casts)
   - [x] every template field has a `hint`; the keys are unique within each type
 
-### [ ] 2. Mock documents + pages
-- **Build:** about 25 documents across the three types in every status, including `unclassified`, with long values and one invoice with 50+ table rows. Pages carry tokens. One generated sample PDF (no real data) plus a JPG scan in `public/mock/`, each with a hand-made token JSON that lines up with the file.
-- **Files:** `src/lib/mock/data.ts`, `src/lib/mock/pages.ts`, `public/mock/*`
+### [x] 2. Mock documents + pages
+- **Build:** first update the templates per **Decisions**: drop the Invoice `currency` field; Contract `parties` becomes a `table` (columns `name`: text, `tax_id`: tax_id). Then about 25 documents across the three types in every status, including `unclassified`, with long values and one invoice with 50+ table rows. Pages carry tokens. One generated sample PDF (no real data) plus a JPG scan in `public/mock/`, each with a hand-made token JSON that lines up with the file.
+- **Files:** `src/lib/mock/templates.ts`, `src/lib/mock/data.ts`, `src/lib/mock/pages.ts`, `public/mock/*`
 - **Accept:**
-  - [ ] each document's `values` match its type's fields by id and value type
-  - [ ] the sample PDF includes one rotated page (`rotate: 90`) for spec 013
+  - [x] each document's `values` match its type's fields by id and value type, including table cells against their column's type (checked at runtime: the types can't tie a value to its field id)
+  - [x] the money values within one invoice share one currency
+  - [x] the sample PDF includes one rotated page (`rotate: 90`) for spec 013
 
 ### [ ] 3. Mock API
-- **Build:** replace the invoice and supplier functions with: `listDocumentTypes`, `getDocumentType`, `createDocumentType`, `updateDocumentType` (raises `version`), `listTemplates`, `listDocuments({ typeId, status, search, group })`, `getDocument`, `getDocumentPages`, `updateDocumentValues`, `approveDocuments`, `rejectDocument`, `reassignDocumentType`, `uploadDocument`, `proposeFields`, `testExtract`, `addFieldExample`, `listGroupValues`. Keep the export, company and team functions, with export jobs taking a `typeId`.
+- **Build:** replace the invoice and supplier functions with: `listDocumentTypes`, `getDocumentType(id, version?)` (old versions stay readable; omitted means current), `createDocumentType`, `updateDocumentType` (raises `version`, keeps the previous one), `listTemplates` (server-provided), `listDocuments({ typeId, status, search, group })`, `getDocument`, `getDocumentPages`, `updateDocumentValues`, `approveDocuments`, `rejectDocument`, `reassignDocumentType`, `uploadDocument`, `proposeFields`, `testExtract`, `addFieldExample`, `listGroupValues`. Keep the export, company and team functions, with export jobs taking a `typeId`.
 - **Files:** `src/lib/mock/api.ts`
 - **Accept:**
   - [ ] the comment block at the top of `api.ts` lists what the backend must provide
@@ -131,16 +132,20 @@ export interface Document {
   - [ ] every new route renders its placeholder; typecheck, lint and build green
 
 ## Backend needs
-Storage for document types with versions; documents linked to a type version; page images or the source file per page; OCR tokens with normalized bboxes for PDFs, scans and photos.
+Storage for document types with every version kept and readable; documents linked to a type version; templates served by the API (editable without a frontend deploy); page images or the source file per page; OCR tokens with normalized bboxes for PDFs, scans and photos.
+
+## Decisions
+- **Type versions:** old versions stay readable. A document is shown with the fields of the version it was extracted with (`typeVersion`); re-extracting with the current version is offered separately (008/014).
+- **Templates** live on the server and come through `listTemplates`. `templates.ts` is only the mock's seed.
+- **Invoice currency:** no separate `currency` field; the currency comes from the `money` values themselves.
+- **Contract parties:** a `table` (name, tax ID), not comma-separated text. No new field type.
 
 ## Open questions
-- Should a type's old versions stay readable (show a document with the fields it was extracted with), or only the current one?
-- Do templates live on the server (editable by us without a deploy) or ship in the frontend?
-- Invoice has a `currency` select field while each `money` value carries its own currency, so the two can disagree. Keep the field (for export/filtering) or derive it from the totals?
-- Nothing in the types ties a table cell's `type` to its column's declared type; slice 2's check that values match fields has to cover table cells too.
-- Contract `parties` is a comma-separated `text` because there is no list field type. Is that enough, or does a list type belong in 014?
+- Only two documents are really backed by their file: `doc-001` (`sample-invoice.pdf`) and `doc-002` (`sample-receipt.jpg`), with `source` bboxes on their values. The other documents point `file.url` at the sample of their kind and carry no `source`, so the file shown doesn't match their values. Is that enough for 008/013, or does each type need its own sample file?
+- Templates have no `required` option for table fields (`makeTable` always sets `false`), so Contract `parties` lost the `required` it had as a text field.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | 1 | done | New schema types (`FieldDef`, `ColumnDef`, `DocumentType`, `AnyExtractedValue`/`FieldValue`, `Document`, …) added beside the legacy invoice types, which are marked `@deprecated` until slices 2/3/5 migrate their users. `DOCUMENT_TEMPLATES` (Invoice, Receipt, Contract). `lib/mock/types.ts`, `lib/mock/templates.ts`, `lib/mock/index.ts` |
+| 2026-10-22 | 2 | done | Templates updated per Decisions. 27 seed documents (every status, Invoice v1 and v2, 64-row invoice, PLN/EUR/GBP/USD); `findValueMismatches` returns 0 and runs over the seeds in dev. Sample PDF (3 pages, page 2 `/Rotate 90`) and receipt JPG with token JSON, generated by `scripts/generate-mock-files.py`; token alignment spot-checked against the rendered pages. Legacy invoice seeds stay, deprecated, until slice 3. `lib/mock/{data,templates,pages,document-types-seed,documents-seed,value-builders,value-check,seed-utils,showcase-sources}.ts`, `public/mock/*`, `scripts/generate-mock-files.py` |
