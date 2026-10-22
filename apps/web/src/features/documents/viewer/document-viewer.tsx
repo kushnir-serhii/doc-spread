@@ -4,10 +4,12 @@ import { useDocumentPages } from '@/lib/api'
 import { useElementWidth } from './use-element-width'
 import { useVisiblePages } from './use-visible-pages'
 import { bboxToView, nextRotation, rotatedSize, type ViewRotation } from './rotation'
+import { PointingHintBar } from './pointing-hint-bar'
+import { usePointing } from './use-pointing'
 import { ViewerPage } from './viewer-page'
 import { ViewerToolbar } from './viewer-toolbar'
 import type { DocumentViewerHandle, ViewerHighlight } from './viewer-highlights'
-import type { ViewerFile, ViewerZoom } from './viewer-types'
+import type { ViewerFile, ViewerMode, ViewerSelection, ViewerZoom } from './viewer-types'
 
 interface DocumentViewerProps {
   documentId: string
@@ -17,6 +19,10 @@ interface DocumentViewerProps {
   highlights?: ViewerHighlight[]
   activeHighlightId?: string | null
   onHighlightClick?: (id: string) => void
+  /** view: no pointing; select-words / select-region: a pending selection until confirmed */
+  mode?: ViewerMode
+  onSelect?: (s: ViewerSelection) => void
+  onCancel?: () => void
   ref?: Ref<DocumentViewerHandle>
 }
 
@@ -36,6 +42,9 @@ export const DocumentViewer = ({
   highlights = NO_HIGHLIGHTS,
   activeHighlightId,
   onHighlightClick,
+  mode = 'view',
+  onSelect,
+  onCancel,
   ref,
 }: DocumentViewerProps) => {
   const pagesQuery = useDocumentPages(documentId)
@@ -53,6 +62,7 @@ export const DocumentViewer = ({
     for (const i of indexes) byPage[i] = nextRotation(rotationOf(i))
     setRotationState({ documentId, byPage })
   }
+  const pointing = usePointing({ mode, pages: pages ?? [], rotationOf, onSelect, onCancel })
   const { containerRef, visible } = useVisiblePages(pages?.length ?? 0)
   const containerWidth = useElementWidth(containerRef)
   // set by scrollToHighlight; the box takes focus when it mounts, then clears it
@@ -101,6 +111,13 @@ export const DocumentViewer = ({
         onZoomIn={() => stepZoom(1)}
         onRotateAll={() => rotatePages((pages ?? []).map((p) => p.index))}
       />
+      <PointingHintBar
+        mode={mode}
+        selection={pointing.selection}
+        canConfirm={pointing.state.step === 'pending'}
+        onConfirm={pointing.actions.confirm}
+        onCancel={pointing.actions.cancel}
+      />
       <div ref={containerRef} className="flex min-h-0 flex-1 flex-col overflow-auto">
         {pagesQuery.isPending ? (
           <div className="flex flex-col items-center gap-4 p-4" role="status" aria-label="Loading pages">
@@ -137,6 +154,10 @@ export const DocumentViewer = ({
                 onHighlightFocused={clearFocusRequest}
                 onHighlightClick={onHighlightClick}
                 onRotate={() => rotatePages([page.index])}
+                mode={mode}
+                selection={pointing.selection?.page === page.index ? pointing.selection : null}
+                focusToken={pointing.selection?.page === page.index ? pointing.focusToken : null}
+                pointing={pointing.actions}
               />
             ))}
           </div>

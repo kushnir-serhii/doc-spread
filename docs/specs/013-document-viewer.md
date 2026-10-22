@@ -1,6 +1,6 @@
 # 013 — Document viewer
 
-**Status:** in-progress · **Depends on:** 002, 012 · **Route(s):** — (component; demoed on `/design`)
+**Status:** done · **Depends on:** 002, 012 · **Route(s):** — (component; demoed on `/design`)
 
 ## Goal
 One component shows any document (a digital PDF, a scanned PDF, a photo), draws boxes where field values came from, and lets the user point at words or a region. The type builder (014, 015) and Review (008) both use it.
@@ -44,22 +44,24 @@ One component shows any document (a digital PDF, a scanned PDF, a photo), draws 
   - [x] tones come from design tokens in `src/styles/index.css` (normal / active / low confidence) and also differ by border style, not color alone
   - [x] each highlight is a focusable button with an `aria-label` ("Issue date: 12.03.2026")
 
-### [ ] 4. Pointing: words + region
+### [x] 4. Pointing: words + region
 - **Build:** a `mode` prop: `view | select-words | select-region`. In `select-words`, a click picks a token and a drag or Shift+click extends the selection in reading order. In `select-region`, the user draws a rectangle. Either way it calls `onSelect({ page, bbox, tokens, text })`. Esc cancels.
 - **Files:** `src/features/documents/viewer/`, the `/design` demo
 - **Accept:**
-  - [ ] the selection snaps to whole tokens; the combined bbox wraps them; it works the same on a page rotated in the view, and `onSelect` always gets page coordinates
-  - [ ] keyboard: Tab into the page, arrows move between tokens, Shift+arrows extend, Enter confirms
-  - [ ] the cursor and a hint bar make the active mode obvious
+  - [x] the selection snaps to whole tokens; the combined bbox wraps them; it works the same on a page rotated in the view, and `onSelect` always gets page coordinates
+  - [x] keyboard: Tab into the page, arrows move between tokens, Shift+arrows extend, Enter confirms
+  - [x] the cursor and a hint bar make the active mode obvious
 
 ## Backend needs
 For each document: the source file URL (CORS on the S3 bucket for pdf.js), or page images for scans and photos; OCR tokens with bboxes normalized after rotation; the page count and the size of each page.
 
 ## Open questions
 - Is a thumbnail strip worth having for long documents?
-- Do touch devices need pointing in the MVP, or is the builder desktop-only?
+- Do touch devices need pointing in the MVP, or is the builder desktop-only? Today select modes set `touch-none` on pages, so a touch drag selects instead of scrolling.
+- `document-viewer.tsx` is ~170 lines (over the ~150 guideline); split the pointing/rotation wiring out when 008 or 015 adds to it.
 
 ## Decisions
+- Pointing: a selection is pending until confirmed (Enter or Confirm; Esc or Cancel clears it and calls `onCancel`); it lives on one page; reading order = `DocumentPage.tokens` order; a region takes the tokens whose centre is inside it, and an empty region is still a valid selection (`text: ''`). Region mode has no keyboard alternative.
 - Highlight boxes match the text and are not inflated to 44px (accepted exception to the touch-target rule); keyboard focus and a label list are the other way in.
 - Highlight colours are fixed, not theme-flipped: the page is white in both themes.
 - Rotation is view-only; it is never saved (no backend field).
@@ -75,3 +77,4 @@ For each document: the source file URL (CORS on the S3 bucket for pdf.js), or pa
 | 2026-10-23 | — | rescoped | added slice 2 Rotate view (view-only, before highlights so they're built rotation-aware); highlights → 3, pointing → 4. Decided: fit width = widest page; token JSON stays indented |
 | 2026-10-23 | 2 | done | Per-page rotate + "Rotate all" (view-only, reset on document change, kept above virtualization). PDF re-rendered at `page.rotate + view` (canvas 1784×2524 at DPR 2 after rotating, not scaled); images by CSS. `PageOverlay` (unrotated page box, rotates with the backdrop) and `rotation.ts` (`pageToView`/`viewToPage`/bbox variants, DEV round-trip check) for slices 3–4. `showTokens` prop + demo toggle: headless Chrome shows invoice page 2 upright and the receipt at 90° with OCR outlines on the words. Toolbar label is now "Document view" · `features/documents/viewer/{rotation,page-overlay,token-outlines,document-viewer,viewer-page,pdf-page-canvas,image-page,viewer-toolbar}`, `pages/design/viewer-section.tsx` |
 | 2026-10-23 | 3 | done | `highlights`/`activeHighlightId`/`onHighlightClick`, `ref` → `scrollToHighlight` (scrolls to unrendered pages via `bboxToView`, then focuses the box). Tones: normal solid, low-confidence dashed (kept when active), active 2px + stronger fill; `--highlight-*` tokens. Fixed in review: `useDocumentType`/`useDocumentPages` take `null` and skip the request (`skipToken`), closing 002's guard question. Headless Chrome: jump to the sideways page focuses the box; it sits on "2026-10-14" as delivered and after rotating · `features/documents/viewer/{highlight-box,viewer-highlights,document-viewer,viewer-page}`, `styles/index.css`, `pages/design/{viewer-section,use-demo-highlights}`, `lib/api/{document-types,documents}.ts` |
+| 2026-10-23 | 4 | done | `mode` (`view`/`select-words`/`select-region`), `onSelect`, `onCancel`; `use-pointing` state machine, `use-page-pointer` (page-box rect → `viewToPage`), `token-hit-test` (DEV self-check), selection layer + `--selection-*` tokens, hint bar with Confirm/Cancel. Headless Chrome: drag on the rotated invoice page → "Data odbioru: 2026-10-14" (3 tokens, page coords); keyboard arrows/Shift/Enter → `onSelect`; Esc → Cancelled; regions on the PDF, the JPG and the JPG rotated 90° return the right tokens in page coords; text/crosshair cursors. Spec done · `features/documents/viewer/{use-pointing,use-page-pointer,pointing-types,resolve-selection,selection-layer,pointing-hint-bar,token-hit-test,document-viewer,viewer-page,highlight-box,viewer-types}`, `styles/index.css`, `pages/design/viewer-section.tsx` |

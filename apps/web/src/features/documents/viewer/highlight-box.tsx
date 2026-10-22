@@ -9,10 +9,12 @@ interface HighlightBoxProps {
   focusRequested: boolean
   onFocused: () => void
   onClick?: (id: string) => void
+  /** pointing mode: let pointer events through to the page, the box stays visible */
+  passive?: boolean
 }
 
 /** A focusable box in page coordinates. Tone differs by border style as well as colour: solid, dashed, thick. */
-export const HighlightBox = ({ highlight, active, focusRequested, onFocused, onClick }: HighlightBoxProps) => {
+export const HighlightBox = ({ highlight, active, focusRequested, onFocused, onClick, passive = false }: HighlightBoxProps) => {
   const ref = useRef<HTMLButtonElement>(null)
   const { id, bbox, tone, label } = highlight
 
@@ -30,7 +32,8 @@ export const HighlightBox = ({ highlight, active, focusRequested, onFocused, onC
       aria-pressed={active}
       title={label}
       className={cn(
-        'pointer-events-auto absolute cursor-pointer rounded-xs border border-highlight-border bg-highlight-bg outline-offset-2 outline-highlight-active-border hover:bg-highlight-active-bg focus-visible:outline-2',
+        passive ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer',
+        'absolute rounded-xs border border-highlight-border bg-highlight-bg outline-offset-2 outline-highlight-active-border hover:bg-highlight-active-bg focus-visible:outline-2',
         tone === 'low-confidence' &&
           'border-dashed border-highlight-low-border bg-highlight-low-bg outline-highlight-low-border hover:bg-highlight-low-bg',
         // active keeps the dashed border of a low-confidence box, so that signal isn't lost

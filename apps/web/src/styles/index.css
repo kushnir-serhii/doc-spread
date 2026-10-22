@@ -207,6 +207,10 @@
   --highlight-active-border: oklch(0.38 0.17 258);
   --highlight-low-bg: oklch(0.53 0.2 27 / 0.14);
   --highlight-low-border: oklch(0.53 0.2 27);
+
+  /* Pointing selection (words / region), also drawn on the white page: fixed, border >= 3:1 on white. */
+  --selection-bg: oklch(0.55 0.2 305 / 0.22);
+  --selection-border: oklch(0.48 0.2 305);
 }
 
 /* ------------------------------------------------- Tailwind theme mapping -- */
@@ -303,6 +307,8 @@
   --color-highlight-active-border: var(--highlight-active-border);
   --color-highlight-low-bg: var(--highlight-low-bg);
   --color-highlight-low-border: var(--highlight-low-border);
+  --color-selection-bg: var(--selection-bg);
+  --color-selection-border: var(--selection-border);
 
   /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
