@@ -37,3 +37,10 @@ There is no test runner configured yet; the root `test` script is a placeholder 
 ## Specs and process
 
 Work is driven by `docs/specs/` (one spec per task, split into slices; process and index in `docs/specs/README.md`). Implement one slice at a time, check it against `docs/conventions.md`, run typecheck/lint/build, mark the slice `[x]`, log it in the spec, then stop and wait for approval before the next slice.
+
+### Models and delegation
+
+- The main session (Opus) orchestrates: it picks and plans slices, delegates the implementation to subagents, reviews their diffs against the spec and `docs/conventions.md`, runs the verification, and records the result. It does not write slice code itself unless a fix is trivial.
+- Implementation goes to subagents on **Sonnet** (`model: "sonnet"`): building components, hooks, mocks, and slices in general.
+- The simplest mechanical tasks go to **Haiku** (`model: "haiku"`): moving or renaming files, copy changes, adding a shadcn primitive, updating a spec's log and checkboxes.
+- Subagents can run in parallel when their slices are independent: the dependencies are `done` and they don't touch the same files. Use `isolation: "worktree"` when parallel agents might overlap. The approval loop still holds: report the batch together and wait for the OK before the next one.

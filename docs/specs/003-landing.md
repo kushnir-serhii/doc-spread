@@ -6,7 +6,7 @@
 A visitor understands what DocSpread does in a few seconds and signs up.
 
 ## Scope
-- In: hero, "how it works" in 3 steps, CTA to `/sign-up`, link to `/sign-in`, footer.
+- In: hero (any document → a spreadsheet, not just invoices), "how it works" in 3 steps (describe or show your document → upload → review and export), CTA to `/sign-up`, link to `/sign-in`, footer.
 - Out: pricing page, blog, marketing analytics.
 
 ## Data
@@ -34,8 +34,9 @@ None (static).
 None.
 
 ## Open questions
-- Final product copy and value proposition?
+- Final product copy and value proposition? The product is horizontal: lead with examples from several niches (invoices, receipts, contracts, HR forms).
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-22 | — | rescoped | positioning is horizontal: any document type |

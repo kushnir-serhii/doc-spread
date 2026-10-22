@@ -1,29 +1,36 @@
 # 002 — Query layer (lib/api)
 
-**Status:** ready · **Depends on:** — · **Route(s):** —
+**Status:** draft · **Depends on:** 012 · **Route(s):** —
 
 ## Goal
 Screens get data only through typed TanStack Query hooks, so swapping the mocks for the real API later means changing `src/lib/api` and nothing else.
 
 ## Scope
-- In: query-key factories, query and mutation hooks wrapping every function in `src/lib/mock/api.ts`, invalidation rules.
+- In: query-key factories, query and mutation hooks wrapping every function in `src/lib/mock/api.ts` (as rewritten in 012), invalidation rules.
 - Out: the real HTTP client, auth.
 
 ## Data
-`listInvoices`, `getInvoice`, `updateInvoice`, `approveInvoices`, `rejectInvoice`, `listSuppliers`, `getSupplier`, `listExportJobs`, `createExportJob`, `getCompany`, `updateCompany`, `listTeam`.
+Every function in `src/lib/mock/api.ts` after 012: document types, templates, documents, pages, upload, AI proposals and test extraction, examples, group values, export jobs, company, team.
 
 ## Slices
 
-### [ ] 1. Invoices
-- **Build:** `invoiceKeys` factory; `useInvoices(params)`, `useInvoice(id)`, `useUpdateInvoice()`, `useApproveInvoices()`, `useRejectInvoice()`. Mutations invalidate lists and update the affected detail.
-- **Files:** `src/lib/api/invoices.ts`, `src/lib/api/index.ts`
+### [ ] 1. Document types + templates
+- **Build:** `documentTypeKeys`; `useDocumentTypes()`, `useDocumentType(id)`, `useCreateDocumentType()`, `useUpdateDocumentType()`, `useTemplates()`.
+- **Files:** `src/lib/api/document-types.ts`, `src/lib/api/index.ts`
 - **Accept:**
   - [ ] no inline query keys; return types are inferred from the mocks (no manual generics)
-  - [ ] approving invalidates every `invoiceKeys.list(*)`
+  - [ ] updating a type invalidates its detail, the list, and document lists of that type
 
-### [ ] 2. Suppliers, export, company, team
-- **Build:** the same pattern for `supplierKeys`, `exportKeys`, `companyKeys`, `teamKeys`. `useCreateExportJob()` also invalidates invoices, because exporting changes their status.
-- **Files:** `src/lib/api/{suppliers,export,company,team}.ts`
+### [ ] 2. Documents
+- **Build:** `documentKeys`; `useDocuments(params)`, `useDocument(id)`, `useDocumentPages(id)`, `useUpdateDocumentValues()`, `useApproveDocuments()`, `useRejectDocument()`, `useReassignDocumentType()`, `useUploadDocument()`.
+- **Files:** `src/lib/api/documents.ts`
+- **Accept:**
+  - [ ] approving invalidates every `documentKeys.list(*)` and the type counts
+  - [ ] pages are cached with a long `staleTime` (they never change)
+
+### [ ] 3. Builder AI, groups, export, company, team
+- **Build:** `useProposeFields(documentId)`, `useTestExtract()`, `useAddFieldExample()`, `useGroupValues(typeId, fieldId)`, plus `exportKeys`, `companyKeys`, `teamKeys`. `useCreateExportJob()` also invalidates documents, because exporting changes their status.
+- **Files:** `src/lib/api/{builder,groups,export,company,team}.ts`
 - **Accept:**
   - [ ] every mock function has exactly one hook
   - [ ] `grep "@/lib/mock" src --include=*.tsx` only hits type imports and formatters
@@ -37,3 +44,4 @@ Mirrors the comment block at the top of `src/lib/mock/api.ts`.
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-22 | — | rescoped | back to draft: rewritten for the document-type model (012) |
