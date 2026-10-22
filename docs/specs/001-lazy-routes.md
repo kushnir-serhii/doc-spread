@@ -3,7 +3,7 @@
 **Status:** ready · **Depends on:** — · **Route(s):** all
 
 ## Goal
-Each page loads as its own chunk, so the first load stays small (the build currently warns about a chunk over 500 kB). Required by designer.md → Structure.
+Each page loads as its own chunk, so the first load stays small (the build currently warns about a chunk over 500 kB). Required by docs/product.md → Technical frame.
 
 ## Scope
 - In: `lazy` on every page route, a pending UI while a chunk loads, one folder per route under `src/pages/`.
@@ -17,6 +17,7 @@ None.
 ### [ ] 1. Pages into route folders
 - **Build:** move each page to `src/pages/<route>/` (`landing/`, `auth/`, `not-found/`, `design/`, `placeholder/`). Use `git mv`. No behaviour change.
 - **Files:** `src/pages/**`, `src/app/router.tsx`
+- **Model:** haiku
 - **Accept:**
   - [ ] no files left directly in `src/pages/`
   - [ ] typecheck, lint and build green; all current URLs still render
