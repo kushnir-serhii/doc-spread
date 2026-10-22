@@ -1,59 +1,68 @@
-import { createBrowserRouter, Navigate } from 'react-router'
+import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { AppShell } from '@/components/layout/app-shell'
-import { AuthLayout, OnboardingPage, ResetPasswordPage, SignInPage, SignUpPage } from '@/pages/auth-pages'
-import { DesignPage } from '@/pages/design-page'
-import { LandingPage } from '@/pages/landing-page'
-import { NotFoundPage } from '@/pages/not-found-page'
-import { PlaceholderPage } from '@/pages/placeholder-page'
+import { AuthLayout } from '@/components/layout/auth-layout'
+import { RoutePending } from '@/components/layout/route-pending'
+
+// PlaceholderPage takes props per route, so its lazy route returns an element instead of a Component.
+const placeholder = (title: string, description: string) => () =>
+  import('@/pages/placeholder/placeholder-page').then(({ default: PlaceholderPage }) => ({
+    element: <PlaceholderPage title={title} description={description} />,
+  }))
 
 export const router = createBrowserRouter([
-  // Public — outside the app shell
-  { path: '/', element: <LandingPage /> },
   {
-    element: <AuthLayout />,
+    // Pathless root: shows the pending bar for every navigation and the hydrate fallback on first load
+    element: (
+      <>
+        <RoutePending />
+        <Outlet />
+      </>
+    ),
+    hydrateFallbackElement: <RoutePending forceVisible />,
     children: [
-      { path: '/sign-in', element: <SignInPage /> },
-      { path: '/sign-up', element: <SignUpPage /> },
-      { path: '/reset-password', element: <ResetPasswordPage /> },
-      { path: '/onboarding', element: <OnboardingPage /> },
-    ],
-  },
+      // Public — outside the app shell
+      { path: '/', lazy: () => import('@/pages/landing/landing-page').then((m) => ({ Component: m.default })) },
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: '/sign-in', lazy: () => import('@/pages/auth/sign-in-page').then((m) => ({ Component: m.default })) },
+          { path: '/sign-up', lazy: () => import('@/pages/auth/sign-up-page').then((m) => ({ Component: m.default })) },
+          {
+            path: '/reset-password',
+            lazy: () => import('@/pages/auth/reset-password-page').then((m) => ({ Component: m.default })),
+          },
+          {
+            path: '/onboarding',
+            lazy: () => import('@/pages/onboarding/onboarding-page').then((m) => ({ Component: m.default })),
+          },
+        ],
+      },
 
-  // App — inside the shell
-  {
-    element: <AppShell />,
-    children: [
-      { path: '/app', element: <Navigate to="/inbox" replace /> },
+      // App — inside the shell
       {
-        path: '/inbox',
-        element: <PlaceholderPage title="Inbox" description="All invoices, their status and AI confidence." />,
+        element: <AppShell />,
+        children: [
+          { path: '/app', element: <Navigate to="/inbox" replace /> },
+          { path: '/inbox', lazy: placeholder('Inbox', 'All invoices, their status and AI confidence.') },
+          { path: '/upload', lazy: placeholder('Upload', 'Drop PDF, JPG or PNG invoices to process them.') },
+          {
+            path: '/invoices/:invoiceId',
+            lazy: placeholder('Review invoice', 'Check extracted fields and approve.'),
+          },
+          { path: '/export', lazy: placeholder('Export', 'Send approved invoices to your accountant.') },
+          { path: '/suppliers', lazy: placeholder('Suppliers', 'Everyone who sends you invoices.') },
+          {
+            path: '/suppliers/:supplierId',
+            lazy: placeholder('Supplier', 'Supplier details and their invoices.'),
+          },
+          { path: '/settings', lazy: placeholder('Settings', 'Company, accountant, team and plan.') },
+          { path: '/design', lazy: () => import('@/pages/design/design-page').then((m) => ({ Component: m.default })) },
+          {
+            path: '*',
+            lazy: () => import('@/pages/not-found/not-found-page').then((m) => ({ Component: m.default })),
+          },
+        ],
       },
-      {
-        path: '/upload',
-        element: <PlaceholderPage title="Upload" description="Drop PDF, JPG or PNG invoices to process them." />,
-      },
-      {
-        path: '/invoices/:invoiceId',
-        element: <PlaceholderPage title="Review invoice" description="Check extracted fields and approve." />,
-      },
-      {
-        path: '/export',
-        element: <PlaceholderPage title="Export" description="Send approved invoices to your accountant." />,
-      },
-      {
-        path: '/suppliers',
-        element: <PlaceholderPage title="Suppliers" description="Everyone who sends you invoices." />,
-      },
-      {
-        path: '/suppliers/:supplierId',
-        element: <PlaceholderPage title="Supplier" description="Supplier details and their invoices." />,
-      },
-      {
-        path: '/settings',
-        element: <PlaceholderPage title="Settings" description="Company, accountant, team and plan." />,
-      },
-      { path: '/design', element: <DesignPage /> },
-      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])

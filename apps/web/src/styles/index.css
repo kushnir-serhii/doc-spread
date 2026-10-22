@@ -321,6 +321,18 @@
   --spacing-sidebar: 15rem;
   --spacing-sidebar-collapsed: 4rem;
   --spacing-touch: 2.75rem; /* 44px minimum touch target */
+
+  /* Motion — indeterminate route progress bar (animate-route-progress) */
+  --animate-route-progress: route-progress 1.2s ease-in-out infinite;
+
+  @keyframes route-progress {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(300%);
+    }
+  }
 }
 
 /* Amounts: always tabular, right-aligned in tables */

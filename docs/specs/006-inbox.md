@@ -16,7 +16,7 @@ The user sees every document, of any type, with its status and AI confidence, fi
 
 ### [ ] 1. Table with real states
 - **Build:** add shadcn `table` and `skeleton`. "All types" shows the fixed columns title (the type's title field, or the file name), type, uploaded, status and confidence. A row click opens `/documents/:id`.
-- **Files:** `src/pages/inbox/`, `src/features/documents/DocumentTable.tsx`
+- **Files:** `src/pages/inbox/`, `src/features/documents/document-table.tsx`
 - **Accept:**
   - [ ] skeleton while pending; error with retry; empty state with CTAs to `/upload` and `/types`
   - [ ] long values are truncated with the full value in a `title`

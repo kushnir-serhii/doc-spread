@@ -5,7 +5,7 @@ import { ThemeToggle } from '@/components/layout/theme-toggle'
 import { Button } from '@/components/ui/button'
 
 /** Placeholder — full landing page comes in the Landing step. */
-export function LandingPage() {
+const LandingPage = () => {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="flex h-header items-center justify-between px-4 md:px-8">
@@ -39,3 +39,5 @@ export function LandingPage() {
     </div>
   )
 }
+
+export default LandingPage
