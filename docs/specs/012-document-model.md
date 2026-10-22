@@ -123,6 +123,13 @@ export interface Document {
   - [ ] every `switch` over `FieldType` ends with a `never` check
   - [ ] null shows as "—"; money always shows its currency
 
+### [ ] 5. Existing code follows the model
+- **Build:** move the code that already uses the invoice model to documents: `StatusBadge` (new `unclassified` status), `ConfidenceBadge`, the `/design` page demos, the header search ("Search documents…"), the nav (Inbox, Upload, Types, Groups, Export, Settings), and the router placeholders (`/types`, `/types/new`, `/types/:typeId`, `/documents/:documentId`, `/groups`, `/groups/:typeId/:fieldId` instead of `/invoices/:id` and `/suppliers/*`).
+- **Files:** `src/components/domain/`, `src/components/layout/{header.tsx,nav-items.ts}`, `src/pages/design-page.tsx` (or `design/` after 001), `src/app/router.tsx`
+- **Accept:**
+  - [ ] `grep -rni "invoice\|supplier" src` only hits the Invoice template and mock data
+  - [ ] every new route renders its placeholder; typecheck, lint and build green
+
 ## Backend needs
 Storage for document types with versions; documents linked to a type version; page images or the source file per page; OCR tokens with normalized bboxes for PDFs, scans and photos.
 

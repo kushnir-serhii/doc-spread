@@ -62,4 +62,4 @@ Field-level confidence and source boxes; validation for approval from the type (
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
-| 2026-10-22 | — | rescoped | form built from the type schema; fixing by pointing; invoice totals check moved to open questions |
+| 2026-10-22 | — | rescoped | form built from the type schema; fixing by pointing; invoice totals check moved to 016 (field actions) |
