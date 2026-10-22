@@ -7,7 +7,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | # | Spec | Status | Depends on |
 | --- | --- | --- | --- |
 | 001 | [Lazy-loaded routes](specs/001-lazy-routes.md) | done | — |
-| 002 | [Query layer (lib/api)](specs/002-query-layer.md) | draft | 012 |
+| 002 | [Query layer (lib/api)](specs/002-query-layer.md) | in-progress | 012 |
 | 003 | [Landing](specs/003-landing.md) | draft | 001 |
 | 004 | [Auth](specs/004-auth.md) | draft | 001 |
 | 005 | [Onboarding](specs/005-onboarding.md) | draft | 002, 014 |
