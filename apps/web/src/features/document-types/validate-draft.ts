@@ -104,7 +104,7 @@ const consistencyIssues = (draft: TypeDraft): ValidationIssue[] => {
     })
   }
   for (const field of draft.fields) {
-    if (field.groupable && !canGroupBy(field.type)) add(field, 'Only text and tax ID fields can be grouped.')
+    if (field.groupable && !canGroupBy(field.type)) add(field, 'Only text, tax ID and select fields can be grouped.')
   }
   return issues
 }

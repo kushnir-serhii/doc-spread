@@ -1,10 +1,11 @@
+import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
 import type { FieldDef, FieldType } from '@/lib/mock/types'
 
 /** Most columns a list can show. */
 export const MAX_LIST_COLUMNS = 6
 
-/** Types that can be grouped on the Groups page (spec 014: text and tax ID only). */
-export const canGroupBy = (type: FieldType) => type === 'text' || type === 'tax_id'
+/** Types that can be grouped on the Groups page: text, tax ID and select (see `FIELD_TYPE_META`). */
+export const canGroupBy = (type: FieldType) => FIELD_TYPE_META[type].groupable
 
 const TITLE_TYPES: readonly FieldType[] = ['text', 'tax_id', 'email', 'phone', 'select', 'number', 'date']
 
