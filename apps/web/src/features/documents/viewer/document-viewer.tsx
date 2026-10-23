@@ -70,7 +70,7 @@ export const DocumentViewer = ({
   const clearFocusRequest = useCallback(() => setFocusHighlightId(null), [])
 
   useImperativeHandle(ref, () => ({
-    scrollToHighlight: (id) => {
+    scrollToHighlight: (id, { focus = true } = {}) => {
       const target = highlights.find((h) => h.id === id)
       const container = containerRef.current
       const pageEl = container?.querySelector<HTMLElement>(`[data-page-index="${target?.page}"]`)
@@ -82,7 +82,7 @@ export const DocumentViewer = ({
       const centerX = pageRect.left - containerRect.left + container.scrollLeft + (view.x + view.w / 2) * pageRect.width
       const centerY = pageRect.top - containerRect.top + container.scrollTop + (view.y + view.h / 2) * pageRect.height
       container.scrollTo({ left: centerX - container.clientWidth / 2, top: centerY - container.clientHeight / 2 })
-      setFocusHighlightId(id)
+      if (focus) setFocusHighlightId(id)
     },
   }))
 

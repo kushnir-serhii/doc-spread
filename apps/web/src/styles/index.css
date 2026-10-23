@@ -348,6 +348,7 @@
 
   /* Layout sizes (use as h-header, w-sidebar, min-h-touch …) */
   --spacing-header: 3.5rem;
+  --spacing-sample-pane: calc(100dvh - 8rem); /* viewer pane of the type-from-sample screen */
   --spacing-sidebar: 15rem;
   --spacing-sidebar-collapsed: 4rem;
   --spacing-touch: 2.75rem; /* 44px minimum touch target */

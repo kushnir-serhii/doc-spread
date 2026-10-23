@@ -20,7 +20,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 012 | [Document model](specs/012-document-model.md) | done | — |
 | 013 | [Document viewer](specs/013-document-viewer.md) | done | 002, 012 |
 | 014 | [Document types (builder)](specs/014-document-types.md) | done | 002, 012 |
-| 015 | [Type from a sample](specs/015-type-from-sample.md) | ready | 013, 014 |
+| 015 | [Type from a sample](specs/015-type-from-sample.md) | in-progress | 013, 014 |
 | 016 | [Field actions](specs/016-field-actions.md) | draft | 008, 014 |
 
 Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.

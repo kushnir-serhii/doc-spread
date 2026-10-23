@@ -1,6 +1,6 @@
 # 015 — Type from a sample
 
-**Status:** ready · **Depends on:** 013, 014 · **Route(s):** `/types/new?from=sample`, `/types/new?documentId=:id`, `/types/:typeId/train`
+**Status:** in-progress · **Depends on:** 013, 014 · **Route(s):** `/types/new?from=sample`, `/types/new?documentId=:id`, `/types/:typeId/train`
 
 ## Goal
 The user builds a type by showing a real document instead of typing a schema: the AI proposes fields with boxes on the document, the user keeps, renames or removes them, points at anything that's missing or wrong, and test-runs the type on a second sample before saving.
@@ -23,15 +23,15 @@ The user builds a type by showing a real document instead of typing a schema: th
 
 ## Slices
 
-### [ ] 1. Sample + AI proposals
+### [x] 1. Sample + AI proposals
 - **Build:** three panes: the viewer, the proposed fields (each with value, confidence and accept/reject buttons), and the field editor from 014. `/types/new` (014's page) opens this screen for `?from=sample` and `?documentId=`.
 - **Files:** `src/pages/types/new-type-page.tsx`, `src/features/document-types/sample/`
 - **Accept:**
-  - [ ] upload one sample (or open with `?documentId=` from an unclassified document); a processing state with progress text while fields are proposed
-  - [ ] upload and proposal errors show a message with retry; a sample with no proposals explains that and offers "Point to add"
-  - [ ] hovering or focusing a field highlights its box and scrolls to it; clicking a box selects the field
-  - [ ] "Accept all", plus Accept / Reject on each field; rejected fields can be restored; the user can rename them inline
-  - [ ] desktop-first; below `lg` the panes stack
+  - [x] upload one sample (or open with `?documentId=` from an unclassified document); a processing state with progress text while fields are proposed
+  - [x] upload and proposal errors show a message with retry; a sample with no proposals explains that and offers "Point to add"
+  - [x] hovering or focusing a field highlights its box and scrolls to it; clicking a box selects the field
+  - [x] "Accept all", plus Accept / Reject on each field; rejected fields can be restored; the user can rename them inline
+  - [x] desktop-first: three panes (viewer, proposals, editor) from `2xl`; at `lg` two panes (viewer 3/5, proposals 2/5), with the editor in 014's sheet; below `lg` everything stacks
 
 ### [ ] 2. Add a field by pointing
 - **Build:** the `useSuggestField()` hook and the `suggestField` mock; the "Point to add" flow.
@@ -62,18 +62,24 @@ The user builds a type by showing a real document instead of typing a schema: th
   - [ ] each field shows the value found and its confidence for the active sample; low confidence (`< LOW_CONFIDENCE`) and "not found" are flagged with an icon, not color alone
   - [ ] fixing by pointing on any sample adds an example (more samples → better hint); a short summary shows "12/14 fields found on all samples" and is announced (`role="status"`)
   - [ ] the sixth sample is refused with an explanation
+  - [ ] after Save, every sample is assigned to the new type (`useReassignDocumentType()`) and shows up in the Inbox under it
   - [ ] Save goes through the same validation, impact dialog, versioning and leave guard as 014; `/types/:typeId/train` reopens this screen for an existing type
 
 ## Backend needs
 OCR tokens right after upload; an LLM call that proposes fields (label, key, type, hint, bbox) for a sample; inference of label, type and hint from a selection plus its anchor; table columns and rows from a region; test extraction with an unsaved schema; examples passed to extraction as few-shot hints, including their bboxes as a "usually here" hint.
 
 ## Open questions
-- Samples are uploaded as ordinary documents. Do they show up in the Inbox (as unclassified until the type is saved, then classified into it), or stay hidden as builder-only samples?
+- Samples are uploaded as ordinary documents. Do they show up in the Inbox? **Decided:** yes: unclassified until the type is saved, then assigned to the new type (slice 5).
+- Three panes at `lg` were tight (the viewer toolbar wrapped even at 1440px). **Decided:** three panes from `2xl` (the sidebar takes 240px, so `xl` was still tight at 1440px); at `lg` two panes, the viewer 3/5 wide, and the editor in the sheet. The viewer toolbar still wraps in a narrow column: make it compact (icon-only Rotate all) once 008 and 015 are merged, since the viewer is shared. A floating draggable panel was considered and dropped: it covers the boxes, needs a keyboard alternative and custom drag code.
+- The mock `testExtract` doesn't use a proposal's example, so values can be unrelated to the box (e.g. "NIP" → "Rozliczenie Zakup"). The mock should return the example's text for its own document; fix with slice 2 or 3.
+- A fresh upload gets one blank synthetic page with no tokens, so it only gets the fallback Title/Date/Total proposals without boxes; real proposals come from seeded documents (`?documentId=`).
+- Values are read through `useTestExtractPreview(documentId, fields)`, a query over `testExtract` (it reruns when a field's type or hint changes, not on rename), instead of the `useTestExtract()` mutation, which would need an effect to fire.
 - How many examples per field are stored at most? **Decided:** one per sample, so at most 5 (see **Data**).
 - Should corrections made in Review (008) add examples automatically or ask first? **Decided in 008 slice 3:** ask with a non-blocking prompt.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-23 | 1 | done | upload or `?documentId=`, reading/proposing states, proposals with values and confidence, accept all / accept / reject / restore / inline rename, boxes linked to rows, 014 editor and save reused; `addFields` reducer action, `useTestExtractPreview`, viewer `scrollToHighlight(id, { focus })` (same change as 008), `--spacing-sample-pane` token; an "Add a field manually" button beyond the spec. Files: `pages/types/new-type-page.tsx`, `features/document-types/sample/`, `features/document-types/type-draft-reducer.ts`, `lib/api/builder.ts`, `features/documents/viewer/`, `styles/index.css` |
 | 2026-10-23 | — | ready | approved; example limit decided; needs 014 merged before slice 1 |
 | 2026-10-23 | — | reviewed | checked against product, conventions and process and against 014's code: the draft holds examples until Save, new suggestField/suggestTable hooks, values from testExtract, Files for every slice, error/empty states, the train route |

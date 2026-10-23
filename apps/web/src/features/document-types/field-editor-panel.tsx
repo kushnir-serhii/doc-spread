@@ -8,13 +8,20 @@ type FieldEditorPanelProps = Omit<ComponentProps<typeof SelectedEditor>, 'target
   /** null = nothing selected */
   target: EditorTarget | null
   onClose: () => void
+  /** media query from which the editor sits beside the list instead of opening as a sheet */
+  besideFrom?: string
 }
 
 const targetId = (target: EditorTarget) => (target.kind === 'field' ? target.field.id : target.column.id)
 
-/** From lg up the editor sits beside the list; below it opens as a sheet. */
-export const FieldEditorPanel = ({ target, onClose, ...editorProps }: FieldEditorPanelProps) => {
-  const isDesktop = useMediaQuery('(min-width: 1024px)')
+/** From lg up (or `besideFrom`) the editor sits beside the list; below it opens as a sheet. */
+export const FieldEditorPanel = ({
+  target,
+  onClose,
+  besideFrom = '(min-width: 1024px)',
+  ...editorProps
+}: FieldEditorPanelProps) => {
+  const isDesktop = useMediaQuery(besideFrom)
 
   if (isDesktop) {
     return (

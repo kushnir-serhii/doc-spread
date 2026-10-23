@@ -1,12 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { addFieldExample, proposeFields, testExtract } from '@/lib/mock'
-import type { FieldExample, TestExtractInput } from '@/lib/mock/types'
+import type { FieldDef, FieldExample, TestExtractInput } from '@/lib/mock/types'
 import { documentTypeKeys } from './document-types'
 
 export const builderKeys = {
   all: ['builder'] as const,
   proposals: (documentId: string) =>
     [...builderKeys.all, 'proposals', documentId] as const,
+  /** what the AI reads of a field: renaming a label doesn't change the extraction */
+  preview: (documentId: string, fields: FieldDef[]) =>
+    [
+      ...builderKeys.all,
+      'preview',
+      documentId,
+      fields.map(({ id, type, hint, options }) => [id, type, hint, options]),
+    ] as const,
 }
 
 /** proposals for one document never change, so they are fetched once */
@@ -21,6 +29,18 @@ export const useProposeFields = (documentId: string) =>
 export const useTestExtract = () =>
   useMutation({
     mutationFn: (input: TestExtractInput) => testExtract(input),
+  })
+
+/**
+ * Values and confidence of an unsaved schema on one document (the same call as `useTestExtract`,
+ * read as a query so it reruns when a field's type or hint changes). Saves nothing.
+ */
+export const useTestExtractPreview = (documentId: string, fields: FieldDef[]) =>
+  useQuery({
+    queryKey: builderKeys.preview(documentId, fields),
+    queryFn: () => testExtract({ documentId, fields }),
+    enabled: fields.length > 0,
+    placeholderData: keepPreviousData,
   })
 
 export const useAddFieldExample = () => {

@@ -8,6 +8,7 @@ export type BuilderAction =
   | { type: 'setName'; name: string }
   | { type: 'setDescription'; description: string }
   | { type: 'addField'; id: string }
+  | { type: 'addFields'; fields: FieldDef[] }
   | { type: 'duplicateField'; id: string; newId: string }
   | { type: 'deleteField'; id: string }
   | { type: 'moveField'; id: string; direction: 'up' | 'down' }
@@ -92,6 +93,17 @@ export const builderReducer = (state: BuilderState, action: BuilderAction): Buil
         examples: [],
       }
       return { ...state, draft: { ...draft, fields: [...draft.fields, field] } }
+    }
+    case 'addFields': {
+      // Whole fields (accepted AI proposals): ids already in the draft are skipped, keys made unique.
+      const added = action.fields.filter((f) => !draft.fields.some((d) => d.id === f.id))
+      const taken = draft.fields.map((f) => f.key)
+      const fields = added.map((f) => {
+        const key = uniqueKey(f.key === '' ? 'new_field' : f.key, taken)
+        taken.push(key)
+        return { ...f, key }
+      })
+      return added.length === 0 ? state : { ...state, draft: { ...draft, fields: [...draft.fields, ...fields] } }
     }
     case 'duplicateField':
       return duplicate(state, action.id, action.newId)
