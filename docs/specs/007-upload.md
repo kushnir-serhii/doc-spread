@@ -1,6 +1,6 @@
 # 007 — Upload
 
-**Status:** draft · **Depends on:** 002, 012 · **Route(s):** `/upload`
+**Status:** ready · **Depends on:** 002, 012 · **Route(s):** `/upload`
 
 ## Goal
 The user drops several documents of any kind (PDF/JPG/PNG), sees each file's progress, and learns what type the AI assigned to each one, or that it couldn't tell.
@@ -10,7 +10,9 @@ The user drops several documents of any kind (PDF/JPG/PNG), sees each file's pro
 - Out: email forwarding, KSeF import, camera capture.
 
 ## Data
-`useUploadDocument()` (statuses `uploaded → processing → needs_review | unclassified`), `useDocumentTypes()`.
+`useUploadDocument()` (statuses `uploaded → processing → needs_review | unclassified`), `useDocument(id)` (polls while processing), `useDocumentTypes()`.
+
+Accepted: `.pdf`, `.jpg`/`.jpeg`, `.png`; max 20 MB per file (`MAX_UPLOAD_BYTES`, mock value until the backend sets it).
 
 ## Slices
 
@@ -22,7 +24,7 @@ The user drops several documents of any kind (PDF/JPG/PNG), sees each file's pro
   - [ ] an optional "Type" select, defaulting to "Detect automatically"; `?type=` preselects it
 
 ### [ ] 2. Per-file progress
-- **Build:** a file list whose state is a discriminated union per file: `queued | uploading(progress) | processing | classified(typeName) | unclassified | failed(reason)`.
+- **Build:** the mock gains `uploadDocument(file, { typeId?, onProgress? })`: simulated upload progress, and a chosen type skips classification and goes straight to extraction; `useUploadDocument()` passes both through. A file list whose state is a discriminated union per file: `queued | uploading(progress) | processing | classified(typeName) | unclassified | failed(reason)`.
 - **Accept:**
   - [ ] each file shows a progress bar with `aria-valuenow`; failures have retry and remove buttons
   - [ ] a classified file shows its type name; an unclassified one links to "Assign type"
@@ -38,10 +40,11 @@ The user drops several documents of any kind (PDF/JPG/PNG), sees each file's pro
 Presigned upload URL, max file size, accepted MIME types; classification against the user's types (descriptions + examples) with a confidence threshold; processing status (polling or a push channel).
 
 ## Open questions
-- Max file size and pages per file?
+- Max file size and pages per file? 20 MB for the mock; pages per file not limited yet.
 - What is the confidence threshold below which a document stays unclassified?
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | any document type; auto-classification with an optional manual type |
+| 2026-10-23 | — | ready | checked against the code: accepted types and a 20 MB mock limit, `uploadDocument` gains `typeId` + `onProgress` in slice 2 (it had neither), per-file status via `useDocument(id)` |
