@@ -1,6 +1,6 @@
 # 006 — Inbox (dashboard)
 
-**Status:** ready · **Depends on:** 002, 012 · **Route(s):** `/inbox`
+**Status:** in-progress · **Depends on:** 002, 012 · **Route(s):** `/inbox`
 
 ## Goal
 The user sees every document, of any type, with its status and AI confidence, finds one quickly, deals with documents the AI couldn't classify, and approves or exports in bulk.
@@ -14,12 +14,12 @@ The user sees every document, of any type, with its status and AI confidence, fi
 
 ## Slices
 
-### [ ] 1. Table with real states
+### [x] 1. Table with real states
 - **Build:** add shadcn `table` and `skeleton`. "All types" shows the fixed columns title (the type's title field, or the file name), type, uploaded, status and confidence. A row click opens `/documents/:id`.
 - **Files:** `src/pages/inbox/`, `src/features/documents/document-table.tsx`
 - **Accept:**
-  - [ ] skeleton while pending; error with retry; empty state with CTAs to `/upload` and `/types`
-  - [ ] long values are truncated with the full value in a `title`
+  - [x] skeleton while pending; error with retry; empty state with CTAs to `/upload` and `/types`
+  - [x] long values are truncated with the full value in a `title`
 
 ### [ ] 2. Type switcher + dynamic columns
 - **Accept:**
@@ -56,3 +56,4 @@ List endpoint filtered by type and status, full-text search over values, sort, c
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | invoices → documents of any type; added the type switcher and the unclassified bucket |
 | 2026-10-23 | — | ready | checked against the code: `?type=unclassified` maps to the status, counts computed on the client, best-guess type moved to Backend needs (the model has none), default sort = newest upload |
+| 2026-10-23 | 1 | done | `DocumentTable` (title = type title field or file name, type, uploaded, status, confidence; a dash while there is no confidence), title `<Link>` stretched over the row; skeleton (`role="status"`), error with retry, empty with CTAs to `/upload` and `/types`; `overflow-x-auto` so 375px scrolls the table, not the page. Fixed in review: shadcn `cn` import bug, class strings through `cn()`. Headless Chrome: 1280 light, 375 dark · `pages/inbox/inbox-page.tsx`, `features/documents/document-table{,-skeleton,-error,-empty}.tsx`, `components/ui/{table,skeleton}.tsx`, `app/router.tsx` |
