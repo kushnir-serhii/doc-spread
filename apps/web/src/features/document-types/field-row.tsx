@@ -8,6 +8,8 @@ import { FieldSummary } from './field-summary'
 interface FieldRowProps {
   /** A field or a table column. */
   field: Pick<FieldDef, 'id' | 'key' | 'label' | 'type' | 'required'>
+  /** Short markers such as "Title" or "Column 2". */
+  badges?: string[]
   selected: boolean
   isFirst: boolean
   isLast: boolean
@@ -16,7 +18,7 @@ interface FieldRowProps {
 }
 
 /** A selectable field or column with move buttons and Alt+↑/↓. */
-export const FieldRow = ({ field, selected, isFirst, isLast, onSelect, onMove }: FieldRowProps) => {
+export const FieldRow = ({ field, badges = [], selected, isFirst, isLast, onSelect, onMove }: FieldRowProps) => {
   const handleKeyDown = (event: KeyboardEvent) => {
     if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return
     event.preventDefault()
@@ -33,6 +35,15 @@ export const FieldRow = ({ field, selected, isFirst, isLast, onSelect, onMove }:
         className="flex min-h-touch min-w-0 flex-1 items-center gap-3 rounded-md px-4 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-12"
       >
         <FieldSummary field={field} />
+        {badges.length > 0 && (
+          <span className="flex shrink-0 flex-wrap justify-end gap-1">
+            {badges.map((badge) => (
+              <span key={badge} className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                {badge}
+              </span>
+            ))}
+          </span>
+        )}
       </button>
       <Button
         variant="ghost"

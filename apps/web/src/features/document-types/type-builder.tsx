@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { resolveSelection, type Selection } from './editor-target'
 import { FieldEditorPanel } from './field-editor-panel'
 import { FieldList } from './field-list'
+import { ListSettingsSection } from './list-settings-section'
 import type { TypeDraft } from './type-draft'
 import { builderReducer, createBuilderState } from './type-draft-reducer'
 import { TypeMetaForm } from './type-meta-form'
@@ -69,11 +70,14 @@ export const TypeBuilder = ({ initialDraft }: TypeBuilderProps) => {
         onNameChange={(name) => dispatch({ type: 'setName', name })}
         onDescriptionChange={(description) => dispatch({ type: 'setDescription', description })}
       />
+      <ListSettingsSection draft={draft} dispatch={dispatch} />
       <h2 className="mb-2 text-sm font-medium">Fields ({draft.fields.length})</h2>
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="min-w-0 lg:col-span-2">
           <FieldList
             fields={draft.fields}
+            titleFieldId={draft.titleFieldId}
+            listColumnIds={draft.listColumnIds}
             selection={selection}
             onSelect={setSelection}
             onMove={(id, direction) => dispatch({ type: 'moveField', id, direction })}

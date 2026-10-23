@@ -3,6 +3,8 @@ import { FIELD_TYPES, type FieldDef } from '@/lib/mock/types'
 import type { EditorActions, EditorTarget } from './editor-target'
 import { FieldEditor } from './field-editor'
 import { getKeyError, isScalarFieldType } from './field-key'
+import { GroupByToggle } from './group-by-toggle'
+import { canGroupBy } from './list-settings'
 import { TableColumnsSection } from './table-columns-section'
 import type { ColumnOp } from './type-draft-columns'
 import type { BuilderAction } from './type-draft-reducer'
@@ -34,6 +36,12 @@ export const SelectedEditor = ({ target, fields, dispatch, ...actions }: Selecte
         onDuplicate={() => actions.onDuplicateField(field.id)}
         onDelete={() => actions.onDeleteField(field.id)}
       >
+        {canGroupBy(field.type) && (
+          <GroupByToggle
+            checked={field.groupable === true}
+            onChange={(groupable) => dispatch({ type: 'setGroupable', id: field.id, groupable })}
+          />
+        )}
         {field.type === 'table' && (
           <TableColumnsSection table={field} onAddColumn={() => actions.onAddColumn(field.id)} />
         )}

@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button'
 import type { FieldDef } from '@/lib/mock/types'
 import { ColumnList } from './column-list'
 import type { Selection } from './editor-target'
+import { fieldBadges } from './list-settings'
 import { FieldRow } from './field-row'
 
 interface FieldListProps {
   fields: FieldDef[]
+  titleFieldId: string | null
+  listColumnIds: string[]
   selection: Selection
   onSelect: (selection: NonNullable<Selection>) => void
   onMove: (id: string, direction: 'up' | 'down') => void
@@ -18,6 +21,8 @@ interface FieldListProps {
 
 export const FieldList = ({
   fields,
+  titleFieldId,
+  listColumnIds,
   selection,
   onSelect,
   onMove,
@@ -65,6 +70,7 @@ export const FieldList = ({
           <li key={field.id}>
             <FieldRow
               field={field}
+              badges={fieldBadges(field, titleFieldId, listColumnIds)}
               selected={selection?.kind === 'field' && selection.fieldId === field.id}
               isFirst={index === 0}
               isLast={index === fields.length - 1}

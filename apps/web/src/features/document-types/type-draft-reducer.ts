@@ -1,6 +1,6 @@
-import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
 import type { FieldDef, FieldType } from '@/lib/mock/types'
 import { sanitizeKey, slugifyKey, uniqueKey } from './field-key'
+import { canBeTitle, canGroupBy, MAX_LIST_COLUMNS } from './list-settings'
 import { moveItem, type BuilderState, type FieldPatch, type TypeDraft } from './type-draft'
 import { columnsReducer, type ColumnOp } from './type-draft-columns'
 
@@ -15,6 +15,10 @@ export type BuilderAction =
   | { type: 'setFieldKey'; id: string; key: string }
   | { type: 'updateField'; id: string; patch: FieldPatch }
   | { type: 'changeFieldType'; id: string; fieldType: FieldType }
+  | { type: 'setGroupable'; id: string; groupable: boolean }
+  | { type: 'setTitleField'; id: string | null }
+  | { type: 'toggleListColumn'; id: string }
+  | { type: 'moveListColumn'; id: string; direction: 'up' | 'down' }
   | { type: 'column'; fieldId: string; op: ColumnOp }
 
 export const createBuilderState = (draft: TypeDraft): BuilderState => ({
@@ -44,7 +48,7 @@ const retype = (field: FieldDef, fieldType: FieldType): FieldDef => {
     ...(hint !== undefined && { hint }),
     ...(fieldType === 'select' && { options: [] }),
     ...(fieldType === 'table' && { columns: [] }),
-    ...(groupable && FIELD_TYPE_META[fieldType].groupable && { groupable }),
+    ...(groupable && canGroupBy(fieldType) && { groupable }),
   }
 }
 
@@ -121,8 +125,39 @@ export const builderReducer = (state: BuilderState, action: BuilderAction): Buil
     }
     case 'updateField':
       return mapField(state, action.id, (field) => ({ ...field, ...action.patch }))
-    case 'changeFieldType':
-      return mapField(state, action.id, (field) => retype(field, action.fieldType))
+    case 'setGroupable':
+      return mapField(state, action.id, (field) => ({
+        ...field,
+        groupable: (action.groupable && canGroupBy(field.type)) || undefined,
+      }))
+    case 'changeFieldType': {
+      const next = mapField(state, action.id, (field) => retype(field, action.fieldType))
+      // A title must stay a text-like field.
+      return draft.titleFieldId === action.id && !canBeTitle(action.fieldType)
+        ? { ...next, draft: { ...next.draft, titleFieldId: null } }
+        : next
+    }
+    case 'setTitleField': {
+      const field = draft.fields.find((f) => f.id === action.id)
+      if (action.id !== null && (!field || !canBeTitle(field.type))) return state
+      return { ...state, draft: { ...draft, titleFieldId: action.id } }
+    }
+    case 'toggleListColumn': {
+      const chosen = draft.listColumnIds.includes(action.id)
+      if (!chosen && (draft.listColumnIds.length >= MAX_LIST_COLUMNS || !draft.fields.some((f) => f.id === action.id)))
+        return state
+      const listColumnIds = chosen
+        ? draft.listColumnIds.filter((id) => id !== action.id)
+        : [...draft.listColumnIds, action.id]
+      return { ...state, draft: { ...draft, listColumnIds } }
+    }
+    case 'moveListColumn': {
+      const items = draft.listColumnIds.map((id) => ({ id }))
+      const moved = moveItem(items, action.id, action.direction)
+      return moved === items
+        ? state
+        : { ...state, draft: { ...draft, listColumnIds: moved.map((item) => item.id) } }
+    }
     case 'column':
       return columnsReducer(state, action.fieldId, action.op)
     default: {
