@@ -1,16 +1,19 @@
+import { useCallback } from 'react'
 import { useSearchParams } from 'react-router'
 import { useDocuments, useDocumentTypes } from '@/lib/api'
 import { PageHeader } from '@/components/layout/page-header'
 import { allColumns, typeColumns, unclassifiedColumns } from '@/features/documents/document-columns'
 import { DocumentTable } from '@/features/documents/document-table'
 import { DocumentTableEmpty } from '@/features/documents/document-table-empty'
+import { DocumentTableNoResults } from '@/features/documents/document-table-no-results'
 import { DocumentTableError } from '@/features/documents/document-table-error'
 import { DocumentTableSkeleton } from '@/features/documents/document-table-skeleton'
+import { InboxFilters } from '@/features/documents/inbox-filters'
 import { TypeSwitcher } from '@/features/documents/type-switcher'
-import { buildListParams, resolveView } from '@/features/documents/inbox-view'
+import { buildListParams, effectiveFilters, parseStatus, resolveView } from '@/features/documents/inbox-view'
 import type { InboxView } from '@/features/documents/inbox-view'
 import { useTypeCounts } from '@/features/documents/use-type-counts'
-import type { DocumentType } from '@/lib/mock/types'
+import type { DocumentStatus, DocumentType } from '@/lib/mock/types'
 
 const columnsFor = (view: InboxView, types: DocumentType[]) => {
   switch (view.kind) {
@@ -28,11 +31,19 @@ const columnsFor = (view: InboxView, types: DocumentType[]) => {
 }
 
 const InboxPage = () => {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const typesQuery = useDocumentTypes()
   const types = typesQuery.data ?? []
   const view = resolveView(searchParams.get('type'), types)
-  const documentsQuery = useDocuments(buildListParams(view))
+  const filters = effectiveFilters(view, {
+    status: parseStatus(searchParams.get('status')),
+    search: searchParams.get('q') ?? '',
+  })
+  const listParams = buildListParams(view, filters)
+  // keep the rows while filters change, but not across types: their columns differ
+  const documentsQuery = useDocuments(listParams, {
+    keepPreviousIf: (previous) => previous.typeId === listParams.typeId,
+  })
   const counts = useTypeCounts()
   const documents = documentsQuery.data ?? []
   const isError = documentsQuery.isError || typesQuery.isError
@@ -42,6 +53,32 @@ const InboxPage = () => {
     void documentsQuery.refetch()
     void typesQuery.refetch()
   }
+  const setParam = useCallback(
+    (key: string, value: string | undefined) =>
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (value) next.set(key, value)
+          else next.delete(key)
+          return next
+        },
+        { replace: true },
+      ),
+    [setSearchParams],
+  )
+  const commitSearch = useCallback((value: string) => setParam('q', value.trim()), [setParam])
+  const changeStatus = (status: DocumentStatus | undefined) => setParam('status', status)
+  const clearFilters = () =>
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('status')
+        next.delete('q')
+        return next
+      },
+      { replace: true },
+    )
+  const hasFilters = Boolean(filters.status || filters.search)
   const hrefFor = (type: string | null) => {
     const next = new URLSearchParams(searchParams)
     if (type) next.set('type', type)
@@ -62,10 +99,23 @@ const InboxPage = () => {
           hrefFor={hrefFor}
         />
       )}
+      {!isError && (
+        <InboxFilters
+          search={searchParams.get('q') ?? ''}
+          status={filters.status}
+          showStatus={view.kind !== 'unclassified'}
+          resultCount={documentsQuery.data?.length}
+          isUpdating={documentsQuery.isPlaceholderData}
+          onSearchCommit={commitSearch}
+          onStatusChange={changeStatus}
+        />
+      )}
       {isError ? (
         <DocumentTableError onRetry={retry} />
       ) : isPending ? (
         <DocumentTableSkeleton />
+      ) : documents.length === 0 && hasFilters ? (
+        <DocumentTableNoResults onClear={clearFilters} />
       ) : documents.length === 0 ? (
         <DocumentTableEmpty typeId={view.kind === 'type' ? view.type.id : undefined} />
       ) : (

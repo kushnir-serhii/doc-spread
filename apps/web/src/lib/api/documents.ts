@@ -33,11 +33,18 @@ const isPendingPipeline = (data: Document | Document[] | undefined) =>
 const pollWhilePending = (query: { state: { data: Document | Document[] | undefined } }) =>
   isPendingPipeline(query.state.data) ? POLL_INTERVAL_MS : false
 
-export const useDocuments = (params: ListDocumentsParams = {}) =>
+interface UseDocumentsOptions {
+  /** keep showing the previous list (isPlaceholderData) while new params load, when this returns true for its params */
+  keepPreviousIf?: (previous: ListDocumentsParams) => boolean
+}
+
+export const useDocuments = (params: ListDocumentsParams = {}, { keepPreviousIf }: UseDocumentsOptions = {}) =>
   useQuery({
     queryKey: documentKeys.list(params),
     queryFn: () => listDocuments(params),
     refetchInterval: pollWhilePending,
+    placeholderData: (previous, previousQuery) =>
+      keepPreviousIf && previousQuery && keepPreviousIf(previousQuery.queryKey[2]) ? previous : undefined,
   })
 
 export const useDocument = (id: string) =>
