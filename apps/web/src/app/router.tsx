@@ -49,15 +49,15 @@ export const router = createBrowserRouter([
           { path: '/upload', lazy: placeholder('Upload', 'Drop PDF, JPG or PNG files to process them.') },
           {
             path: '/types',
-            lazy: placeholder('Document types', 'The kinds of documents you collect and their fields.'),
+            lazy: () => import('@/pages/types/types-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/types/new',
-            lazy: placeholder('New document type', 'Start from a template, from scratch, or from a sample.'),
+            lazy: () => import('@/pages/types/new-type-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/types/:typeId',
-            lazy: placeholder('Document type', 'Fields, list columns and how AI reads them.'),
+            lazy: () => import('@/pages/types/type-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/documents/:documentId',
