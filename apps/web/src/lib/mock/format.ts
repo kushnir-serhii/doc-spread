@@ -1,3 +1,4 @@
+import { LOW_CONFIDENCE } from '@/lib/fields/confidence'
 import type { Confidence, CurrencyCode } from './types'
 
 /** Formats an amount given in minor units (2 decimals for all supported currencies). */
@@ -22,7 +23,7 @@ export function formatDate(
 }
 
 export function confidenceLevel(score: number): Confidence {
-  if (score >= 0.9) return 'high'
+  if (score >= LOW_CONFIDENCE) return 'high'
   if (score >= 0.7) return 'medium'
   return 'low'
 }

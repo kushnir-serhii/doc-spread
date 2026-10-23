@@ -18,6 +18,9 @@ export interface ViewerHighlight {
 }
 
 export interface DocumentViewerHandle {
-  /** scroll the highlight to the centre of the view and focus it, even when its page is far away */
-  scrollToHighlight: (id: string) => void
+  /**
+   * scroll the highlight to the centre of the view, even when its page is far away.
+   * It also takes keyboard focus unless `focus` is false (use that when focus lives elsewhere, e.g. in a form field).
+   */
+  scrollToHighlight: (id: string, options?: { focus?: boolean }) => void
 }

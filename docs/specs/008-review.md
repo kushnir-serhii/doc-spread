@@ -1,6 +1,6 @@
 # 008 — Review (core screen)
 
-**Status:** ready · **Depends on:** 002, 006, 013 · **Route(s):** `/documents/:documentId`
+**Status:** in-progress · **Depends on:** 002, 006, 013 · **Route(s):** `/documents/:documentId`
 
 ## Goal
 The user checks the AI-extracted values against the document, fixes the low-confidence ones by typing or by pointing at the document, and approves fast, mostly from the keyboard. The form is built from the document's type, so it works for any type.
@@ -19,15 +19,15 @@ The user checks the AI-extracted values against the document, fixes the low-conf
 
 ## Slices
 
-### [ ] 1. Layout + read-only fields
+### [x] 1. Layout + read-only fields
 - **Build:** the page and a field registry: one component per `FieldType` for viewing and for editing (`text → Input`, `money → MoneyInput`, `date → DateInput`, `select → Select`, `boolean → Switch`, `table → FieldTable`…). Add the missing shadcn primitives (`select`, `switch`, `dialog`). Split the pointing and rotation wiring out of `document-viewer.tsx` (~170 lines, 013's open question) before adding to it.
 - **Files:** `src/pages/review/review-page.tsx`, `src/app/router.tsx`, `src/features/documents/review/`, `src/features/documents/fields/`, `src/lib/fields/confidence.ts`, `src/features/documents/viewer/`, `src/components/ui/`
 - **Accept:**
-  - [ ] two panes on desktop; stacked on mobile (viewer collapsible)
-  - [ ] every field shows its value and a confidence badge; null shows "Not found"; long values wrap or truncate with a title
-  - [ ] focusing a field highlights and scrolls to its box; clicking a box focuses the field
-  - [ ] skeleton, not-found document, and error-with-retry states; each document status shows what **Data** says
-  - [ ] `document-viewer.tsx` is back under ~150 lines
+  - [x] two panes on desktop; stacked on mobile (viewer collapsible)
+  - [x] every field shows its value and a confidence badge; null shows "Not found"; long values wrap or truncate with a title
+  - [x] focusing a field highlights and scrolls to its box; clicking a box focuses the field
+  - [x] skeleton, not-found document, and error-with-retry states; each document status shows what **Data** says
+  - [x] `document-viewer.tsx` is back under ~150 lines
 
 ### [ ] 2. Editable form + draft
 - **Files:** `src/features/documents/review/`, `src/features/documents/fields/`
@@ -70,11 +70,16 @@ Field-level confidence and source boxes; the type version a document was extract
 
 ## Open questions
 - Exact key bindings? **Decided:** `J`/`K` next/previous field, `P` point on document, `Ctrl+Enter` approve, `N` next document, `?` help. Letter keys fire only outside text inputs; `Esc` leaves an input.
+- Not-found and failed look the same: the mock `getDocument` throws a plain `Error`, so both show the error state with Retry and a link to the Inbox. Backend: a 404 the client can tell apart.
+- Table cells are reachable from a box click, but not by Tab (`tabIndex=-1`, to avoid one tab stop per cell). Keyboard movement inside a table comes with slice 4.
+- `MoneyInput` keeps its own text while typing; when slice 3 sets a value by pointing, it must re-sync (e.g. a `key` on the value).
+- The viewer's `scrollToHighlight(id, { focus })` gained an optional `focus` flag (default `true`): Review scrolls the box into view but keeps keyboard focus in the form.
 - Cross-field rules (Gross = Net + VAT, totals = sum of a column) moved to [016 Field actions](016-field-actions.md); Review shows their results there.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | form built from the type schema; fixing by pointing; invoice totals check moved to 016 (field actions) |
+| 2026-10-23 | 1 | done | review page and route, fields registry (view + edit inputs, read-only table), screen per status, highlights linked to fields, `LOW_CONFIDENCE` in `lib/fields/confidence.ts` (used by `confidenceLevel`), viewer zoom/rotation moved into hooks (147 lines), shadcn select/switch/dialog, `--spacing-review-pane` token. Files: `pages/review/`, `features/documents/review/`, `features/documents/fields/`, `features/documents/viewer/`, `lib/fields/confidence.ts`, `lib/mock/format.ts`, `app/router.tsx`, `styles/index.css`, `components/ui/` |
 | 2026-10-23 | — | ready | approved; key bindings decided |
 | 2026-10-23 | — | reviewed | checked against product, conventions and process: type version, LOW_CONFIDENCE = 0.9, the fields folder, the screen for each status, a Confirm action, 375px Approve, Files for every slice |
