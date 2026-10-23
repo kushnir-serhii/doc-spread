@@ -43,6 +43,8 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { path: '/app', element: <Navigate to="/inbox" replace /> },
+          { path: '/inbox', lazy: placeholder('Inbox', 'All documents, their status and AI confidence.') },
+          { path: '/upload', lazy: () => import('@/pages/upload/upload-page').then((m) => ({ Component: m.default })) },
           { path: '/inbox', lazy: () => import('@/pages/inbox/inbox-page').then((m) => ({ Component: m.default })) },
           { path: '/upload', lazy: placeholder('Upload', 'Drop PDF, JPG or PNG files to process them.') },
           {
