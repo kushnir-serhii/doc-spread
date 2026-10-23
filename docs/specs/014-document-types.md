@@ -24,10 +24,12 @@ Per-type document counts (total and `needs_review`) are computed on the client f
   - [x] "New type" offers: from a template / from a sample (links to 015) / blank
   - [x] empty state explains what a type is and offers the same three choices; skeleton and error states
 
-### [ ] 2. Templates
+### [x] 2. Templates
+- **Build:** "From a template" goes to `/types/new?from=template`, a gallery. `/types/new` becomes the builder page holding an unsaved draft: from `?template=<id>` (a copy of the template's fields) or blank. In this slice it shows the draft's name, description and field list read-only; slice 3 makes them editable.
+- **Files:** `src/pages/types/`, `src/features/document-types/`
 - **Accept:**
-  - [ ] a gallery of templates with name, description and the first few field labels
-  - [ ] picking one opens `/types/new?template=<id>` prefilled; nothing is saved until the user clicks Save
+  - [x] a gallery of templates with name, description and the first few field labels
+  - [x] picking one opens `/types/new?template=<id>` prefilled; nothing is saved until the user clicks Save
 
 ### [ ] 3. Field list + field editor
 - **Build:** the builder page (`/types/new`, `/types/:typeId`) with a header for the type's name and description (the description is what the AI uses to classify documents; helper text says so), then two panes: the field list on the left, the selected field's editor on the right. Editor: label, key (auto slug from the label, editable, unique), type, required, hint for the AI, options (for select).
@@ -66,3 +68,5 @@ Create and update a type with an incremented version; re-extract the added field
 | --- | --- | --- | --- |
 | 2026-10-23 | — | ready | checked against the code: added the name/description header to slice 3 (slice 6 validates a name), client-side counts from `useDocuments()`, the mock's missing re-extract job; open questions marked non-blocking |
 | 2026-10-23 | 1 | done | `/types` lists types (fields, documents, to review, updated) as keyboard links; "New type" menu and the empty state share `NEW_TYPE_OPTIONS` (template → `/types/new` until slice 2, sample → `/types/new?from=sample`, blank); skeleton, error with retry. Counts from `useDocuments()` on the client. Fixed in review: the shadcn CLI added a bogus `cn` npm dependency and `import { cn } from "cn"` (reverted, `@/lib/utils`). Headless Chrome: 1280 light, 375 dark, no page scroll · `pages/types/types-page.tsx`, `features/document-types/{new-type-options,new-type-menu,type-row,types-empty-state,types-skeleton,types-error}`, `components/ui/skeleton.tsx`, `app/router.tsx` |
+| 2026-10-23 | — | rescoped | slice 2 also creates the `/types/new` builder page with a read-only draft (the prefilled template needs somewhere to open before slice 3); gallery at `?from=template` |
+| 2026-10-23 | 2 | done | Gallery at `?from=template` (cards: name, clamped description, first 4 field labels + "+N more", "Start blank"; skeleton, error with retry, empty). `/types/new` = builder with an unsaved draft: `draftFromTemplate` copies fields with fresh ids and remaps title/list columns/table columns, `blankDraft`; `TemplateBuilder` mounts `TypeBuilder` keyed by template once loaded (no effect sync); read-only header + `FieldList` (table columns indented); unknown template → not found; `?from=sample` → "coming with 015". `TypesError` takes a `title`. Fixed in review: `TemplateBuilder` moved out of `pages/`. Headless Chrome (CDP): gallery 1280 light/375 dark, builder 375 light/1280 dark, no page scroll · `pages/types/new-type-page.tsx`, `features/document-types/{type-draft,field-list,type-builder,template-builder,template-card,template-gallery,new-type-options,types-error}`, `app/router.tsx` |

@@ -51,7 +51,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/types/new',
-            lazy: placeholder('New document type', 'Start from a template, from scratch, or from a sample.'),
+            lazy: () => import('@/pages/types/new-type-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/types/:typeId',

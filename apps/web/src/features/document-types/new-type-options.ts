@@ -1,12 +1,11 @@
 import { FilePlus2, LayoutTemplate, ScanSearch } from 'lucide-react'
 
-// Template gallery (`/types/new?template`) comes in a later slice; for now it links to /types/new.
 export const NEW_TYPE_OPTIONS = [
   {
     id: 'template',
     label: 'From a template',
     hint: 'Invoice, receipt, contract and more',
-    to: '/types/new',
+    to: '/types/new?from=template',
     icon: LayoutTemplate,
   },
   {
