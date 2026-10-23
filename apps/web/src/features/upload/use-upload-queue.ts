@@ -65,10 +65,19 @@ export const useUploadQueue = (typeId: string) => {
     pump()
   }
 
+  const retryAll = () => {
+    for (const entry of entries) {
+      if (entry.phase.kind !== 'failed') continue
+      setPhase(entry.id, { kind: 'queued' })
+      pending.current.push({ id: entry.id, file: entry.file })
+    }
+    pump()
+  }
+
   const remove = (id: string) => {
     pending.current = pending.current.filter((item) => item.id !== id)
     setEntries((prev) => prev.filter((entry) => entry.id !== id))
   }
 
-  return { entries, add, retry, remove }
+  return { entries, add, retry, retryAll, remove }
 }

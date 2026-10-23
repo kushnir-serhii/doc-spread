@@ -3,8 +3,9 @@ import { useSearchParams } from 'react-router'
 import { PageHeader } from '@/components/layout/page-header'
 import { DropZone } from '@/features/upload/drop-zone'
 import { FileList } from '@/features/upload/file-list'
+import { UploadHandoff } from '@/features/upload/upload-handoff'
 import { TypeSelect } from '@/features/upload/type-select'
-import { countStates, describeCounts } from '@/features/upload/file-state'
+import { countStates, describeCounts, isSettled } from '@/features/upload/file-state'
 import { classifyFiles, describeResult } from '@/features/upload/upload-entries'
 import type { RejectedFile } from '@/features/upload/upload-entries'
 import { useFileStates } from '@/features/upload/use-file-states'
@@ -23,7 +24,8 @@ const UploadPage = () => {
 
   const queue = useUploadQueue(typeId)
   const items = useFileStates(queue.entries)
-  const statusSummary = describeCounts(countStates(items.map((item) => item.state)))
+  const counts = countStates(items.map((item) => item.state))
+  const statusSummary = isSettled(counts) ? `Upload finished: ${describeCounts(counts)}` : describeCounts(counts)
 
   const handleTypeChange = (next: string) => {
     setSearchParams(
@@ -53,6 +55,7 @@ const UploadPage = () => {
         <p role="status" className="sr-only">
           {[announcement, statusSummary].filter(Boolean).join('. ')}
         </p>
+        <UploadHandoff items={items} counts={counts} onRetryFailed={queue.retryAll} />
         <FileList
           items={items}
           rejected={rejected}

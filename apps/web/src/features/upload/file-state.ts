@@ -6,7 +6,7 @@ export type FileState =
   | { kind: 'queued' }
   | { kind: 'uploading'; progress: number }
   | { kind: 'processing' }
-  | { kind: 'classified'; typeName: string; documentId: string }
+  | { kind: 'classified'; typeId: string; typeName: string; documentId: string }
   | { kind: 'unclassified'; documentId: string }
   | { kind: 'failed'; reason: string }
 
@@ -34,7 +34,7 @@ const fromDocument = (
     case 'exported':
     case 'rejected':
       return document.typeId
-        ? { kind: 'classified', typeName: typeName(document.typeId), documentId }
+        ? { kind: 'classified', typeId: document.typeId, typeName: typeName(document.typeId), documentId }
         : { kind: 'unclassified', documentId }
     default: {
       const unreachable: never = document.status
@@ -105,4 +105,18 @@ export const describeCounts = ({ total, inProgress, classified, unclassified, fa
   if (failed > 0) parts.push(`${failed} failed`)
   if (inProgress > 0) parts.push(`${inProgress} in progress`)
   return parts.join(', ')
+}
+
+/** Everything is uploaded: at least one file and none still queued, uploading or processing. */
+export const isSettled = ({ total, inProgress }: FileCounts): boolean => total > 0 && inProgress === 0
+
+/** The type shared by every classified file, or undefined when they differ or there are none. */
+export const sharedType = (states: FileState[]): { typeId: string; typeName: string } | undefined => {
+  let shared: { typeId: string; typeName: string } | undefined
+  for (const state of states) {
+    if (state.kind !== 'classified') continue
+    if (shared && shared.typeId !== state.typeId) return undefined
+    shared = { typeId: state.typeId, typeName: state.typeName }
+  }
+  return shared
 }
