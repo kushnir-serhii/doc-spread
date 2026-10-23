@@ -53,6 +53,7 @@ export const FieldOptionsEditor = ({ options, onChange }: FieldOptionsEditorProp
                 <Input
                   id={inputId}
                   value={row.value}
+                  data-part="options"
                   autoFocus={row.id === focusId}
                   aria-invalid={error !== null}
                   aria-describedby={error ? `${inputId}-error` : undefined}
@@ -82,6 +83,7 @@ export const FieldOptionsEditor = ({ options, onChange }: FieldOptionsEditorProp
       </ul>
       <Button
         variant="outline"
+        data-part="options"
         className="min-h-touch self-start md:min-h-9"
         onClick={() => {
           const id = crypto.randomUUID()

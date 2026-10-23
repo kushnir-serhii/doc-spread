@@ -40,7 +40,7 @@ export const getKeyError = (field: Keyed, siblings: readonly Keyed[], scope: 'fi
   return null
 }
 
-const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`
+export const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`
 
 /** What would be lost by switching to `next`, or null when nothing is. */
 export const getTypeChangeLoss = (field: Pick<FieldDef, 'type' | 'options' | 'columns'>, next: FieldType) => {

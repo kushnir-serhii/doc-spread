@@ -12,6 +12,8 @@ interface FieldListProps {
   titleFieldId: string | null
   listColumnIds: string[]
   selection: Selection
+  /** Ids of fields and columns with problems to show. */
+  invalidIds: ReadonlySet<string>
   onSelect: (selection: NonNullable<Selection>) => void
   onMove: (id: string, direction: 'up' | 'down') => void
   onMoveColumn: (fieldId: string, columnId: string, direction: 'up' | 'down') => void
@@ -24,6 +26,7 @@ export const FieldList = ({
   titleFieldId,
   listColumnIds,
   selection,
+  invalidIds,
   onSelect,
   onMove,
   onMoveColumn,
@@ -49,7 +52,7 @@ export const FieldList = ({
             Fields are the data DocSpread reads from every document of this type, like a date or a total.
           </p>
         </div>
-        <Button onClick={onAdd} className="min-h-touch md:min-h-9">
+        <Button onClick={onAdd} data-add-field className="min-h-touch md:min-h-9">
           <Plus aria-hidden />
           Add field
         </Button>
@@ -72,6 +75,7 @@ export const FieldList = ({
               field={field}
               badges={fieldBadges(field, titleFieldId, listColumnIds)}
               selected={selection?.kind === 'field' && selection.fieldId === field.id}
+              invalid={invalidIds.has(field.id)}
               isFirst={index === 0}
               isLast={index === fields.length - 1}
               onSelect={() => onSelect({ kind: 'field', fieldId: field.id })}
@@ -80,6 +84,7 @@ export const FieldList = ({
             {field.type === 'table' && (
               <ColumnList
                 table={field}
+                invalidIds={invalidIds}
                 selectedColumnId={
                   selection?.kind === 'column' && selection.fieldId === field.id ? selection.columnId : null
                 }
@@ -93,7 +98,7 @@ export const FieldList = ({
           </li>
         ))}
       </ul>
-      <Button variant="outline" onClick={onAdd} className="min-h-touch self-start md:min-h-9">
+      <Button variant="outline" onClick={onAdd} data-add-field className="min-h-touch self-start md:min-h-9">
         <Plus aria-hidden />
         Add field
       </Button>

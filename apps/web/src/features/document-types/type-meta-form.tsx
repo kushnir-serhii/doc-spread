@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, type Ref } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -6,11 +6,14 @@ import { Textarea } from '@/components/ui/textarea'
 interface TypeMetaFormProps {
   name: string
   description: string
+  /** Shown after a failed Save. */
+  nameError: string | null
+  nameRef: Ref<HTMLInputElement>
   onNameChange: (name: string) => void
   onDescriptionChange: (description: string) => void
 }
 
-export const TypeMetaForm = ({ name, description, onNameChange, onDescriptionChange }: TypeMetaFormProps) => {
+export const TypeMetaForm = ({ name, description, nameError, nameRef, onNameChange, onDescriptionChange }: TypeMetaFormProps) => {
   const id = useId()
   const helpId = `${id}-description-help`
   return (
@@ -19,11 +22,19 @@ export const TypeMetaForm = ({ name, description, onNameChange, onDescriptionCha
         <Label htmlFor={`${id}-name`}>Type name</Label>
         <Input
           id={`${id}-name`}
+          ref={nameRef}
+          aria-invalid={nameError !== null}
+          aria-describedby={nameError ? `${id}-name-error` : undefined}
           value={name}
           placeholder="e.g. Invoice"
           onChange={(event) => onNameChange(event.target.value)}
           className="min-h-touch md:min-h-9"
         />
+        {nameError && (
+          <p id={`${id}-name-error`} className="text-xs text-destructive">
+            {nameError}
+          </p>
+        )}
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor={`${id}-description`}>Description</Label>

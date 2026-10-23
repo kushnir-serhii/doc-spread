@@ -17,6 +17,7 @@ export const FieldKeyInput = ({ value, error, onChange }: FieldKeyInputProps) =>
       <Label htmlFor={id}>Key</Label>
       <Input
         id={id}
+        data-part="key"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={error !== null}

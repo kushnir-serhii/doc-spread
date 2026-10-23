@@ -17,6 +17,10 @@ interface FieldEditorProps {
   /** Small line above the form, e.g. which table a column belongs to. */
   heading?: string
   keyError: string | null
+  /** Shown after a failed Save. */
+  labelError?: string | null
+  /** Other problems of this item (options, columns, title/list rules); shown after a failed Save. */
+  errors?: string[]
   deleteLabel: string
   onLabelChange: (label: string) => void
   onKeyChange: (key: string) => void
@@ -34,6 +38,8 @@ export const FieldEditor = ({
   types,
   heading,
   keyError,
+  labelError = null,
+  errors = [],
   deleteLabel,
   onLabelChange,
   onKeyChange,
@@ -47,16 +53,24 @@ export const FieldEditor = ({
   const hintHelpId = `${id}-hint-help`
 
   return (
-    <div className="flex flex-col gap-5">
+    <div data-field-editor tabIndex={-1} className="flex flex-col gap-5 outline-none">
       {heading && <p className="truncate text-sm font-medium text-muted-foreground" title={heading}>{heading}</p>}
       <div className="flex flex-col gap-2">
         <Label htmlFor={`${id}-label`}>Label</Label>
         <Input
           id={`${id}-label`}
           value={field.label}
+          data-part="label"
+          aria-invalid={labelError !== null}
+          aria-describedby={labelError ? `${id}-label-error` : undefined}
           onChange={(event) => onLabelChange(event.target.value)}
           className="min-h-touch md:min-h-9"
         />
+        {labelError && (
+          <p id={`${id}-label-error`} className="text-xs text-destructive">
+            {labelError}
+          </p>
+        )}
       </div>
 
       <FieldKeyInput
@@ -75,6 +89,14 @@ export const FieldEditor = ({
       )}
 
       {children}
+
+      {errors.length > 0 && (
+        <ul className="flex flex-col gap-1 text-sm text-destructive">
+          {errors.map((message) => (
+            <li key={message}>{message}</li>
+          ))}
+        </ul>
+      )}
 
       <label htmlFor={`${id}-required`} className="flex min-h-touch items-center gap-3 text-sm font-medium md:min-h-9">
         <input

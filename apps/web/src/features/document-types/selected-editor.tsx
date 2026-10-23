@@ -8,6 +8,7 @@ import { canGroupBy } from './list-settings'
 import { TableColumnsSection } from './table-columns-section'
 import type { ColumnOp } from './type-draft-columns'
 import type { BuilderAction } from './type-draft-reducer'
+import { splitEditorIssues, type ValidationIssue } from './validate-draft'
 
 const columnAction = (fieldId: string, op: ColumnOp): BuilderAction => ({ type: 'column', fieldId, op })
 
@@ -17,10 +18,13 @@ interface SelectedEditorProps extends EditorActions {
   target: EditorTarget
   fields: FieldDef[]
   dispatch: Dispatch<BuilderAction>
+  /** Problems of the selected item to show; empty until a Save was tried. */
+  issues: ValidationIssue[]
 }
 
 /** Wires the shared FieldEditor to a field or to a column of a table. */
-export const SelectedEditor = ({ target, fields, dispatch, ...actions }: SelectedEditorProps) => {
+export const SelectedEditor = ({ target, fields, dispatch, issues, ...actions }: SelectedEditorProps) => {
+  const shown = splitEditorIssues(issues)
   if (target.kind === 'field') {
     const { field } = target
     return (
@@ -28,6 +32,7 @@ export const SelectedEditor = ({ target, fields, dispatch, ...actions }: Selecte
         field={field}
         types={FIELD_TYPES}
         keyError={getKeyError(field, fields)}
+        {...shown}
         deleteLabel="Delete field"
         onLabelChange={(label) => dispatch({ type: 'setFieldLabel', id: field.id, label })}
         onKeyChange={(key) => dispatch({ type: 'setFieldKey', id: field.id, key })}
@@ -57,6 +62,7 @@ export const SelectedEditor = ({ target, fields, dispatch, ...actions }: Selecte
       types={COLUMN_TYPES}
       heading={`Column of ${table.label}`}
       keyError={getKeyError(column, table.columns ?? [], 'column')}
+      {...shown}
       deleteLabel="Delete column"
       onLabelChange={(label) => run({ kind: 'setLabel', id: column.id, label })}
       onKeyChange={(key) => run({ kind: 'setKey', id: column.id, key })}

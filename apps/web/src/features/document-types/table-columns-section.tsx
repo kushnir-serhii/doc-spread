@@ -14,7 +14,7 @@ export const TableColumnsSection = ({ table, onAddColumn }: TableColumnsSectionP
     <section aria-label="Columns" className="flex flex-col gap-2 rounded-md border bg-muted/30 p-3">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-medium">Columns ({count})</h3>
-        <Button variant="outline" className="min-h-touch md:min-h-9" onClick={onAddColumn}>
+        <Button variant="outline" data-part="columns" className="min-h-touch md:min-h-9" onClick={onAddColumn}>
           <Plus aria-hidden />
           Add column
         </Button>

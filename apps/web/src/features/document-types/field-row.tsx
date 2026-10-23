@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react'
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import { ArrowDown, ArrowUp, CircleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { FieldDef } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
@@ -11,6 +11,8 @@ interface FieldRowProps {
   /** Short markers such as "Title" or "Column 2". */
   badges?: string[]
   selected: boolean
+  /** The item has problems to fix (shown after a failed Save). */
+  invalid?: boolean
   isFirst: boolean
   isLast: boolean
   onSelect: () => void
@@ -18,7 +20,7 @@ interface FieldRowProps {
 }
 
 /** A selectable field or column with move buttons and Alt+↑/↓. */
-export const FieldRow = ({ field, badges = [], selected, isFirst, isLast, onSelect, onMove }: FieldRowProps) => {
+export const FieldRow = ({ field, badges = [], selected, invalid = false, isFirst, isLast, onSelect, onMove }: FieldRowProps) => {
   const handleKeyDown = (event: KeyboardEvent) => {
     if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return
     event.preventDefault()
@@ -35,6 +37,12 @@ export const FieldRow = ({ field, badges = [], selected, isFirst, isLast, onSele
         className="flex min-h-touch min-w-0 flex-1 items-center gap-3 rounded-md px-4 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-12"
       >
         <FieldSummary field={field} />
+        {invalid && (
+          <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-destructive">
+            <CircleAlert className="size-4" aria-hidden />
+            <span className="sr-only">{field.label}</span> has errors
+          </span>
+        )}
         {badges.length > 0 && (
           <span className="flex shrink-0 flex-wrap justify-end gap-1">
             {badges.map((badge) => (
