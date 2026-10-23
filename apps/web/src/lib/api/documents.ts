@@ -1,4 +1,4 @@
-import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { skipToken, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 import {
   approveDocuments,
@@ -45,6 +45,16 @@ export const useDocument = (id: string) =>
     queryKey: documentKeys.detail(id),
     queryFn: () => getDocument(id),
     refetchInterval: pollWhilePending,
+  })
+
+/** several details at once (same keys and polling as useDocument), results in the order of `ids` */
+export const useDocumentsByIds = (ids: string[]) =>
+  useQueries({
+    queries: ids.map((id) => ({
+      queryKey: documentKeys.detail(id),
+      queryFn: () => getDocument(id),
+      refetchInterval: pollWhilePending,
+    })),
   })
 
 /** null id skips the request */
@@ -106,7 +116,15 @@ export const useReassignDocumentType = () => {
 export const useUploadDocument = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (file: File) => uploadDocument(file),
+    mutationFn: ({
+      file,
+      typeId,
+      onProgress,
+    }: {
+      file: File
+      typeId?: string
+      onProgress?: (fraction: number) => void
+    }) => uploadDocument(file, { typeId, onProgress }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: documentKeys.lists() }),
   })

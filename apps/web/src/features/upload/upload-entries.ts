@@ -1,7 +1,17 @@
 import { validateFile } from './upload-rules'
 
-/** Slice 2 extends this union: uploading | processing | classified | unclassified | failed. */
-export type UploadEntry = { id: string; file: File; status: 'queued' }
+/** Client-side phase of a file; what happens to the document afterwards comes from the server. */
+export type UploadPhase =
+  | { kind: 'queued' }
+  | { kind: 'uploading'; progress: number }
+  | { kind: 'uploaded'; documentId: string }
+  | { kind: 'failed'; reason: string }
+
+export interface UploadEntry {
+  id: string
+  file: File
+  phase: UploadPhase
+}
 
 export interface RejectedFile {
   id: string
@@ -21,7 +31,7 @@ export const classifyFiles = (files: File[]): ClassifiedFiles => {
   for (const file of files) {
     const result = validateFile(file)
     if (result.ok) {
-      accepted.push({ id: crypto.randomUUID(), file, status: 'queued' })
+      accepted.push({ id: crypto.randomUUID(), file, phase: { kind: 'queued' } })
     } else {
       rejected.push({ id: crypto.randomUUID(), name: file.name, size: file.size, reason: result.reason })
     }

@@ -4,20 +4,26 @@ import { PageHeader } from '@/components/layout/page-header'
 import { DropZone } from '@/features/upload/drop-zone'
 import { FileList } from '@/features/upload/file-list'
 import { TypeSelect } from '@/features/upload/type-select'
+import { countStates, describeCounts } from '@/features/upload/file-state'
 import { classifyFiles, describeResult } from '@/features/upload/upload-entries'
-import type { RejectedFile, UploadEntry } from '@/features/upload/upload-entries'
+import type { RejectedFile } from '@/features/upload/upload-entries'
+import { useFileStates } from '@/features/upload/use-file-states'
+import { useUploadQueue } from '@/features/upload/use-upload-queue'
 import { useDocumentTypes } from '@/lib/api'
 
 const UploadPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const types = useDocumentTypes()
-  const [entries, setEntries] = useState<UploadEntry[]>([])
   const [rejected, setRejected] = useState<RejectedFile[]>([])
   const [announcement, setAnnouncement] = useState('')
 
   // an unknown id falls back to "Detect automatically"; until types load, trust the URL
   const requested = searchParams.get('type') ?? ''
   const typeId = types.data && !types.data.some((type) => type.id === requested) ? '' : requested
+
+  const queue = useUploadQueue(typeId)
+  const items = useFileStates(queue.entries)
+  const statusSummary = describeCounts(countStates(items.map((item) => item.state)))
 
   const handleTypeChange = (next: string) => {
     setSearchParams(
@@ -33,7 +39,7 @@ const UploadPage = () => {
 
   const handleFiles = (files: File[]) => {
     const result = classifyFiles(files)
-    setEntries((prev) => [...prev, ...result.accepted])
+    queue.add(result.accepted)
     setRejected((prev) => [...prev, ...result.rejected])
     setAnnouncement(describeResult(result))
   }
@@ -45,12 +51,13 @@ const UploadPage = () => {
         <TypeSelect value={typeId} onChange={handleTypeChange} />
         <DropZone onFiles={handleFiles} />
         <p role="status" className="sr-only">
-          {announcement}
+          {[announcement, statusSummary].filter(Boolean).join('. ')}
         </p>
         <FileList
-          entries={entries}
+          items={items}
           rejected={rejected}
-          onRemove={(id) => setEntries((prev) => prev.filter((entry) => entry.id !== id))}
+          onRetry={queue.retry}
+          onRemove={queue.remove}
           onDismiss={(id) => setRejected((prev) => prev.filter((file) => file.id !== id))}
         />
       </div>

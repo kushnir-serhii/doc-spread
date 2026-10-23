@@ -1,15 +1,18 @@
 import { useId } from 'react'
 import { FileRow } from './file-row'
-import type { RejectedFile, UploadEntry } from './upload-entries'
+import type { RejectedFile } from './upload-entries'
+import { UploadRow } from './upload-row'
+import type { UploadItem } from './use-file-states'
 
 interface FileListProps {
-  entries: UploadEntry[]
+  items: UploadItem[]
   rejected: RejectedFile[]
+  onRetry: (id: string) => void
   onRemove: (id: string) => void
   onDismiss: (id: string) => void
 }
 
-export const FileList = ({ entries, rejected, onRemove, onDismiss }: FileListProps) => {
+export const FileList = ({ items, rejected, onRetry, onRemove, onDismiss }: FileListProps) => {
   const rejectedHeadingId = useId()
   const acceptedHeadingId = useId()
   return (
@@ -33,20 +36,14 @@ export const FileList = ({ entries, rejected, onRemove, onDismiss }: FileListPro
           </ul>
         </section>
       )}
-      {entries.length > 0 && (
+      {items.length > 0 && (
         <section aria-labelledby={acceptedHeadingId} className="flex flex-col gap-2">
           <h2 id={acceptedHeadingId} className="text-sm font-semibold">
-            Ready to upload ({entries.length})
+            Files ({items.length})
           </h2>
           <ul className="divide-y divide-border rounded-md border border-border bg-card">
-            {entries.map((entry) => (
-              <FileRow
-                key={entry.id}
-                name={entry.file.name}
-                size={entry.file.size}
-                removeLabel={`Remove ${entry.file.name}`}
-                onRemove={() => onRemove(entry.id)}
-              />
+            {items.map((item) => (
+              <UploadRow key={item.id} item={item} onRetry={() => onRetry(item.id)} onRemove={() => onRemove(item.id)} />
             ))}
           </ul>
         </section>
