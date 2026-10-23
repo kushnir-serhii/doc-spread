@@ -47,7 +47,7 @@ export const router = createBrowserRouter([
           { path: '/upload', lazy: placeholder('Upload', 'Drop PDF, JPG or PNG files to process them.') },
           {
             path: '/types',
-            lazy: placeholder('Document types', 'The kinds of documents you collect and their fields.'),
+            lazy: () => import('@/pages/types/types-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/types/new',

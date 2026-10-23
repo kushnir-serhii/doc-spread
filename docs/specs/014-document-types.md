@@ -1,6 +1,6 @@
 # 014 — Document types (builder)
 
-**Status:** ready · **Depends on:** 002, 012 · **Route(s):** `/types`, `/types/new`, `/types/:typeId`
+**Status:** in-progress · **Depends on:** 002, 012 · **Route(s):** `/types`, `/types/new`, `/types/:typeId`
 
 ## Goal
 The user describes which documents they process and which data to collect from each one: they make a type from a template or from scratch, add and arrange fields, and save it without breaking documents already processed.
@@ -16,13 +16,13 @@ Per-type document counts (total and `needs_review`) are computed on the client f
 
 ## Slices
 
-### [ ] 1. Types list + create menu
+### [x] 1. Types list + create menu
 - **Build:** `/types` lists the user's types; `/types/new` and `/types/:typeId` stay placeholders until slices 2–3.
 - **Files:** `src/pages/types/`, `src/features/document-types/`
 - **Accept:**
-  - [ ] each row shows the name, field count, document count, documents needing review and when it was last updated; a click opens the builder
-  - [ ] "New type" offers: from a template / from a sample (links to 015) / blank
-  - [ ] empty state explains what a type is and offers the same three choices; skeleton and error states
+  - [x] each row shows the name, field count, document count, documents needing review and when it was last updated; a click opens the builder
+  - [x] "New type" offers: from a template / from a sample (links to 015) / blank
+  - [x] empty state explains what a type is and offers the same three choices; skeleton and error states
 
 ### [ ] 2. Templates
 - **Accept:**
@@ -65,3 +65,4 @@ Create and update a type with an incremented version; re-extract the added field
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-23 | — | ready | checked against the code: added the name/description header to slice 3 (slice 6 validates a name), client-side counts from `useDocuments()`, the mock's missing re-extract job; open questions marked non-blocking |
+| 2026-10-23 | 1 | done | `/types` lists types (fields, documents, to review, updated) as keyboard links; "New type" menu and the empty state share `NEW_TYPE_OPTIONS` (template → `/types/new` until slice 2, sample → `/types/new?from=sample`, blank); skeleton, error with retry. Counts from `useDocuments()` on the client. Fixed in review: the shadcn CLI added a bogus `cn` npm dependency and `import { cn } from "cn"` (reverted, `@/lib/utils`). Headless Chrome: 1280 light, 375 dark, no page scroll · `pages/types/types-page.tsx`, `features/document-types/{new-type-options,new-type-menu,type-row,types-empty-state,types-skeleton,types-error}`, `components/ui/skeleton.tsx`, `app/router.tsx` |
