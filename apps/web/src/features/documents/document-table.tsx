@@ -1,85 +1,38 @@
-import { Link } from 'react-router'
-import { ConfidenceBadge } from '@/components/domain/confidence-badge'
-import { StatusBadge } from '@/components/domain/status-badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formatFieldValue } from '@/lib/fields/format-field-value'
-import { formatDate } from '@/lib/mock/format'
-import type { Document, DocumentStatus, DocumentType } from '@/lib/mock/types'
+import type { Document } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
+import type { DocumentColumn } from './document-column'
 
 interface DocumentTableProps {
   documents: Document[]
-  types: DocumentType[]
+  columns: DocumentColumn[]
 }
 
-const NO_CONFIDENCE: DocumentStatus[] = ['uploaded', 'processing', 'unclassified', 'rejected', 'error']
+const alignClass = (column: DocumentColumn) => (column.align === 'right' ? 'text-right tabular-nums' : undefined)
 
-const documentTitle = (doc: Document, type: DocumentType | undefined): string => {
-  if (type?.titleFieldId) {
-    const title = formatFieldValue(doc.values[type.titleFieldId])
-    if (title !== '—') return title
-  }
-  return doc.file.name
-}
-
-const TruncatedText = ({ text, className = 'max-w-64' }: { text: string; className?: string }) => (
-  <span title={text} className={cn('block truncate', className)}>
-    {text}
-  </span>
-)
-
-export const DocumentTable = ({ documents, types }: DocumentTableProps) => {
-  const typesById = new Map(types.map((type) => [type.id, type]))
-
-  return (
-    <div className="overflow-x-auto rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Uploaded</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Confidence</TableHead>
+export const DocumentTable = ({ documents, columns }: DocumentTableProps) => (
+  <div className="overflow-x-auto rounded-lg border">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {columns.map((column) => (
+            <TableHead key={column.id} className={cn(alignClass(column))}>
+              {column.header}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {documents.map((doc) => (
+          <TableRow key={doc.id} className="relative min-h-touch cursor-pointer">
+            {columns.map((column) => (
+              <TableCell key={column.id} className={cn(alignClass(column))}>
+                {column.cell(doc)}
+              </TableCell>
+            ))}
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {documents.map((doc) => {
-            const type = doc.typeId ? typesById.get(doc.typeId) : undefined
-            const title = documentTitle(doc, type)
-            const typeName = type?.name ?? (doc.typeId ? '—' : 'Unclassified')
-            return (
-              <TableRow key={doc.id} className="relative min-h-touch cursor-pointer">
-                <TableCell className="font-medium">
-                  <Link
-                    to={`/documents/${doc.id}`}
-                    title={title}
-                    className="block max-w-72 truncate rounded-sm outline-none after:absolute after:inset-0 focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
-                  >
-                    {title}
-                  </Link>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  <TruncatedText text={typeName} className="max-w-48" />
-                </TableCell>
-                <TableCell className="whitespace-nowrap text-muted-foreground">{formatDate(doc.uploadedAt)}</TableCell>
-                <TableCell>
-                  <StatusBadge status={doc.status} />
-                </TableCell>
-                <TableCell>
-                  {NO_CONFIDENCE.includes(doc.status) ? (
-                    <span className="text-muted-foreground" aria-label="No confidence yet">
-                      —
-                    </span>
-                  ) : (
-                    <ConfidenceBadge score={doc.overallConfidence} />
-                  )}
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
+        ))}
+      </TableBody>
+    </Table>
+  </div>
+)

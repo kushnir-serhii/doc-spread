@@ -21,11 +21,11 @@ The user sees every document, of any type, with its status and AI confidence, fi
   - [x] skeleton while pending; error with retry; empty state with CTAs to `/upload` and `/types`
   - [x] long values are truncated with the full value in a `title`
 
-### [ ] 2. Type switcher + dynamic columns
+### [x] 2. Type switcher + dynamic columns
 - **Accept:**
-  - [ ] tabs or a select for All / each type (with the count needing review) / Unclassified; synced to `?type=` (`?type=unclassified` lists `status: 'unclassified'`; counts are computed on the client from `useDocuments()`)
-  - [ ] with a type chosen, the columns are its `listColumnIds`, rendered through `formatFieldValue`; money and number columns are right-aligned with `tabular-nums`; table fields show a row count
-  - [ ] a type with 6 columns plus status still fits at 1280px; narrower screens scroll the table horizontally, not the page
+  - [x] tabs or a select for All / each type (with the count needing review) / Unclassified; synced to `?type=` (`?type=unclassified` lists `status: 'unclassified'`; counts are computed on the client from `useDocuments()`)
+  - [x] with a type chosen, the columns are its `listColumnIds`, rendered through `formatFieldValue`; money and number columns are right-aligned with `tabular-nums`; table fields show a row count
+  - [x] a type with 6 columns plus status still fits at 1280px; narrower screens scroll the table horizontally, not the page
 
 ### [ ] 3. Filter + search in the URL
 - **Accept:**
@@ -57,3 +57,4 @@ List endpoint filtered by type and status, full-text search over values, sort, c
 | 2026-10-22 | — | rescoped | invoices → documents of any type; added the type switcher and the unclassified bucket |
 | 2026-10-23 | — | ready | checked against the code: `?type=unclassified` maps to the status, counts computed on the client, best-guess type moved to Backend needs (the model has none), default sort = newest upload |
 | 2026-10-23 | 1 | done | `DocumentTable` (title = type title field or file name, type, uploaded, status, confidence; a dash while there is no confidence), title `<Link>` stretched over the row; skeleton (`role="status"`), error with retry, empty with CTAs to `/upload` and `/types`; `overflow-x-auto` so 375px scrolls the table, not the page. Fixed in review: shadcn `cn` import bug, class strings through `cn()`. Headless Chrome: 1280 light, 375 dark · `pages/inbox/inbox-page.tsx`, `features/documents/document-table{,-skeleton,-error,-empty}.tsx`, `components/ui/{table,skeleton}.tsx`, `app/router.tsx` |
+| 2026-10-23 | 2 | done | `TypeSwitcher` (link tabs with `aria-current`, needs-review / to-classify badges with labels, scrolls at 375px), `?type=` keeps other params, unknown id → All. List from server params (`buildListParams`: `{typeId}` / `{status: unclassified}`; slice 3 extends it), counts from one unfiltered `useDocuments()`. `DocumentTable` takes column definitions (`allColumns`, `typeColumns`, `unclassifiedColumns`); type columns via `formatFieldValue` (table → "N rows"), money/number right-aligned with `tabular-nums`, cells narrower past 4 columns; per-type empty state links to `/upload?type=`. Decided: no confidence column in type views (keeps 6 columns + status inside 1280px). Fixed in review: view and count helpers moved from `pages/` to `features/documents/`. Headless Chrome (CDP): invoice 1280 light / 375 dark (table scrolls, page does not), unclassified 1280 dark, unknown type 375 · `pages/inbox/inbox-page.tsx`, `features/documents/{document-table,document-table-empty,document-column,document-columns,document-title,document-title-link,truncated-text,type-switcher,type-switcher-skeleton,inbox-view,use-type-counts}` |
