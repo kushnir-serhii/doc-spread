@@ -1,4 +1,3 @@
-import { CURRENCIES } from './types'
 import type { ColumnDef, DocumentType, FieldDef, ScalarFieldType } from './types'
 
 export type DocumentTemplate = Omit<DocumentType, 'version' | 'updatedAt'>
@@ -95,10 +94,6 @@ const invoice = ((): DocumentTemplate => {
       }),
       f('sale_date', 'Sale date', 'date', 'Date of sale or delivery, usually labelled "Data sprzedaży". Leave empty if absent.'),
       f('due_date', 'Due date', 'date', 'Payment deadline, usually labelled "Termin płatności".'),
-      f('currency', 'Currency', 'select', 'Currency the invoice is issued in.', {
-        required: true,
-        options: [...CURRENCIES],
-      }),
       f('net_total', 'Net total', 'money', 'Total net amount (netto) of the whole invoice.', { required: true }),
       f('vat_total', 'VAT total', 'money', 'Total VAT amount of the whole invoice.'),
       f('gross_total', 'Gross total', 'money', 'Total gross amount (brutto) to be paid.', { required: true }),
@@ -167,6 +162,8 @@ const receipt = ((): DocumentTemplate => {
 })()
 
 const contract = ((): DocumentTemplate => {
+  const pc = (key: string, label: string, type: ScalarFieldType, hint: string) =>
+    makeColumn('contract', 'parties', key, label, type, hint)
   const f = (
     key: string,
     label: string,
@@ -181,7 +178,10 @@ const contract = ((): DocumentTemplate => {
     description: 'A contract or agreement between two or more parties, with term and value.',
     fields: [
       f('contract_number', 'Contract number', 'text', 'Contract number or reference, if the document has one.'),
-      f('parties', 'Parties', 'text', 'Names of the contracting parties, separated by commas.', { required: true }),
+      makeTable('contract', 'parties', 'Parties', 'One row per contracting party, including our own company.', [
+        pc('name', 'Name', 'text', 'Full legal name of the party.'),
+        pc('tax_id', 'Tax ID', 'tax_id', 'Tax ID of the party: NIP for Polish companies.'),
+      ]),
       f('counterparty', 'Counterparty', 'text', 'The other party to the contract (not our company).', {
         groupable: true,
       }),

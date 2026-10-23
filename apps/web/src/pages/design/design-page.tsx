@@ -6,8 +6,10 @@ import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { INVOICE_STATUSES } from '@/lib/mock/types'
+import { DOCUMENT_STATUSES } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
+import { FieldTypesSection } from './field-types-section'
+import { ViewerSection } from './viewer-section'
 
 /* Class strings are written out in full so Tailwind can see them. */
 
@@ -129,11 +131,11 @@ const DesignPage = () => {
 
       <Section
         id="status"
-        title="Invoice status"
-        description="Uploaded → Processing → Needs review → Approved → Exported, plus Rejected and Error. Icon + label, never color alone."
+        title="Document status"
+        description="Uploaded → Processing → Needs review | Unclassified → Approved → Exported, plus Rejected and Error. Icon + label, never color alone."
       >
         <div className="flex flex-wrap gap-2">
-          {INVOICE_STATUSES.map((s) => (
+          {DOCUMENT_STATUSES.map((s) => (
             <StatusBadge key={s} status={s} />
           ))}
         </div>
@@ -147,11 +149,12 @@ const DesignPage = () => {
           <ConfidenceBadge level="high" />
           <ConfidenceBadge level="medium" />
           <ConfidenceBadge level="low" />
+          <ConfidenceBadge score={0.86} />
         </div>
         <div className="mt-5 grid max-w-xl gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="demo-number">Invoice number</Label>
+              <Label htmlFor="demo-number">Document number</Label>
               <ConfidenceBadge level="high" score={0.99} />
             </div>
             <Input id="demo-number" defaultValue="FV/2026/10/0142" />
@@ -164,6 +167,18 @@ const DesignPage = () => {
             <Input id="demo-vat" defaultValue="DE81 2345 678" className="bg-card" />
           </div>
         </div>
+      </Section>
+
+      <Section
+        id="field-types"
+        title="Field types"
+        description="Every type a document field can have, and how its value is formatted."
+      >
+        <FieldTypesSection />
+      </Section>
+
+      <Section id="viewer" title="Document viewer" description="Pages render only near the viewport. Zoom: fit width, 100%, steps from 50% to 300%.">
+        <ViewerSection />
       </Section>
 
       <Section id="amounts" title="Amounts" description="Use the `amount` utility (tabular-nums), right-align in tables, always show currency.">
@@ -192,7 +207,7 @@ const DesignPage = () => {
                 <TokenName>{t.token}</TokenName>
                 <p className="text-xs text-muted-foreground">{t.use}</p>
               </div>
-              <p className={cn('min-w-0 truncate', t.className)}>Invoice from Nordwind GmbH</p>
+              <p className={cn('min-w-0 truncate', t.className)}>Quarterly report, Nordwind GmbH</p>
             </div>
           ))}
         </div>

@@ -2,22 +2,28 @@ import {
   CircleCheck,
   CircleX,
   Eye,
+  CircleQuestionMark,
   FileUp,
   LoaderCircle,
   OctagonAlert,
   Send,
   type LucideIcon,
 } from 'lucide-react'
-import type { InvoiceStatus } from '@/lib/mock/types'
+import type { DocumentStatus } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
 
-const STATUS_META: Record<InvoiceStatus, { label: string; icon: LucideIcon; className: string; spin?: boolean }> = {
+const STATUS_META: Record<DocumentStatus, { label: string; icon: LucideIcon; className: string; spin?: boolean }> = {
   uploaded: { label: 'Uploaded', icon: FileUp, className: 'bg-status-uploaded-bg text-status-uploaded-fg' },
   processing: {
     label: 'Processing',
     icon: LoaderCircle,
     className: 'bg-status-processing-bg text-status-processing-fg',
     spin: true,
+  },
+  unclassified: {
+    label: 'Unclassified',
+    icon: CircleQuestionMark,
+    className: 'bg-status-unclassified-bg text-status-unclassified-fg',
   },
   needs_review: { label: 'Needs review', icon: Eye, className: 'bg-status-needs-review-bg text-status-needs-review-fg' },
   approved: { label: 'Approved', icon: CircleCheck, className: 'bg-status-approved-bg text-status-approved-fg' },
@@ -31,12 +37,12 @@ const STATUS_META: Record<InvoiceStatus, { label: string; icon: LucideIcon; clas
 }
 
 export interface StatusBadgeProps {
-  status: InvoiceStatus
+  status: DocumentStatus
   className?: string
 }
 
-/** Invoice status pill. Color is never the only cue: icon + label always present. */
-export function StatusBadge({ status, className }: StatusBadgeProps) {
+/** Document status pill. Color is never the only cue: icon + label always present. */
+export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
   const meta = STATUS_META[status]
   const Icon = meta.icon
   return (

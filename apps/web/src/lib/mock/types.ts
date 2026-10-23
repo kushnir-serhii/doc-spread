@@ -1,29 +1,7 @@
-/** @deprecated replaced by DOCUMENT_STATUSES (spec 012); removed in slice 5 */
-export const INVOICE_STATUSES = [
-  'uploaded',
-  'processing',
-  'needs_review',
-  'approved',
-  'exported',
-  'rejected',
-  'error',
-] as const
-/** @deprecated replaced by DocumentStatus (spec 012); removed in slice 5 */
-export type InvoiceStatus = (typeof INVOICE_STATUSES)[number]
-
 export type Confidence = 'high' | 'medium' | 'low'
 
 export const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP'] as const
 export type CurrencyCode = (typeof CURRENCIES)[number]
-
-/**
- * Per-field AI extraction result. confidence is 0..1.
- * @deprecated replaced by ExtractedValue (spec 012); removed in slice 2
- */
-export interface ExtractedField<T> {
-  value: T | null
-  confidence: number
-}
 
 /** Amount in minor units (grosze/cents) — always an integer. */
 export interface Money {
@@ -31,64 +9,7 @@ export interface Money {
   currency: CurrencyCode
 }
 
-/** @deprecated replaced by Document values (spec 012); removed in slice 2 */
-export interface Supplier {
-  id: string
-  name: string
-  /** NIP for Polish suppliers, VAT ID (e.g. DE123456789) for foreign ones */
-  taxId: string
-  /** ISO 3166-1 alpha-2 */
-  country: string
-  address: string
-  email?: string
-}
-
-/** @deprecated replaced by TableValue (spec 012); removed in slice 2 */
-export interface LineItem {
-  id: string
-  description: string
-  quantity: number
-  unit: string
-  /** minor units */
-  unitNet: number
-  /** percent, e.g. 23; 0 for reverse charge / non-EU */
-  vatRate: number
-  net: number
-  vat: number
-  gross: number
-}
-
 export type FileType = 'pdf' | 'jpg' | 'png'
-
-/** @deprecated replaced by Document (spec 012); removed in slice 2 */
-export interface Invoice {
-  id: string
-  fileName: string
-  fileType: FileType
-  pageCount: number
-  /** ISO datetime */
-  uploadedAt: string
-  status: InvoiceStatus
-  errorMessage?: string
-  rejectionReason?: string
-  supplierId: string | null
-  supplierName: ExtractedField<string>
-  taxId: ExtractedField<string>
-  number: ExtractedField<string>
-  /** ISO dates (YYYY-MM-DD) */
-  issueDate: ExtractedField<string>
-  saleDate: ExtractedField<string>
-  dueDate: ExtractedField<string>
-  currency: ExtractedField<CurrencyCode>
-  /** minor units */
-  net: ExtractedField<number>
-  vat: ExtractedField<number>
-  gross: ExtractedField<number>
-  lineItems: LineItem[]
-  overallConfidence: number
-  /** true if the invoice came through / is registered in KSeF */
-  ksef: boolean
-}
 
 export interface Company {
   name: string
@@ -114,7 +35,8 @@ export interface ExportJob {
   id: string
   createdAt: string
   format: ExportFormat
-  invoiceIds: string[]
+  typeId: string
+  documentIds: string[]
   destination: ExportDestination
   recipient?: string
   status: ExportStatus
@@ -122,19 +44,11 @@ export interface ExportJob {
 
 export interface CreateExportJobInput {
   format: ExportFormat
-  invoiceIds: string[]
+  typeId: string
+  documentIds: string[]
   destination: ExportDestination
   recipient?: string
 }
-
-/** @deprecated replaced by the document list params (spec 012); removed in slice 3 */
-export interface ListInvoicesParams {
-  status?: InvoiceStatus
-  search?: string
-}
-
-/** @deprecated replaced by group values (spec 012); removed in slice 3 */
-export type SupplierWithInvoices = Supplier & { invoices: Invoice[] }
 
 export const FIELD_TYPES = [
   'text',
@@ -274,4 +188,35 @@ export interface Document {
   overallConfidence: number
   errorMessage?: string
   rejectionReason?: string
+}
+
+export interface ListDocumentsParams {
+  typeId?: string
+  status?: DocumentStatus
+  /** file name and any text-like value, case-insensitive */
+  search?: string
+  /** documents whose value for the field equals `value` (trimmed, case-insensitive) */
+  group?: { fieldId: string; value: string }
+}
+
+/** To start from a template, copy its fields from listTemplates into `fields`. */
+export type CreateDocumentTypeInput = Pick<
+  DocumentType,
+  'name' | 'description' | 'fields' | 'titleFieldId' | 'listColumnIds'
+>
+
+/** Changing any of these raises the type's version. */
+export type UpdateDocumentTypeInput = Partial<CreateDocumentTypeInput>
+
+export interface GroupValue {
+  /** display form of the first occurrence */
+  value: string
+  count: number
+  /** ISO datetime of the newest document in the group */
+  lastDocumentAt: string
+}
+
+export interface TestExtractInput {
+  fields: FieldDef[]
+  documentId: string
 }

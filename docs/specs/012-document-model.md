@@ -1,6 +1,6 @@
 # 012 — Document model
 
-**Status:** in-progress · **Depends on:** — · **Route(s):** —
+**Status:** done · **Depends on:** — · **Route(s):** —
 
 ## Goal
 The mock layer describes documents of any kind, not just invoices: the user's own document types (a schema of fields) and documents whose values follow that schema. Every later screen builds on these types, so swapping mocks for the real API changes nothing above `src/lib/mock`.
@@ -102,45 +102,59 @@ export interface Document {
   - [x] `ExtractedValue<'money'>['value']` is `Money | null`, so the compiler catches a mismatched value type (no casts)
   - [x] every template field has a `hint`; the keys are unique within each type
 
-### [ ] 2. Mock documents + pages
-- **Build:** about 25 documents across the three types in every status, including `unclassified`, with long values and one invoice with 50+ table rows. Pages carry tokens. One generated sample PDF (no real data) plus a JPG scan in `public/mock/`, each with a hand-made token JSON that lines up with the file.
-- **Files:** `src/lib/mock/data.ts`, `src/lib/mock/pages.ts`, `public/mock/*`
+### [x] 2. Mock documents + pages
+- **Build:** first update the templates per **Decisions**: drop the Invoice `currency` field; Contract `parties` becomes a `table` (columns `name`: text, `tax_id`: tax_id). Then about 25 documents across the three types in every status, including `unclassified`, with long values and one invoice with 50+ table rows. Pages carry tokens. One generated sample PDF (no real data) plus a JPG scan in `public/mock/`, each with a hand-made token JSON that lines up with the file.
+- **Files:** `src/lib/mock/templates.ts`, `src/lib/mock/data.ts`, `src/lib/mock/pages.ts`, `public/mock/*`
 - **Accept:**
-  - [ ] each document's `values` match its type's fields by id and value type
-  - [ ] the sample PDF includes one rotated page (`rotate: 90`) for spec 013
+  - [x] each document's `values` match its type's fields by id and value type, including table cells against their column's type (checked at runtime: the types can't tie a value to its field id)
+  - [x] the money values within one invoice share one currency
+  - [x] the sample PDF includes one rotated page (`rotate: 90`) for spec 013
 
-### [ ] 3. Mock API
-- **Build:** replace the invoice and supplier functions with: `listDocumentTypes`, `getDocumentType`, `createDocumentType`, `updateDocumentType` (raises `version`), `listTemplates`, `listDocuments({ typeId, status, search, group })`, `getDocument`, `getDocumentPages`, `updateDocumentValues`, `approveDocuments`, `rejectDocument`, `reassignDocumentType`, `uploadDocument`, `proposeFields`, `testExtract`, `addFieldExample`, `listGroupValues`. Keep the export, company and team functions, with export jobs taking a `typeId`.
+### [x] 3. Mock API
+- **Build:** replace the invoice and supplier functions with: `listDocumentTypes`, `getDocumentType(id, version?)` (old versions stay readable; omitted means current), `createDocumentType`, `updateDocumentType` (raises `version`, keeps the previous one), `listTemplates` (server-provided), `listDocuments({ typeId, status, search, group })`, `getDocument`, `getDocumentPages`, `updateDocumentValues`, `approveDocuments`, `rejectDocument`, `reassignDocumentType`, `uploadDocument`, `proposeFields`, `testExtract`, `addFieldExample`, `listGroupValues`. Keep the export, company and team functions, with export jobs taking a `typeId`.
 - **Files:** `src/lib/mock/api.ts`
 - **Accept:**
-  - [ ] the comment block at the top of `api.ts` lists what the backend must provide
-  - [ ] `uploadDocument` moves through `uploaded → processing → needs_review | unclassified` with fake latency
+  - [x] the comment block at the top of `api.ts` lists what the backend must provide
+  - [x] `uploadDocument` moves through `uploaded → processing → needs_review | unclassified` with fake latency
 
-### [ ] 4. Field-type metadata + formatting
+### [x] 4. Field-type metadata + formatting
 - **Build:** `FIELD_TYPE_META` (label, lucide icon, empty value, whether it can be grouped) and `formatFieldValue(value)` using `formatMoney`/`formatDate`.
 - **Files:** `src/lib/fields/field-meta.ts`, `src/lib/fields/format-field-value.ts`
 - **Accept:**
-  - [ ] every `switch` over `FieldType` ends with a `never` check
-  - [ ] null shows as "—"; money always shows its currency
+  - [x] every `switch` over `FieldType` ends with a `never` check
+  - [x] null shows as "—"; money always shows its currency
 
-### [ ] 5. Existing code follows the model
+### [x] 5. Existing code follows the model
 - **Build:** move the code that already uses the invoice model to documents: `StatusBadge` (new `unclassified` status), `ConfidenceBadge`, the `/design` page demos, the header search ("Search documents…"), the nav (Inbox, Upload, Types, Groups, Export, Settings), and the router placeholders (`/types`, `/types/new`, `/types/:typeId`, `/documents/:documentId`, `/groups`, `/groups/:typeId/:fieldId` instead of `/invoices/:id` and `/suppliers/*`).
 - **Files:** `src/components/domain/`, `src/components/layout/{header.tsx,nav-items.ts}`, `src/pages/design-page.tsx` (or `design/` after 001), `src/app/router.tsx`
 - **Accept:**
-  - [ ] `grep -rni "invoice\|supplier" src` only hits the Invoice template and mock data
-  - [ ] every new route renders its placeholder; typecheck, lint and build green
+  - [x] `grep -rni "invoice\|supplier" src` only hits the Invoice template and mock data (plus the landing copy, which belongs to spec 003)
+  - [x] every new route renders its placeholder; typecheck, lint and build green
 
 ## Backend needs
-Storage for document types with versions; documents linked to a type version; page images or the source file per page; OCR tokens with normalized bboxes for PDFs, scans and photos.
+Storage for document types with every version kept and readable; documents linked to a type version; templates served by the API (editable without a frontend deploy); page images or the source file per page; OCR tokens with normalized bboxes for PDFs, scans and photos. Full list in the header of `src/lib/mock/api.ts`. Learned in slice 3:
+- Pipeline status changes must be pushed (realtime) or pollable; a failed run needs a retry / re-run endpoint.
+- Creating a type from a template generates fresh field ids on the server (the mock seeds just swap the `tpl-` prefix).
+- Concurrent edits of one document need a version or conflict check.
+
+## Decisions
+- **Type versions:** old versions stay readable. A document is shown with the fields of the version it was extracted with (`typeVersion`); re-extracting with the current version is offered separately (008/014).
+- **Templates** live on the server and come through `listTemplates`. `templates.ts` is only the mock's seed.
+- **Invoice currency:** no separate `currency` field; the currency comes from the `money` values themselves.
+- **Contract parties:** a `table` (name, tax ID), not comma-separated text. No new field type.
 
 ## Open questions
-- Should a type's old versions stay readable (show a document with the fields it was extracted with), or only the current one?
-- Do templates live on the server (editable by us without a deploy) or ship in the frontend?
-- Invoice has a `currency` select field while each `money` value carries its own currency, so the two can disagree. Keep the field (for export/filtering) or derive it from the totals?
-- Nothing in the types ties a table cell's `type` to its column's declared type; slice 2's check that values match fields has to cover table cells too.
-- Contract `parties` is a comma-separated `text` because there is no list field type. Is that enough, or does a list type belong in 014?
+- Only two documents are really backed by their file: `doc-001` (`sample-invoice.pdf`) and `doc-002` (`sample-receipt.jpg`), with `source` bboxes on their values. The other documents point `file.url` at the sample of their kind and carry no `source`, so the file shown doesn't match their values. Is that enough for 008/013, or does each type need its own sample file?
+- Can a document with empty required fields be approved? The mock allows it.
+- Export: the mock only moves `approved` documents to `exported` and silently includes the others. Should the API reject non-approved documents?
+- `addFieldExample` works only on top-level fields. Should table columns get examples too (spec 015)?
+- Templates have no `required` option for table fields (`makeTable` always sets `false`), so Contract `parties` lost the `required` it had as a text field.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | 1 | done | New schema types (`FieldDef`, `ColumnDef`, `DocumentType`, `AnyExtractedValue`/`FieldValue`, `Document`, …) added beside the legacy invoice types, which are marked `@deprecated` until slices 2/3/5 migrate their users. `DOCUMENT_TEMPLATES` (Invoice, Receipt, Contract). `lib/mock/types.ts`, `lib/mock/templates.ts`, `lib/mock/index.ts` |
+| 2026-10-22 | 2 | done | Templates updated per Decisions. 27 seed documents (every status, Invoice v1 and v2, 64-row invoice, PLN/EUR/GBP/USD); `findValueMismatches` returns 0 and runs over the seeds in dev. Sample PDF (3 pages, page 2 `/Rotate 90`) and receipt JPG with token JSON, generated by `scripts/generate-mock-files.py`; token alignment spot-checked against the rendered pages. Legacy invoice seeds stay, deprecated, until slice 3. `lib/mock/{data,templates,pages,document-types-seed,documents-seed,value-builders,value-check,seed-utils,showcase-sources}.ts`, `public/mock/*`, `scripts/generate-mock-files.py` |
+| 2026-10-22 | 3 | done | `api.ts` rewritten on documents: all functions from the slice plus export per type (`typeId` + `documentIds`). Type updates push a new version, old ones stay readable; value edits are validated and set confidence 1; upload runs uploaded → processing → needs_review / unclassified on timers, classifying by file name. Legacy invoice/supplier types and seeds removed (only `INVOICE_STATUSES`/`InvoiceStatus` remain for slice 5). Checked with a script: uploads, versions, validation, groups, pages, export. `lib/mock/{api,types,data,fake-extract,propose-fields}.ts` |
+| 2026-10-22 | 4 | done | `FIELD_TYPE_META: Record<FieldType, …>` (label, lucide icon, `groupable`, `empty()` blank value) and `formatFieldValue` (exhaustive switch with a `never` check; null → "—", money via `formatMoney` with currency, table → "N rows"). Checked with a script. `lib/fields/field-meta.ts`, `lib/fields/format-field-value.ts` |
+| 2026-10-22 | 5 | done | UI on the document model: `StatusBadge` with `unclassified` (new `--status-unclassified-*` tokens, 7.1:1 light / 10.1:1 dark), `ConfidenceBadge` takes a level or a score, nav Inbox/Upload/Types/Groups/Export/Settings, "Search documents…", placeholders for `/types*`, `/documents/:documentId`, `/groups*`; `/design` gets Document status and Field types sections. `INVOICE_STATUSES` removed. Routes checked in a preview build; `/design` checked at 375px in dark mode. The landing copy still says invoices: left for spec 003. `app/router.tsx`, `components/domain/*`, `components/layout/{header.tsx,nav-items.ts}`, `pages/design/{design-page,field-types-section}.tsx`, `styles/index.css`, `lib/mock/types.ts` |

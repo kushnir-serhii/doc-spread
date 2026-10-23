@@ -154,10 +154,15 @@
 /* ------------------------------------------- Domain tokens (both themes) -- */
 :root,
 .dark {
-  /* Invoice statuses — each has bg / fg / dot. Always paired with an icon + label. */
+  /* Document statuses — each has bg / fg / dot. Always paired with an icon + label. */
   --status-uploaded-bg: var(--neutral-soft);
   --status-uploaded-fg: var(--neutral-soft-foreground);
   --status-uploaded-dot: var(--muted-foreground);
+
+  /* Neutral bg + warning text: distinct from uploaded (neutral) and needs-review (warning bg) */
+  --status-unclassified-bg: var(--neutral-soft);
+  --status-unclassified-fg: var(--warning-soft-foreground);
+  --status-unclassified-dot: var(--warning);
 
   --status-processing-bg: var(--info-soft);
   --status-processing-fg: var(--info-soft-foreground);
@@ -193,6 +198,19 @@
   --confidence-low-bg: var(--danger-soft);
   --confidence-low-fg: var(--danger-soft-foreground);
   --confidence-low-dot: var(--danger);
+
+  /* Viewer highlights sit on the page, which is white in both themes, so these are fixed (not theme-flipped).
+     Borders are >= 3:1 on white; fills are faint so the text underneath stays readable. */
+  --highlight-bg: oklch(0.5 0.17 258 / 0.12);
+  --highlight-border: oklch(0.5 0.17 258);
+  --highlight-active-bg: oklch(0.5 0.17 258 / 0.26);
+  --highlight-active-border: oklch(0.38 0.17 258);
+  --highlight-low-bg: oklch(0.53 0.2 27 / 0.14);
+  --highlight-low-border: oklch(0.53 0.2 27);
+
+  /* Pointing selection (words / region), also drawn on the white page: fixed, border >= 3:1 on white. */
+  --selection-bg: oklch(0.55 0.2 305 / 0.22);
+  --selection-border: oklch(0.48 0.2 305);
 }
 
 /* ------------------------------------------------- Tailwind theme mapping -- */
@@ -251,6 +269,9 @@
   --color-status-uploaded-bg: var(--status-uploaded-bg);
   --color-status-uploaded-fg: var(--status-uploaded-fg);
   --color-status-uploaded-dot: var(--status-uploaded-dot);
+  --color-status-unclassified-bg: var(--status-unclassified-bg);
+  --color-status-unclassified-fg: var(--status-unclassified-fg);
+  --color-status-unclassified-dot: var(--status-unclassified-dot);
   --color-status-processing-bg: var(--status-processing-bg);
   --color-status-processing-fg: var(--status-processing-fg);
   --color-status-processing-dot: var(--status-processing-dot);
@@ -279,6 +300,15 @@
   --color-confidence-low-bg: var(--confidence-low-bg);
   --color-confidence-low-fg: var(--confidence-low-fg);
   --color-confidence-low-dot: var(--confidence-low-dot);
+
+  --color-highlight-bg: var(--highlight-bg);
+  --color-highlight-border: var(--highlight-border);
+  --color-highlight-active-bg: var(--highlight-active-bg);
+  --color-highlight-active-border: var(--highlight-active-border);
+  --color-highlight-low-bg: var(--highlight-low-bg);
+  --color-highlight-low-border: var(--highlight-low-border);
+  --color-selection-bg: var(--selection-bg);
+  --color-selection-border: var(--selection-border);
 
   /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
