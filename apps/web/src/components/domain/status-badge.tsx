@@ -11,26 +11,24 @@ import {
 } from 'lucide-react'
 import type { DocumentStatus } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
+import { STATUS_LABELS } from './status-labels'
 
-const STATUS_META: Record<DocumentStatus, { label: string; icon: LucideIcon; className: string; spin?: boolean }> = {
-  uploaded: { label: 'Uploaded', icon: FileUp, className: 'bg-status-uploaded-bg text-status-uploaded-fg' },
+const STATUS_META: Record<DocumentStatus, { icon: LucideIcon; className: string; spin?: boolean }> = {
+  uploaded: { icon: FileUp, className: 'bg-status-uploaded-bg text-status-uploaded-fg' },
   processing: {
-    label: 'Processing',
     icon: LoaderCircle,
     className: 'bg-status-processing-bg text-status-processing-fg',
     spin: true,
   },
   unclassified: {
-    label: 'Unclassified',
     icon: CircleQuestionMark,
     className: 'bg-status-unclassified-bg text-status-unclassified-fg',
   },
-  needs_review: { label: 'Needs review', icon: Eye, className: 'bg-status-needs-review-bg text-status-needs-review-fg' },
-  approved: { label: 'Approved', icon: CircleCheck, className: 'bg-status-approved-bg text-status-approved-fg' },
-  exported: { label: 'Exported', icon: Send, className: 'bg-status-exported-bg text-status-exported-fg' },
-  rejected: { label: 'Rejected', icon: CircleX, className: 'bg-status-rejected-bg text-status-rejected-fg' },
+  needs_review: { icon: Eye, className: 'bg-status-needs-review-bg text-status-needs-review-fg' },
+  approved: { icon: CircleCheck, className: 'bg-status-approved-bg text-status-approved-fg' },
+  exported: { icon: Send, className: 'bg-status-exported-bg text-status-exported-fg' },
+  rejected: { icon: CircleX, className: 'bg-status-rejected-bg text-status-rejected-fg' },
   error: {
-    label: 'Error',
     icon: OctagonAlert,
     className: 'bg-status-error-bg text-status-error-fg ring-1 ring-inset ring-status-error-dot/40',
   },
@@ -54,7 +52,7 @@ export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
       )}
     >
       <Icon className={cn('size-3.5 shrink-0', meta.spin && 'animate-spin')} aria-hidden="true" />
-      {meta.label}
+      {STATUS_LABELS[status]}
     </span>
   )
 }

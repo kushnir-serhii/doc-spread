@@ -338,15 +338,26 @@ function applyExtraction(doc: Document, type: DocumentType, classificationConfid
   delete doc.errorMessage
 }
 
-/** Re-extracts with the current version of the new type. */
+/**
+ * Sets the new type at once with status processing (returned), then re-extracts with the
+ * current version of that type on a timer: processing -> needs_review.
+ */
 export async function reassignDocumentType(id: string, typeId: string): Promise<Document> {
   await delay()
   const doc = findDocument(id)
   if (doc.status === 'uploaded' || doc.status === 'processing' || doc.status === 'exported') {
     throw new Error(`Document type can't be changed in status ${doc.status}`)
   }
-  applyExtraction(doc, findCurrentType(typeId), 1)
-  return copy(doc)
+  const type = findCurrentType(typeId)
+  doc.status = 'processing'
+  doc.typeId = type.id
+  doc.typeVersion = type.version
+  const result = copy(doc)
+  void later(randomBetween(1500, 2500)).then(() => {
+    const current = db.documents.find((d) => d.id === id)
+    if (current) applyExtraction(current, type, 1)
+  })
+  return result
 }
 
 // ---------- upload ----------
