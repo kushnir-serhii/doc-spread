@@ -75,7 +75,12 @@ export const allColumns = (types: DocumentType[]): DocumentColumn[] => {
   ]
 }
 
-export const unclassifiedColumns = (): DocumentColumn[] => [titleColumn(new Map()), uploadedColumn, statusColumn]
+export const unclassifiedColumns = (actionsColumn: DocumentColumn): DocumentColumn[] => [
+  titleColumn(new Map()),
+  uploadedColumn,
+  statusColumn,
+  actionsColumn,
+]
 
 export const typeColumns = (type: DocumentType): DocumentColumn[] => {
   const fields = type.listColumnIds

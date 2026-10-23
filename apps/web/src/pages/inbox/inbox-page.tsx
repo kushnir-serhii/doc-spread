@@ -2,7 +2,8 @@ import { useCallback } from 'react'
 import { useSearchParams } from 'react-router'
 import { useDocuments, useDocumentTypes } from '@/lib/api'
 import { PageHeader } from '@/components/layout/page-header'
-import { allColumns, typeColumns, unclassifiedColumns } from '@/features/documents/document-columns'
+import { allColumns, typeColumns } from '@/features/documents/document-columns'
+import { UnclassifiedView } from '@/features/documents/unclassified-view'
 import { DocumentTable } from '@/features/documents/document-table'
 import { DocumentTableEmpty } from '@/features/documents/document-table-empty'
 import { DocumentTableNoResults } from '@/features/documents/document-table-no-results'
@@ -20,7 +21,7 @@ const columnsFor = (view: InboxView, types: DocumentType[]) => {
     case 'all':
       return allColumns(types)
     case 'unclassified':
-      return unclassifiedColumns()
+      return []
     case 'type':
       return typeColumns(view.type)
     default: {
@@ -116,6 +117,8 @@ const InboxPage = () => {
         <DocumentTableSkeleton />
       ) : documents.length === 0 && hasFilters ? (
         <DocumentTableNoResults onClear={clearFilters} />
+      ) : view.kind === 'unclassified' ? (
+        <UnclassifiedView documents={documents} types={types} />
       ) : documents.length === 0 ? (
         <DocumentTableEmpty typeId={view.kind === 'type' ? view.type.id : undefined} />
       ) : (
