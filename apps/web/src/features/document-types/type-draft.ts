@@ -1,4 +1,4 @@
-import type { ColumnDef, CreateDocumentTypeInput, FieldDef } from '@/lib/mock/types'
+import type { ColumnDef, CreateDocumentTypeInput, DocumentType, FieldDef } from '@/lib/mock/types'
 import type { DocumentTemplate } from '@/lib/mock/templates'
 
 /** An unsaved document type. Slice 6 passes it to `useCreateDocumentType()`. */
@@ -34,3 +34,12 @@ export const draftFromTemplate = (template: DocumentTemplate): TypeDraft => {
     listColumnIds: template.listColumnIds.flatMap((id) => idMap.get(id) ?? []),
   }
 }
+
+/** A saved type as an editable draft. Keeps the ids: saving must not break existing documents. */
+export const draftFromType = (type: DocumentType): TypeDraft => ({
+  name: type.name,
+  description: type.description,
+  fields: type.fields,
+  titleFieldId: type.titleFieldId,
+  listColumnIds: type.listColumnIds,
+})

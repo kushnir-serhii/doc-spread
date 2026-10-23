@@ -1,0 +1,141 @@
+import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
+import type { FieldDef, FieldType } from '@/lib/mock/types'
+import { sanitizeKey, slugifyKey, uniqueKey } from './field-key'
+import type { TypeDraft } from './type-draft'
+
+/** `keyTouched`: ids of fields whose key is the user's own; the others follow the label. */
+export interface BuilderState {
+  draft: TypeDraft
+  keyTouched: string[]
+}
+
+export type FieldPatch = Partial<Pick<FieldDef, 'required' | 'hint' | 'options'>>
+
+export type BuilderAction =
+  | { type: 'setName'; name: string }
+  | { type: 'setDescription'; description: string }
+  | { type: 'addField'; id: string }
+  | { type: 'duplicateField'; id: string; newId: string }
+  | { type: 'deleteField'; id: string }
+  | { type: 'moveField'; id: string; direction: 'up' | 'down' }
+  | { type: 'setFieldLabel'; id: string; label: string }
+  | { type: 'setFieldKey'; id: string; key: string }
+  | { type: 'updateField'; id: string; patch: FieldPatch }
+  | { type: 'changeFieldType'; id: string; fieldType: FieldType }
+
+export const createBuilderState = (draft: TypeDraft): BuilderState => ({
+  draft,
+  // Saved and template keys are never rewritten by renaming a label.
+  keyTouched: draft.fields.map((field) => field.id),
+})
+
+const keysExcept = (fields: FieldDef[], id: string) => fields.filter((f) => f.id !== id).map((f) => f.key)
+
+const mapField = (state: BuilderState, id: string, update: (field: FieldDef) => FieldDef): BuilderState => ({
+  ...state,
+  draft: { ...state.draft, fields: state.draft.fields.map((f) => (f.id === id ? update(f) : f)) },
+})
+
+/** Keeps label, hint and required; options and columns exist only on their own type. */
+const retype = (field: FieldDef, fieldType: FieldType): FieldDef => {
+  if (field.type === fieldType) return field
+  const { id, key, label, required, hint, groupable, examples } = field
+  return {
+    id,
+    key,
+    label,
+    required,
+    examples,
+    type: fieldType,
+    ...(hint !== undefined && { hint }),
+    ...(fieldType === 'select' && { options: [] }),
+    ...(fieldType === 'table' && { columns: [] }),
+    ...(groupable && FIELD_TYPE_META[fieldType].groupable && { groupable }),
+  }
+}
+
+const move = (fields: FieldDef[], id: string, direction: 'up' | 'down') => {
+  const from = fields.findIndex((f) => f.id === id)
+  const to = direction === 'up' ? from - 1 : from + 1
+  if (from === -1 || to < 0 || to >= fields.length) return fields
+  const next = [...fields]
+  const [item] = next.splice(from, 1)
+  next.splice(to, 0, item)
+  return next
+}
+
+const duplicate = (state: BuilderState, id: string, newId: string): BuilderState => {
+  const { fields } = state.draft
+  const index = fields.findIndex((f) => f.id === id)
+  if (index === -1) return state
+  const source = fields[index]
+  const copy: FieldDef = {
+    ...source,
+    id: newId,
+    label: `${source.label} (copy)`,
+    key: uniqueKey(source.key === '' ? 'field' : source.key, fields.map((f) => f.key)),
+    examples: [],
+    ...(source.options && { options: [...source.options] }),
+    ...(source.columns && {
+      columns: source.columns.map((c) => ({ ...c, id: `${newId}-${c.id}`, examples: [] })),
+    }),
+  }
+  const next = [...fields]
+  next.splice(index + 1, 0, copy)
+  return { draft: { ...state.draft, fields: next }, keyTouched: [...state.keyTouched, newId] }
+}
+
+export const builderReducer = (state: BuilderState, action: BuilderAction): BuilderState => {
+  const { draft } = state
+  switch (action.type) {
+    case 'setName':
+      return { ...state, draft: { ...draft, name: action.name } }
+    case 'setDescription':
+      return { ...state, draft: { ...draft, description: action.description } }
+    case 'addField': {
+      const field: FieldDef = {
+        id: action.id,
+        key: uniqueKey('new_field', draft.fields.map((f) => f.key)),
+        label: 'New field',
+        type: 'text',
+        required: false,
+        examples: [],
+      }
+      return { ...state, draft: { ...draft, fields: [...draft.fields, field] } }
+    }
+    case 'duplicateField':
+      return duplicate(state, action.id, action.newId)
+    case 'deleteField':
+      return {
+        keyTouched: state.keyTouched.filter((id) => id !== action.id),
+        draft: {
+          ...draft,
+          fields: draft.fields.filter((f) => f.id !== action.id),
+          titleFieldId: draft.titleFieldId === action.id ? null : draft.titleFieldId,
+          listColumnIds: draft.listColumnIds.filter((id) => id !== action.id),
+        },
+      }
+    case 'moveField':
+      return { ...state, draft: { ...draft, fields: move(draft.fields, action.id, action.direction) } }
+    case 'setFieldLabel':
+      return mapField(state, action.id, (field) => ({
+        ...field,
+        label: action.label,
+        ...(!state.keyTouched.includes(field.id) && {
+          key: uniqueKey(slugifyKey(action.label), keysExcept(draft.fields, field.id)),
+        }),
+      }))
+    case 'setFieldKey': {
+      const next = mapField(state, action.id, (field) => ({ ...field, key: sanitizeKey(action.key) }))
+      return state.keyTouched.includes(action.id) ? next : { ...next, keyTouched: [...state.keyTouched, action.id] }
+    }
+    case 'updateField':
+      return mapField(state, action.id, (field) => ({ ...field, ...action.patch }))
+    case 'changeFieldType':
+      return mapField(state, action.id, (field) => retype(field, action.fieldType))
+    default: {
+      const unreachable: never = action
+      return unreachable
+    }
+  }
+}

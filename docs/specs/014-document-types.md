@@ -31,14 +31,14 @@ Per-type document counts (total and `needs_review`) are computed on the client f
   - [x] a gallery of templates with name, description and the first few field labels
   - [x] picking one opens `/types/new?template=<id>` prefilled; nothing is saved until the user clicks Save
 
-### [ ] 3. Field list + field editor
+### [x] 3. Field list + field editor
 - **Build:** the builder page (`/types/new`, `/types/:typeId`) with a header for the type's name and description (the description is what the AI uses to classify documents; helper text says so), then two panes: the field list on the left, the selected field's editor on the right. Editor: label, key (auto slug from the label, editable, unique), type, required, hint for the AI, options (for select).
 - **Accept:**
-  - [ ] the type's name and description are editable inputs with labels
-  - [ ] add, duplicate, delete and reorder fields, with up/down buttons and Alt+↑/↓ (no drag-and-drop library)
-  - [ ] changing the type keeps the label and hint, and warns if options would be lost
-  - [ ] the hint has helper text with a good example ("The date the invoice was issued, not the sale date")
-  - [ ] at 375px the panes stack and the editor opens as a sheet
+  - [x] the type's name and description are editable inputs with labels
+  - [x] add, duplicate, delete and reorder fields, with up/down buttons and Alt+↑/↓ (no drag-and-drop library)
+  - [x] changing the type keeps the label and hint, and warns if options would be lost
+  - [x] the hint has helper text with a good example ("The date the invoice was issued, not the sale date")
+  - [x] at 375px the panes stack and the editor opens as a sheet
 
 ### [ ] 4. Table fields
 - **Accept:**
@@ -62,6 +62,7 @@ Create and update a type with an incremented version; re-extract the added field
 ## Open questions
 - Can a type be deleted when it has documents (archive instead)? Not blocking: no slice deletes a type.
 - Is a field limit per type needed (cost and quality of extraction)? Not blocking: no limit in the MVP.
+- An unknown `/types/:typeId` shows the error-with-retry state: the mock throws a plain `Error`, so not-found is indistinguishable. Backend: a 404 the client can tell apart.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -70,3 +71,4 @@ Create and update a type with an incremented version; re-extract the added field
 | 2026-10-23 | 1 | done | `/types` lists types (fields, documents, to review, updated) as keyboard links; "New type" menu and the empty state share `NEW_TYPE_OPTIONS` (template → `/types/new` until slice 2, sample → `/types/new?from=sample`, blank); skeleton, error with retry. Counts from `useDocuments()` on the client. Fixed in review: the shadcn CLI added a bogus `cn` npm dependency and `import { cn } from "cn"` (reverted, `@/lib/utils`). Headless Chrome: 1280 light, 375 dark, no page scroll · `pages/types/types-page.tsx`, `features/document-types/{new-type-options,new-type-menu,type-row,types-empty-state,types-skeleton,types-error}`, `components/ui/skeleton.tsx`, `app/router.tsx` |
 | 2026-10-23 | — | rescoped | slice 2 also creates the `/types/new` builder page with a read-only draft (the prefilled template needs somewhere to open before slice 3); gallery at `?from=template` |
 | 2026-10-23 | 2 | done | Gallery at `?from=template` (cards: name, clamped description, first 4 field labels + "+N more", "Start blank"; skeleton, error with retry, empty). `/types/new` = builder with an unsaved draft: `draftFromTemplate` copies fields with fresh ids and remaps title/list columns/table columns, `blankDraft`; `TemplateBuilder` mounts `TypeBuilder` keyed by template once loaded (no effect sync); read-only header + `FieldList` (table columns indented); unknown template → not found; `?from=sample` → "coming with 015". `TypesError` takes a `title`. Fixed in review: `TemplateBuilder` moved out of `pages/`. Headless Chrome (CDP): gallery 1280 light/375 dark, builder 375 light/1280 dark, no page scroll · `pages/types/new-type-page.tsx`, `features/document-types/{type-draft,field-list,type-builder,template-builder,template-card,template-gallery,new-type-options,types-error}`, `app/router.tsx` |
+| 2026-10-23 | 3 | done | Builder: `TypeMetaForm` (name, description with the classification helper), `builderReducer` (pure; add/duplicate/delete/move/label/key/type/patch; delete clears title + list columns; "key touched" per field, saved/template keys never follow the label), `FieldList` with up/down buttons + Alt+↑/↓ (focus kept, shortcut shown), `FieldEditor` (label, key with diacritic-folding slug + empty/duplicate errors, type select with an inline "N options will be removed" confirm, required, hint with the example, options editor). ≥lg two panes with a sticky editor, below lg the editor opens in a `Sheet` (`useMediaQuery`). `/types/:typeId` loads `useDocumentType` → `draftFromType` (same ids). Hand-written shadcn-style `Textarea`. Fixed in review: name/description placeholders read like values ("e.g. …"). Headless Chrome (CDP): saved Invoice with Order number selected at 1280, template field in the sheet at 375 dark, blank builder 1280 dark · `features/document-types/{type-draft-reducer,field-key,field-row,field-summary,field-editor,field-editor-panel,field-key-input,field-type-select,field-options-editor,type-meta-form,type-not-found,saved-type-builder-skeleton,type-builder,field-list,template-builder,type-draft}`, `pages/types/{type-page,new-type-page}`, `hooks/use-media-query.ts`, `components/ui/textarea.tsx`, `app/router.tsx` |

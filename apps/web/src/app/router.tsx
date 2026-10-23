@@ -55,7 +55,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/types/:typeId',
-            lazy: placeholder('Document type', 'Fields, list columns and how AI reads them.'),
+            lazy: () => import('@/pages/types/type-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/documents/:documentId',

@@ -1,18 +1,39 @@
-import { useState } from 'react'
+import { useReducer, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router'
-import { PageHeader } from '@/components/layout/page-header'
-import type { DocumentTemplate } from '@/lib/mock/templates'
+import { FieldEditorPanel } from './field-editor-panel'
 import { FieldList } from './field-list'
-import { blankDraft, draftFromTemplate, type TypeDraft } from './type-draft'
+import type { TypeDraft } from './type-draft'
+import { builderReducer, createBuilderState } from './type-draft-reducer'
+import { TypeMetaForm } from './type-meta-form'
 
 interface TypeBuilderProps {
-  /** Mount with a `key` per template: the draft is created once from it. */
-  template?: DocumentTemplate
+  /** Read once on mount: mount with a `key` per source (template, saved type). */
+  initialDraft: TypeDraft
 }
 
-export const TypeBuilder = ({ template }: TypeBuilderProps) => {
-  const [draft] = useState<TypeDraft>(() => (template ? draftFromTemplate(template) : blankDraft()))
+export const TypeBuilder = ({ initialDraft }: TypeBuilderProps) => {
+  const [{ draft }, dispatch] = useReducer(builderReducer, initialDraft, createBuilderState)
+  // The selected field is local state: it needn't survive a reload, and a new draft has no ids to link to.
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = draft.fields.find((field) => field.id === selectedId) ?? null
+
+  const addField = () => {
+    const id = crypto.randomUUID()
+    dispatch({ type: 'addField', id })
+    setSelectedId(id)
+  }
+
+  const duplicateField = (id: string) => {
+    const newId = crypto.randomUUID()
+    dispatch({ type: 'duplicateField', id, newId })
+    setSelectedId(newId)
+  }
+
+  const deleteField = (id: string) => {
+    dispatch({ type: 'deleteField', id })
+    setSelectedId(null)
+  }
 
   return (
     <>
@@ -23,9 +44,34 @@ export const TypeBuilder = ({ template }: TypeBuilderProps) => {
         <ArrowLeft className="size-4" aria-hidden />
         Back to types
       </Link>
-      <PageHeader title={draft.name || 'Untitled type'} description={draft.description || 'No description yet.'} />
+      <TypeMetaForm
+        name={draft.name}
+        description={draft.description}
+        onNameChange={(name) => dispatch({ type: 'setName', name })}
+        onDescriptionChange={(description) => dispatch({ type: 'setDescription', description })}
+      />
       <h2 className="mb-2 text-sm font-medium">Fields ({draft.fields.length})</h2>
-      <FieldList fields={draft.fields} />
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="min-w-0 lg:col-span-2">
+          <FieldList
+            fields={draft.fields}
+            selectedId={selected?.id ?? null}
+            onSelect={setSelectedId}
+            onMove={(id, direction) => dispatch({ type: 'moveField', id, direction })}
+            onAdd={addField}
+          />
+        </div>
+        <div className="min-w-0 lg:col-span-3">
+          <FieldEditorPanel
+            field={selected}
+            fields={draft.fields}
+            dispatch={dispatch}
+            onDuplicate={duplicateField}
+            onDelete={deleteField}
+            onClose={() => setSelectedId(null)}
+          />
+        </div>
+      </div>
     </>
   )
 }

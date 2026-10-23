@@ -1,7 +1,8 @@
-import { Link } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTemplates } from '@/lib/api'
+import { draftFromTemplate } from './type-draft'
 import { TypeBuilder } from './type-builder'
+import { TypeNotFound } from './type-not-found'
 import { TypesError } from './types-error'
 
 interface TemplateBuilderProps {
@@ -17,14 +18,7 @@ export const TemplateBuilder = ({ templateId }: TemplateBuilderProps) => {
 
   const template = data.find((t) => t.id === templateId)
   if (!template) {
-    return (
-      <div role="alert" className="flex flex-col items-center gap-2 rounded-lg border p-8 text-center">
-        <p className="font-medium">Template not found</p>
-        <Link to="/types/new?from=template" className="inline-flex min-h-touch items-center text-sm underline md:min-h-9">
-          Back to templates
-        </Link>
-      </div>
-    )
+    return <TypeNotFound title="Template not found" backTo="/types/new?from=template" backLabel="Back to templates" />
   }
-  return <TypeBuilder key={template.id} template={template} />
+  return <TypeBuilder key={template.id} initialDraft={draftFromTemplate(template)} />
 }
