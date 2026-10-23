@@ -1,6 +1,6 @@
 # 008 — Review (core screen)
 
-**Status:** draft · **Depends on:** 002, 006, 013 · **Route(s):** `/documents/:documentId`
+**Status:** ready · **Depends on:** 002, 006, 013 · **Route(s):** `/documents/:documentId`
 
 ## Goal
 The user checks the AI-extracted values against the document, fixes the low-confidence ones by typing or by pointing at the document, and approves fast, mostly from the keyboard. The form is built from the document's type, so it works for any type.
@@ -69,11 +69,12 @@ The user checks the AI-extracted values against the document, fixes the low-conf
 Field-level confidence and source boxes; the type version a document was extracted with; validation for approval from the type (required, format, tax ID checksum); re-extraction after a type change; storing examples from corrections, with the anchor label found on the server.
 
 ## Open questions
-- Exact key bindings, needed before slice 6. Proposed: `J`/`K` next/previous field, `P` point on document, `Ctrl+Enter` approve, `N` next document, `?` help. The alternative is Alt-based (`Alt+↓/↑`, `Alt+P`, `Alt+N`), which also works while typing.
+- Exact key bindings? **Decided:** `J`/`K` next/previous field, `P` point on document, `Ctrl+Enter` approve, `N` next document, `?` help. Letter keys fire only outside text inputs; `Esc` leaves an input.
 - Cross-field rules (Gross = Net + VAT, totals = sum of a column) moved to [016 Field actions](016-field-actions.md); Review shows their results there.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | form built from the type schema; fixing by pointing; invoice totals check moved to 016 (field actions) |
+| 2026-10-23 | — | ready | approved; key bindings decided |
 | 2026-10-23 | — | reviewed | checked against product, conventions and process: type version, LOW_CONFIDENCE = 0.9, the fields folder, the screen for each status, a Confirm action, 375px Approve, Files for every slice |
