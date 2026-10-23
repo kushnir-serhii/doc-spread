@@ -1,6 +1,7 @@
 import { useReducer, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router'
+import { resolveSelection, type Selection } from './editor-target'
 import { FieldEditorPanel } from './field-editor-panel'
 import { FieldList } from './field-list'
 import type { TypeDraft } from './type-draft'
@@ -14,25 +15,43 @@ interface TypeBuilderProps {
 
 export const TypeBuilder = ({ initialDraft }: TypeBuilderProps) => {
   const [{ draft }, dispatch] = useReducer(builderReducer, initialDraft, createBuilderState)
-  // The selected field is local state: it needn't survive a reload, and a new draft has no ids to link to.
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const selected = draft.fields.find((field) => field.id === selectedId) ?? null
+  // The selection is local state: it needn't survive a reload, and a new draft has no ids to link to.
+  const [selection, setSelection] = useState<Selection>(null)
+  const target = resolveSelection(selection, draft.fields)
 
   const addField = () => {
     const id = crypto.randomUUID()
     dispatch({ type: 'addField', id })
-    setSelectedId(id)
+    setSelection({ kind: 'field', fieldId: id })
   }
 
   const duplicateField = (id: string) => {
     const newId = crypto.randomUUID()
     dispatch({ type: 'duplicateField', id, newId })
-    setSelectedId(newId)
+    setSelection({ kind: 'field', fieldId: newId })
   }
 
   const deleteField = (id: string) => {
     dispatch({ type: 'deleteField', id })
-    setSelectedId(null)
+    setSelection(null)
+  }
+
+  const addColumn = (fieldId: string) => {
+    const id = crypto.randomUUID()
+    dispatch({ type: 'column', fieldId, op: { kind: 'add', id } })
+    setSelection({ kind: 'column', fieldId, columnId: id })
+  }
+
+  const duplicateColumn = (fieldId: string, columnId: string) => {
+    const newId = crypto.randomUUID()
+    dispatch({ type: 'column', fieldId, op: { kind: 'duplicate', id: columnId, newId } })
+    setSelection({ kind: 'column', fieldId, columnId: newId })
+  }
+
+  // The table stays selected, so the editor does not go blank.
+  const deleteColumn = (fieldId: string, columnId: string) => {
+    dispatch({ type: 'column', fieldId, op: { kind: 'delete', id: columnId } })
+    setSelection({ kind: 'field', fieldId })
   }
 
   return (
@@ -55,20 +74,27 @@ export const TypeBuilder = ({ initialDraft }: TypeBuilderProps) => {
         <div className="min-w-0 lg:col-span-2">
           <FieldList
             fields={draft.fields}
-            selectedId={selected?.id ?? null}
-            onSelect={setSelectedId}
+            selection={selection}
+            onSelect={setSelection}
             onMove={(id, direction) => dispatch({ type: 'moveField', id, direction })}
+            onMoveColumn={(fieldId, columnId, direction) =>
+              dispatch({ type: 'column', fieldId, op: { kind: 'move', id: columnId, direction } })
+            }
             onAdd={addField}
+            onAddColumn={addColumn}
           />
         </div>
         <div className="min-w-0 lg:col-span-3">
           <FieldEditorPanel
-            field={selected}
+            target={target}
             fields={draft.fields}
             dispatch={dispatch}
-            onDuplicate={duplicateField}
-            onDelete={deleteField}
-            onClose={() => setSelectedId(null)}
+            onDuplicateField={duplicateField}
+            onDeleteField={deleteField}
+            onAddColumn={addColumn}
+            onDuplicateColumn={duplicateColumn}
+            onDeleteColumn={deleteColumn}
+            onClose={() => setSelection(null)}
           />
         </div>
       </div>

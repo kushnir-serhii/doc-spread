@@ -1,15 +1,8 @@
 import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
 import type { FieldDef, FieldType } from '@/lib/mock/types'
 import { sanitizeKey, slugifyKey, uniqueKey } from './field-key'
-import type { TypeDraft } from './type-draft'
-
-/** `keyTouched`: ids of fields whose key is the user's own; the others follow the label. */
-export interface BuilderState {
-  draft: TypeDraft
-  keyTouched: string[]
-}
-
-export type FieldPatch = Partial<Pick<FieldDef, 'required' | 'hint' | 'options'>>
+import { moveItem, type BuilderState, type FieldPatch, type TypeDraft } from './type-draft'
+import { columnsReducer, type ColumnOp } from './type-draft-columns'
 
 export type BuilderAction =
   | { type: 'setName'; name: string }
@@ -22,11 +15,12 @@ export type BuilderAction =
   | { type: 'setFieldKey'; id: string; key: string }
   | { type: 'updateField'; id: string; patch: FieldPatch }
   | { type: 'changeFieldType'; id: string; fieldType: FieldType }
+  | { type: 'column'; fieldId: string; op: ColumnOp }
 
 export const createBuilderState = (draft: TypeDraft): BuilderState => ({
   draft,
   // Saved and template keys are never rewritten by renaming a label.
-  keyTouched: draft.fields.map((field) => field.id),
+  keyTouched: draft.fields.flatMap((field) => [field.id, ...(field.columns ?? []).map((c) => c.id)]),
 })
 
 const keysExcept = (fields: FieldDef[], id: string) => fields.filter((f) => f.id !== id).map((f) => f.key)
@@ -54,16 +48,6 @@ const retype = (field: FieldDef, fieldType: FieldType): FieldDef => {
   }
 }
 
-const move = (fields: FieldDef[], id: string, direction: 'up' | 'down') => {
-  const from = fields.findIndex((f) => f.id === id)
-  const to = direction === 'up' ? from - 1 : from + 1
-  if (from === -1 || to < 0 || to >= fields.length) return fields
-  const next = [...fields]
-  const [item] = next.splice(from, 1)
-  next.splice(to, 0, item)
-  return next
-}
-
 const duplicate = (state: BuilderState, id: string, newId: string): BuilderState => {
   const { fields } = state.draft
   const index = fields.findIndex((f) => f.id === id)
@@ -80,9 +64,11 @@ const duplicate = (state: BuilderState, id: string, newId: string): BuilderState
       columns: source.columns.map((c) => ({ ...c, id: `${newId}-${c.id}`, examples: [] })),
     }),
   }
-  const next = [...fields]
-  next.splice(index + 1, 0, copy)
-  return { draft: { ...state.draft, fields: next }, keyTouched: [...state.keyTouched, newId] }
+  const copiedIds = (copy.columns ?? []).map((c) => c.id)
+  return {
+    draft: { ...state.draft, fields: fields.toSpliced(index + 1, 0, copy) },
+    keyTouched: [...state.keyTouched, newId, ...copiedIds],
+  }
 }
 
 export const builderReducer = (state: BuilderState, action: BuilderAction): BuilderState => {
@@ -105,9 +91,12 @@ export const builderReducer = (state: BuilderState, action: BuilderAction): Buil
     }
     case 'duplicateField':
       return duplicate(state, action.id, action.newId)
-    case 'deleteField':
+    case 'deleteField': {
+      const deleted = draft.fields.find((f) => f.id === action.id)
       return {
-        keyTouched: state.keyTouched.filter((id) => id !== action.id),
+        keyTouched: state.keyTouched.filter(
+          (id) => id !== action.id && !deleted?.columns?.some((c) => c.id === id),
+        ),
         draft: {
           ...draft,
           fields: draft.fields.filter((f) => f.id !== action.id),
@@ -115,8 +104,9 @@ export const builderReducer = (state: BuilderState, action: BuilderAction): Buil
           listColumnIds: draft.listColumnIds.filter((id) => id !== action.id),
         },
       }
+    }
     case 'moveField':
-      return { ...state, draft: { ...draft, fields: move(draft.fields, action.id, action.direction) } }
+      return { ...state, draft: { ...draft, fields: moveItem(draft.fields, action.id, action.direction) } }
     case 'setFieldLabel':
       return mapField(state, action.id, (field) => ({
         ...field,
@@ -133,6 +123,8 @@ export const builderReducer = (state: BuilderState, action: BuilderAction): Buil
       return mapField(state, action.id, (field) => ({ ...field, ...action.patch }))
     case 'changeFieldType':
       return mapField(state, action.id, (field) => retype(field, action.fieldType))
+    case 'column':
+      return columnsReducer(state, action.fieldId, action.op)
     default: {
       const unreachable: never = action
       return unreachable

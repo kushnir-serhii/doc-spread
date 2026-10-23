@@ -1,33 +1,38 @@
-import { useRef, type KeyboardEvent } from 'react'
+import { useRef } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { FieldDef } from '@/lib/mock/types'
+import { ColumnList } from './column-list'
+import type { Selection } from './editor-target'
 import { FieldRow } from './field-row'
-import { FieldSummary } from './field-summary'
 
 interface FieldListProps {
   fields: FieldDef[]
-  selectedId: string | null
-  onSelect: (id: string) => void
+  selection: Selection
+  onSelect: (selection: NonNullable<Selection>) => void
   onMove: (id: string, direction: 'up' | 'down') => void
+  onMoveColumn: (fieldId: string, columnId: string, direction: 'up' | 'down') => void
   onAdd: () => void
+  onAddColumn: (fieldId: string) => void
 }
 
-export const FieldList = ({ fields, selectedId, onSelect, onMove, onAdd }: FieldListProps) => {
+export const FieldList = ({
+  fields,
+  selection,
+  onSelect,
+  onMove,
+  onMoveColumn,
+  onAdd,
+  onAddColumn,
+}: FieldListProps) => {
   const listRef = useRef<HTMLUListElement>(null)
 
   // A moved row can lose focus (a button disables at the end of the list); put it back on the row.
-  const move = (id: string, direction: 'up' | 'down') => {
-    onMove(id, direction)
+  const moveAndRefocus = (id: string, move: () => void) => {
+    move()
     requestAnimationFrame(() => {
       listRef.current?.querySelector<HTMLElement>(`[data-field-select="${id}"]`)?.focus()
     })
-  }
-
-  const handleKeyDown = (event: KeyboardEvent, id: string) => {
-    if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return
-    event.preventDefault()
-    move(id, event.key === 'ArrowUp' ? 'up' : 'down')
   }
 
   if (fields.length === 0) {
@@ -57,23 +62,27 @@ export const FieldList = ({ fields, selectedId, onSelect, onMove, onAdd }: Field
       </p>
       <ul ref={listRef} className="divide-y rounded-lg border bg-card">
         {fields.map((field, index) => (
-          <li key={field.id} onKeyDown={(event) => handleKeyDown(event, field.id)}>
+          <li key={field.id}>
             <FieldRow
               field={field}
-              selected={field.id === selectedId}
+              selected={selection?.kind === 'field' && selection.fieldId === field.id}
               isFirst={index === 0}
               isLast={index === fields.length - 1}
-              onSelect={() => onSelect(field.id)}
-              onMove={(direction) => move(field.id, direction)}
+              onSelect={() => onSelect({ kind: 'field', fieldId: field.id })}
+              onMove={(direction) => moveAndRefocus(field.id, () => onMove(field.id, direction))}
             />
-            {field.columns && field.columns.length > 0 && (
-              <ul className="ml-6 divide-y border-l border-t bg-muted/30" aria-label={`${field.label} columns`}>
-                {field.columns.map((column) => (
-                  <li key={column.id} className="flex min-h-touch items-center gap-3 px-4 py-2 md:min-h-12">
-                    <FieldSummary field={column} />
-                  </li>
-                ))}
-              </ul>
+            {field.type === 'table' && (
+              <ColumnList
+                table={field}
+                selectedColumnId={
+                  selection?.kind === 'column' && selection.fieldId === field.id ? selection.columnId : null
+                }
+                onSelect={(columnId) => onSelect({ kind: 'column', fieldId: field.id, columnId })}
+                onMove={(columnId, direction) =>
+                  moveAndRefocus(columnId, () => onMoveColumn(field.id, columnId, direction))
+                }
+                onAdd={() => onAddColumn(field.id)}
+              />
             )}
           </li>
         ))}

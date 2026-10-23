@@ -2,16 +2,18 @@ import { useId, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
-import { FIELD_TYPES, type FieldDef, type FieldType } from '@/lib/mock/types'
+import type { FieldDef, FieldType } from '@/lib/mock/types'
 import { getTypeChangeLoss } from './field-key'
 
 interface FieldTypeSelectProps {
-  field: FieldDef
+  field: Pick<FieldDef, 'type' | 'options' | 'columns'>
+  /** The types on offer; a table column can't be a table. */
+  types: readonly FieldType[]
   onChange: (type: FieldType) => void
 }
 
 /** Changing the type keeps label and hint. If data would be lost, it asks first. */
-export const FieldTypeSelect = ({ field, onChange }: FieldTypeSelectProps) => {
+export const FieldTypeSelect = ({ field, types, onChange }: FieldTypeSelectProps) => {
   const id = useId()
   const [pending, setPending] = useState<FieldType | null>(null)
   const loss = pending === null ? null : getTypeChangeLoss(field, pending)
@@ -32,12 +34,12 @@ export const FieldTypeSelect = ({ field, onChange }: FieldTypeSelectProps) => {
         id={id}
         value={pending ?? field.type}
         onChange={(event) => {
-          const next = FIELD_TYPES.find((type) => type === event.target.value)
+          const next = types.find((type) => type === event.target.value)
           if (next) handleChange(next)
         }}
         className="min-h-touch w-full rounded-md border border-input bg-background px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:min-h-9 md:text-sm"
       >
-        {FIELD_TYPES.map((type) => (
+        {types.map((type) => (
           <option key={type} value={type}>
             {FIELD_TYPE_META[type].label}
           </option>

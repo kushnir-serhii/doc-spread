@@ -1,4 +1,4 @@
-import type { FieldDef } from '@/lib/mock/types'
+import type { FieldDef, FieldType, ScalarFieldType } from '@/lib/mock/types'
 
 /** Letters that fold to ASCII but don't decompose with NFD. */
 const EXTRA_FOLDS: Record<string, string> = { ł: 'l', đ: 'd', ø: 'o', ß: 'ss', æ: 'ae', œ: 'oe' }
@@ -27,10 +27,15 @@ export const uniqueKey = (base: string, taken: readonly string[]) => {
   return `${base}_${n}`
 }
 
-export const getKeyError = (field: Pick<FieldDef, 'id' | 'key'>, fields: readonly Pick<FieldDef, 'id' | 'key'>[]) => {
+export const isScalarFieldType = (type: FieldType): type is ScalarFieldType => type !== 'table'
+
+type Keyed = Pick<FieldDef, 'id' | 'key'>
+
+/** `siblings` are the fields of the type, or the columns of one table. */
+export const getKeyError = (field: Keyed, siblings: readonly Keyed[], scope: 'field' | 'column' = 'field') => {
   if (field.key === '') return 'Key is required.'
-  if (fields.some((other) => other.id !== field.id && other.key === field.key)) {
-    return 'Another field already uses this key.'
+  if (siblings.some((other) => other.id !== field.id && other.key === field.key)) {
+    return scope === 'field' ? 'Another field already uses this key.' : 'Another column of this table already uses this key.'
   }
   return null
 }
@@ -38,7 +43,7 @@ export const getKeyError = (field: Pick<FieldDef, 'id' | 'key'>, fields: readonl
 const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`
 
 /** What would be lost by switching to `next`, or null when nothing is. */
-export const getTypeChangeLoss = (field: FieldDef, next: FieldDef['type']) => {
+export const getTypeChangeLoss = (field: Pick<FieldDef, 'type' | 'options' | 'columns'>, next: FieldType) => {
   if (next === field.type) return null
   const options = field.options?.length ?? 0
   if (field.type === 'select' && options > 0) return `${plural(options, 'option')} will be removed.`

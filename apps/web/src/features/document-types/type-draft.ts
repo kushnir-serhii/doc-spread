@@ -43,3 +43,22 @@ export const draftFromType = (type: DocumentType): TypeDraft => ({
   titleFieldId: type.titleFieldId,
   listColumnIds: type.listColumnIds,
 })
+
+/** `keyTouched`: ids of fields and columns whose key is the user's own; the others follow the label. */
+export interface BuilderState {
+  draft: TypeDraft
+  keyTouched: string[]
+}
+
+export type FieldPatch = Partial<Pick<FieldDef, 'required' | 'hint' | 'options'>>
+
+/** Swaps an item with its neighbour; returns the same array at either end. */
+export const moveItem = <T extends { id: string }>(items: T[], id: string, direction: 'up' | 'down') => {
+  const from = items.findIndex((item) => item.id === id)
+  const to = direction === 'up' ? from - 1 : from + 1
+  if (from === -1 || to < 0 || to >= items.length) return items
+  const next = [...items]
+  const [item] = next.splice(from, 1)
+  next.splice(to, 0, item)
+  return next
+}
