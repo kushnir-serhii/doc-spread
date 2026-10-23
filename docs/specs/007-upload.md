@@ -1,6 +1,6 @@
 # 007 — Upload
 
-**Status:** ready · **Depends on:** 002, 012 · **Route(s):** `/upload`
+**Status:** in-progress · **Depends on:** 002, 012 · **Route(s):** `/upload`
 
 ## Goal
 The user drops several documents of any kind (PDF/JPG/PNG), sees each file's progress, and learns what type the AI assigned to each one, or that it couldn't tell.
@@ -16,12 +16,12 @@ Accepted: `.pdf`, `.jpg`/`.jpeg`, `.png`; max 20 MB per file (`MAX_UPLOAD_BYTES`
 
 ## Slices
 
-### [ ] 1. Drop zone + validation
+### [x] 1. Drop zone + validation
 - **Files:** `src/pages/upload/`, `src/features/upload/drop-zone.tsx`
 - **Accept:**
-  - [ ] drag-and-drop plus a keyboard-accessible "Choose files" button (a real `<input type="file" multiple accept>`)
-  - [ ] a wrong file type or a too-large file is rejected per file with a reason; valid files still go through
-  - [ ] an optional "Type" select, defaulting to "Detect automatically"; `?type=` preselects it
+  - [x] drag-and-drop plus a keyboard-accessible "Choose files" button (a real `<input type="file" multiple accept>`)
+  - [x] a wrong file type or a too-large file is rejected per file with a reason; valid files still go through
+  - [x] an optional "Type" select, defaulting to "Detect automatically"; `?type=` preselects it
 
 ### [ ] 2. Per-file progress
 - **Build:** the mock gains `uploadDocument(file, { typeId?, onProgress? })`: simulated upload progress, and a chosen type skips classification and goes straight to extraction; `useUploadDocument()` passes both through. A file list whose state is a discriminated union per file: `queued | uploading(progress) | processing | classified(typeName) | unclassified | failed(reason)`.
@@ -48,3 +48,4 @@ Presigned upload URL, max file size, accepted MIME types; classification against
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | any document type; auto-classification with an optional manual type |
 | 2026-10-23 | — | ready | checked against the code: accepted types and a 20 MB mock limit, `uploadDocument` gains `typeId` + `onProgress` in slice 2 (it had neither), per-file status via `useDocument(id)` |
+| 2026-10-23 | 1 | done | Drop zone (whole-zone drop, drag-over state) + "Choose files" button on a real `<input type="file" multiple accept>`; `validateFile` rejects per file ("Only PDF, JPG or PNG", "Larger than 20 MB", also empty files) and valid files list as ready (removable, `queued` entries for slice 2); result announced in `role="status"`. Native `<select>` for Type ("Detect automatically" first, `?type=` synced, unknown id falls back), types error with retry. Nothing uploads yet. Fixed in review: heading ids from `useId`. Headless Chrome: 1280 dark, 375 light/dark · `pages/upload/upload-page.tsx`, `features/upload/{upload-rules,upload-entries,format-file-size,drop-zone,type-select,file-list,file-row}`, `app/router.tsx` |

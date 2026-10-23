@@ -12,7 +12,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 004 | [Auth](specs/004-auth.md) | draft | 001 |
 | 005 | [Onboarding](specs/005-onboarding.md) | draft | 002, 014 |
 | 006 | [Inbox](specs/006-inbox.md) | draft | 002, 012 |
-| 007 | [Upload](specs/007-upload.md) | ready | 002, 012 |
+| 007 | [Upload](specs/007-upload.md) | in-progress | 002, 012 |
 | 008 | [Review](specs/008-review.md) | draft | 002, 006, 013 |
 | 009 | [Export](specs/009-export.md) | draft | 002, 006 |
 | 010 | [Groups](specs/010-groups.md) | draft | 002, 014 |
