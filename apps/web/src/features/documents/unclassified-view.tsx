@@ -2,7 +2,7 @@ import { useReassignDocumentType } from '@/lib/api'
 import type { Document, DocumentType } from '@/lib/mock/types'
 import { AssignTypeCell } from './assign-type-cell'
 import { unclassifiedColumns } from './document-columns'
-import { DocumentTable } from './document-table'
+import { DocumentList } from './document-list'
 import { UnclassifiedEmpty } from './unclassified-empty'
 
 interface UnclassifiedViewProps {
@@ -42,7 +42,7 @@ export const UnclassifiedView = ({ documents, types }: UnclassifiedViewProps) =>
           Couldn't assign the type: {reassign.error.message}
         </p>
       )}
-      {documents.length === 0 ? <UnclassifiedEmpty /> : <DocumentTable documents={documents} columns={columns} />}
+      {documents.length === 0 ? <UnclassifiedEmpty /> : <DocumentList documents={documents} types={types} columns={columns} />}
     </>
   )
 }

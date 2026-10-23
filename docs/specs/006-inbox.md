@@ -1,6 +1,6 @@
 # 006 — Inbox (dashboard)
 
-**Status:** in-progress · **Depends on:** 002, 012 · **Route(s):** `/inbox`
+**Status:** done · **Depends on:** 002, 012 · **Route(s):** `/inbox`
 
 ## Goal
 The user sees every document, of any type, with its status and AI confidence, finds one quickly, deals with documents the AI couldn't classify, and approves or exports in bulk.
@@ -37,12 +37,12 @@ The user sees every document, of any type, with its status and AI confidence, fi
   - [x] each row offers "Assign type" (a select of the user's types; `Document.classification` has no guessed type yet, so the AI's best guess first waits for the backend, see **Backend needs**) and "Create type from this" (to 015 with `?documentId=`)
   - [x] assigning moves the document to processing with a status message; the count updates
 
-### [ ] 5. Selection + bulk actions + mobile
+### [x] 5. Selection + bulk actions + mobile
 - **Accept:**
-  - [ ] checkbox per row plus select-all (with an indeterminate state); every checkbox is labelled
-  - [ ] Approve only applies to `needs_review` rows and says how many are skipped; after success the selection clears and a status message is announced
-  - [ ] Export is available only when one type is chosen and goes to `/export?type=&ids=…`
-  - [ ] at 375px rows render as cards (title, type, status, the first two columns) and the bulk bar is sticky at the bottom with 44px targets
+  - [x] checkbox per row plus select-all (with an indeterminate state); every checkbox is labelled
+  - [x] Approve only applies to `needs_review` rows and says how many are skipped; after success the selection clears and a status message is announced
+  - [x] Export is available only when one type is chosen and goes to `/export?type=&ids=…`
+  - [x] at 375px rows render as cards (title, type, status, the first two columns) and the bulk bar is sticky at the bottom with 44px targets
 
 ## Backend needs
 List endpoint filtered by type and status, full-text search over values, sort, cursor pagination; counts per type and status; bulk approve with a per-id result; reassigning a type triggers extraction; the classifier's best-guess type for an unclassified document.
@@ -50,6 +50,7 @@ List endpoint filtered by type and status, full-text search over values, sort, c
 ## Open questions
 - Default sort: upload date, or a date field of the type? For now newest upload first (what the mock returns).
 - Which statuses count as "needs attention" for a badge in the sidebar (needs review + unclassified + error?)
+- No safe-area padding token for the sticky bulk bar (iOS home indicator); add one to `index.css` if needed.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -60,3 +61,4 @@ List endpoint filtered by type and status, full-text search over values, sort, c
 | 2026-10-23 | 2 | done | `TypeSwitcher` (link tabs with `aria-current`, needs-review / to-classify badges with labels, scrolls at 375px), `?type=` keeps other params, unknown id → All. List from server params (`buildListParams`: `{typeId}` / `{status: unclassified}`; slice 3 extends it), counts from one unfiltered `useDocuments()`. `DocumentTable` takes column definitions (`allColumns`, `typeColumns`, `unclassifiedColumns`); type columns via `formatFieldValue` (table → "N rows"), money/number right-aligned with `tabular-nums`, cells narrower past 4 columns; per-type empty state links to `/upload?type=`. Decided: no confidence column in type views (keeps 6 columns + status inside 1280px). Fixed in review: view and count helpers moved from `pages/` to `features/documents/`. Headless Chrome (CDP): invoice 1280 light / 375 dark (table scrolls, page does not), unclassified 1280 dark, unknown type 375 · `pages/inbox/inbox-page.tsx`, `features/documents/{document-table,document-table-empty,document-column,document-columns,document-title,document-title-link,truncated-text,type-switcher,type-switcher-skeleton,inbox-view,use-type-counts}` |
 | 2026-10-23 | 3 | done | `InboxFilters`: search (local text, 250 ms debounce into `?q=`, follows outside URL changes, clear button) + native status select ("All statuses", hidden in Unclassified), both `replace`d into the URL keeping `type`; invalid `?status=` ignored; `buildListParams(view, filters)`; "N documents" in `role="status"` with a spinner while updating; "No documents match" + Clear filters (keeps `type`) vs the empty states. `useDocuments(params, { keepPreviousIf })` keeps rows while filters change, not across types (different columns). `STATUS_LABELS` moved to `components/domain/status-labels.ts`. Fixed in review: the URL→input sync was an effect that trimmed a trailing space mid-typing (now adjusted during render, compares trimmed); previous rows no longer shown under another type's columns. Headless Chrome (CDP): typed "orlen sa" → `?q=orlen+sa`; "fv " keeps the space, `?q=fv`; reload with `status`+`q`; no results 375 dark; bogus status ignored · `features/documents/{inbox-filters,inbox-search,document-table-no-results,inbox-view}`, `components/domain/{status-labels,status-badge}`, `lib/api/documents.ts`, `pages/inbox/inbox-page.tsx` |
 | 2026-10-23 | 4 | done | `UnclassifiedView` + `AssignTypeCell` (above the stretched link): native "Assign type…" select fires `useReassignDocumentType` at once (row pending via `variables.id`, "Assigning…"), "Create type from this" → `/types/new?from=sample&documentId=` (same URL as Upload); one sr-only status "<file> assigned to <Type>, processing", `role="alert"` on error; empty bucket "Nothing to classify". Mock `reassignDocumentType` now returns `processing` with the new type and extracts on a timer (was instant). Headless Chrome (CDP): assign scan_007 → Invoice: "Assigning…", row leaves, tab count 2 → 1, message announced · `lib/mock/api.ts`, `features/documents/{unclassified-view,assign-type-cell,unclassified-empty,document-columns}`, `pages/inbox/inbox-page.tsx` |
+| 2026-10-23 | 5 | done | `useSelection` (raw ids, intersected with the visible list in render), `SelectCheckbox` (native, 44px label, indeterminate via ref callback, "Select <title>" / "Select all N documents"), `BulkBar`: "N selected", "Approve N" (needs_review only, "M will be skipped"), Export link `/export?type=&ids=` only in a type view (else "Choose one type to export"), Clear; success clears the selection and announces "N documents approved, M skipped", error `role="alert"`. `DocumentList` switches table / cards with `md:` classes; cards show title, type, status and the first two columns; unclassified cards keep the assign select; bar `sticky bottom-0` below md. `InboxResults` keyed by view. Unclassified view has no checkboxes (per-row actions). Headless Chrome (CDP): invoice view 1 → indeterminate, select all → "Approve 4", 6 skipped, approve → announced; 375 dark cards + sticky bar, no page scroll; unclassified cards 375 dark. Spec done · `features/documents/{use-selection,select-checkbox,document-card,document-list,bulk-bar,inbox-results,document-table,unclassified-view}`, `pages/inbox/inbox-page.tsx` |

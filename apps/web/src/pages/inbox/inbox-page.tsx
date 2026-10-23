@@ -4,7 +4,7 @@ import { useDocuments, useDocumentTypes } from '@/lib/api'
 import { PageHeader } from '@/components/layout/page-header'
 import { allColumns, typeColumns } from '@/features/documents/document-columns'
 import { UnclassifiedView } from '@/features/documents/unclassified-view'
-import { DocumentTable } from '@/features/documents/document-table'
+import { InboxResults } from '@/features/documents/inbox-results'
 import { DocumentTableEmpty } from '@/features/documents/document-table-empty'
 import { DocumentTableNoResults } from '@/features/documents/document-table-no-results'
 import { DocumentTableError } from '@/features/documents/document-table-error'
@@ -122,7 +122,13 @@ const InboxPage = () => {
       ) : documents.length === 0 ? (
         <DocumentTableEmpty typeId={view.kind === 'type' ? view.type.id : undefined} />
       ) : (
-        <DocumentTable documents={documents} columns={columnsFor(view, types)} />
+        <InboxResults
+          key={active}
+          documents={documents}
+          types={types}
+          columns={columnsFor(view, types)}
+          exportTypeId={view.kind === 'type' ? view.type.id : undefined}
+        />
       )}
     </>
   )
