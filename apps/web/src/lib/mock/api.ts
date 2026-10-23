@@ -381,7 +381,7 @@ const nextDocumentNumber = () =>
 const randomBetween = (min: number, max: number) => min + Math.random() * (max - min)
 
 /** uploaded -> processing -> needs_review | unclassified, mutating the document in db. */
-async function runPipeline(id: string): Promise<void> {
+async function runPipeline(id: string, typeId?: string): Promise<void> {
   await later(randomBetween(1000, 2000))
   const processing = db.documents.find((d) => d.id === id)
   if (!processing) return
@@ -389,6 +389,11 @@ async function runPipeline(id: string): Promise<void> {
   await later(randomBetween(2000, 3000))
   const doc = db.documents.find((d) => d.id === id)
   if (!doc) return
+  if (typeId) {
+    // a chosen type skips classification
+    applyExtraction(doc, findCurrentType(typeId), 1)
+    return
+  }
   const name = doc.file.name.toLowerCase()
   const match = CLASSIFIER_KEYWORDS.find((c) => c.keywords.some((k) => name.includes(k)))
   const type = match && currentVersions().find((t) => t.name === match.typeName)
@@ -400,11 +405,37 @@ async function runPipeline(id: string): Promise<void> {
   }
 }
 
-/** Returns the new document at once (status uploaded); its status then advances on timers. */
-export async function uploadDocument(file: File): Promise<Document> {
+export interface UploadOptions {
+  /** classification is skipped and this type is extracted straight away */
+  typeId?: string
+  /** called with 0..1 while the file "transfers" */
+  onProgress?: (fraction: number) => void
+}
+
+/**
+ * Simulates the transfer in 5-8 ticks over about 0.8-1.5 s (longer for bigger files), reporting progress.
+ * A file whose name contains "fail" (case-insensitive) rejects mid-transfer so the failed state is
+ * reachable; there are no random failures.
+ */
+async function simulateTransfer(file: File, onProgress?: (fraction: number) => void): Promise<void> {
+  const ticks = 5 + Math.floor(Math.random() * 4)
+  const totalMs = 800 + Math.min(file.size / 20_000_000, 1) * 400 + Math.random() * 300
+  const failAt = file.name.toLowerCase().includes('fail') ? Math.ceil(ticks / 2) : -1
+  for (let tick = 1; tick <= ticks; tick++) {
+    await later(totalMs / ticks)
+    if (tick === failAt) throw new Error('Upload failed: network error')
+    onProgress?.(tick / ticks)
+  }
+}
+
+/** Resolves once the file is "transferred" with the new document (status uploaded); its status then advances on timers. */
+export async function uploadDocument(file: File, options: UploadOptions = {}): Promise<Document> {
+  const { typeId, onProgress } = options
+  if (typeId) findCurrentType(typeId)
   const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
   const fileType = FILE_TYPE_BY_EXTENSION[extension]
   if (!fileType) throw new Error(`Unsupported file type: ${file.name}`)
+  await simulateTransfer(file, onProgress)
   const id = `doc-${String(nextDocumentNumber()).padStart(3, '0')}`
   const doc: Document = {
     id,
@@ -419,8 +450,7 @@ export async function uploadDocument(file: File): Promise<Document> {
   }
   db.documents.push(doc)
   db.pages[id] = { kind: 'synthetic', pages: [{ index: 0, width: 595, height: 842, tokens: [] }] }
-  void runPipeline(id)
-  await delay()
+  void runPipeline(id, typeId)
   return copy(doc)
 }
 

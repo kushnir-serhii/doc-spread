@@ -61,13 +61,13 @@ export const FIELD_TYPE_META: Record<FieldType, FieldTypeMeta> = {
   email: {
     label: 'Email',
     icon: Mail,
-    groupable: true,
+    groupable: false,
     empty: () => ({ type: 'email', value: null, confidence: 0 }),
   },
   phone: {
     label: 'Phone',
     icon: Phone,
-    groupable: true,
+    groupable: false,
     empty: () => ({ type: 'phone', value: null, confidence: 0 }),
   },
   tax_id: {

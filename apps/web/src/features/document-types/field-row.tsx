@@ -1,0 +1,78 @@
+import type { KeyboardEvent } from 'react'
+import { ArrowDown, ArrowUp, CircleAlert } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import type { FieldDef } from '@/lib/mock/types'
+import { cn } from '@/lib/utils'
+import { FieldSummary } from './field-summary'
+
+interface FieldRowProps {
+  /** A field or a table column. */
+  field: Pick<FieldDef, 'id' | 'key' | 'label' | 'type' | 'required'>
+  /** Short markers such as "Title" or "Column 2". */
+  badges?: string[]
+  selected: boolean
+  /** The item has problems to fix (shown after a failed Save). */
+  invalid?: boolean
+  isFirst: boolean
+  isLast: boolean
+  onSelect: () => void
+  onMove: (direction: 'up' | 'down') => void
+}
+
+/** A selectable field or column with move buttons and Alt+↑/↓. */
+export const FieldRow = ({ field, badges = [], selected, invalid = false, isFirst, isLast, onSelect, onMove }: FieldRowProps) => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return
+    event.preventDefault()
+    onMove(event.key === 'ArrowUp' ? 'up' : 'down')
+  }
+
+  return (
+    <div onKeyDown={handleKeyDown} className={cn('flex items-center', selected && 'bg-accent')}>
+      <button
+        type="button"
+        data-field-select={field.id}
+        aria-current={selected || undefined}
+        onClick={onSelect}
+        className="flex min-h-touch min-w-0 flex-1 items-center gap-3 rounded-md px-4 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-12"
+      >
+        <FieldSummary field={field} />
+        {invalid && (
+          <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-destructive">
+            <CircleAlert className="size-4" aria-hidden />
+            <span className="sr-only">{field.label}</span> has errors
+          </span>
+        )}
+        {badges.length > 0 && (
+          <span className="flex shrink-0 flex-wrap justify-end gap-1">
+            {badges.map((badge) => (
+              <span key={badge} className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                {badge}
+              </span>
+            ))}
+          </span>
+        )}
+      </button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-touch md:size-9"
+        aria-label={`Move ${field.label} up`}
+        disabled={isFirst}
+        onClick={() => onMove('up')}
+      >
+        <ArrowUp aria-hidden />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-touch md:size-9"
+        aria-label={`Move ${field.label} down`}
+        disabled={isLast}
+        onClick={() => onMove('down')}
+      >
+        <ArrowDown aria-hidden />
+      </Button>
+    </div>
+  )
+}
