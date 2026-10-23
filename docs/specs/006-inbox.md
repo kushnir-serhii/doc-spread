@@ -1,6 +1,6 @@
 # 006 — Inbox (dashboard)
 
-**Status:** draft · **Depends on:** 002, 012 · **Route(s):** `/inbox`
+**Status:** ready · **Depends on:** 002, 012 · **Route(s):** `/inbox`
 
 ## Goal
 The user sees every document, of any type, with its status and AI confidence, finds one quickly, deals with documents the AI couldn't classify, and approves or exports in bulk.
@@ -23,7 +23,7 @@ The user sees every document, of any type, with its status and AI confidence, fi
 
 ### [ ] 2. Type switcher + dynamic columns
 - **Accept:**
-  - [ ] tabs or a select for All / each type (with the count needing review) / Unclassified; synced to `?type=`
+  - [ ] tabs or a select for All / each type (with the count needing review) / Unclassified; synced to `?type=` (`?type=unclassified` lists `status: 'unclassified'`; counts are computed on the client from `useDocuments()`)
   - [ ] with a type chosen, the columns are its `listColumnIds`, rendered through `formatFieldValue`; money and number columns are right-aligned with `tabular-nums`; table fields show a row count
   - [ ] a type with 6 columns plus status still fits at 1280px; narrower screens scroll the table horizontally, not the page
 
@@ -34,7 +34,7 @@ The user sees every document, of any type, with its status and AI confidence, fi
 
 ### [ ] 4. Unclassified bucket
 - **Accept:**
-  - [ ] each row offers "Assign type" (a select with the AI's best guess first) and "Create type from this" (to 015 with `?documentId=`)
+  - [ ] each row offers "Assign type" (a select of the user's types; `Document.classification` has no guessed type yet, so the AI's best guess first waits for the backend, see **Backend needs**) and "Create type from this" (to 015 with `?documentId=`)
   - [ ] assigning moves the document to processing with a status message; the count updates
 
 ### [ ] 5. Selection + bulk actions + mobile
@@ -45,13 +45,14 @@ The user sees every document, of any type, with its status and AI confidence, fi
   - [ ] at 375px rows render as cards (title, type, status, the first two columns) and the bulk bar is sticky at the bottom with 44px targets
 
 ## Backend needs
-List endpoint filtered by type and status, full-text search over values, sort, cursor pagination; counts per type and status; bulk approve with a per-id result; reassigning a type triggers extraction.
+List endpoint filtered by type and status, full-text search over values, sort, cursor pagination; counts per type and status; bulk approve with a per-id result; reassigning a type triggers extraction; the classifier's best-guess type for an unclassified document.
 
 ## Open questions
-- Default sort: upload date, or a date field of the type?
+- Default sort: upload date, or a date field of the type? For now newest upload first (what the mock returns).
 - Which statuses count as "needs attention" for a badge in the sidebar (needs review + unclassified + error?)
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | invoices → documents of any type; added the type switcher and the unclassified bucket |
+| 2026-10-23 | — | ready | checked against the code: `?type=unclassified` maps to the status, counts computed on the client, best-guess type moved to Backend needs (the model has none), default sort = newest upload |
