@@ -1,6 +1,6 @@
 # 015 — Type from a sample
 
-**Status:** draft · **Depends on:** 013, 014 · **Route(s):** `/types/new?from=sample`, `/types/new?documentId=:id`, `/types/:typeId/train`
+**Status:** ready · **Depends on:** 013, 014 · **Route(s):** `/types/new?from=sample`, `/types/new?documentId=:id`, `/types/:typeId/train`
 
 ## Goal
 The user builds a type by showing a real document instead of typing a schema: the AI proposes fields with boxes on the document, the user keeps, renames or removes them, points at anything that's missing or wrong, and test-runs the type on a second sample before saving.
@@ -69,10 +69,11 @@ OCR tokens right after upload; an LLM call that proposes fields (label, key, typ
 
 ## Open questions
 - Samples are uploaded as ordinary documents. Do they show up in the Inbox (as unclassified until the type is saved, then classified into it), or stay hidden as builder-only samples?
-- How many examples per field are stored at most? **Proposed:** one per sample, so at most 5 (see **Data**).
+- How many examples per field are stored at most? **Decided:** one per sample, so at most 5 (see **Data**).
 - Should corrections made in Review (008) add examples automatically or ask first? **Decided in 008 slice 3:** ask with a non-blocking prompt.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-23 | — | ready | approved; example limit decided; needs 014 merged before slice 1 |
 | 2026-10-23 | — | reviewed | checked against product, conventions and process and against 014's code: the draft holds examples until Save, new suggestField/suggestTable hooks, values from testExtract, Files for every slice, error/empty states, the train route |
