@@ -215,6 +215,22 @@ export async function createDocumentType(input: CreateDocumentTypeInput): Promis
   return copy(type)
 }
 
+/** All or nothing: every input is validated before any type is stored. */
+export async function createDocumentTypes(inputs: CreateDocumentTypeInput[]): Promise<DocumentType[]> {
+  await delay()
+  inputs.forEach((input) => assertTypeShape(input))
+  const created = inputs.map(
+    (input): DocumentType => ({
+      ...copy(input),
+      id: `type-${crypto.randomUUID().slice(0, 8)}`,
+      version: 1,
+      updatedAt: new Date().toISOString(),
+    }),
+  )
+  db.documentTypes.push(...created)
+  return copy(created)
+}
+
 /** Pushes a new version; the previous one stays readable. */
 export async function updateDocumentType(id: string, patch: UpdateDocumentTypeInput): Promise<DocumentType> {
   await delay()
