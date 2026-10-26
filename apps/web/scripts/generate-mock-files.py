@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Generates the mock sample files and their OCR token JSON (spec 012, slice 2).
+"""Generates the mock sample files and their OCR token JSON (spec 012 slice 2; English and USD since spec 019 slice 4).
 
 Run from anywhere (Python 3 + Pillow, no other dependencies):
 
     python apps/web/scripts/generate-mock-files.py
 
 Writes:
-  apps/web/public/mock/sample-invoice.pdf          3 pages, page 2 has /Rotate 90
+  apps/web/public/mock/sample-invoice.pdf          3 pages (English, USD), page 2 has /Rotate 90
   apps/web/public/mock/sample-invoice.tokens.json  DocumentPage[] (points, after rotation)
-  apps/web/public/mock/sample-long.pdf            30 pages, a fictional service agreement (spec 013)
+  apps/web/public/mock/sample-long.pdf            30 pages, a fictional English service agreement (spec 013)
   apps/web/public/mock/sample-long.tokens.json    DocumentPage[] (points)
   apps/web/public/mock/sample-receipt.jpg          upright "scan"
   apps/web/public/mock/sample-receipt.tokens.json  DocumentPage[] (pixels)
@@ -186,11 +186,13 @@ class Sources:
 
 
 # ---------- invoice ----------
+# English, USD, 8% sales tax printed per line ("Tax 8%"); the amounts are what
+# showcaseInvoiceValues in src/lib/mock/documents-seed.ts stores (keep them in sync).
 INV_LINES = [
-    ("Konsultacje wdrozeniowe - etap 1", "10", "godz.", "150,00", "23", "1500,00", "345,00", "1845,00"),
-    ("Licencja Demo Suite - 5 uzytkownikow", "5", "szt.", "200,00", "23", "1000,00", "230,00", "1230,00"),
-    ("Szkolenie online dla zespolu", "1", "usl.", "800,00", "23", "800,00", "184,00", "984,00"),
-    ("Hosting - abonament miesieczny", "3", "mc", "49,00", "23", "147,00", "33,81", "180,81"),
+    ("Implementation consulting - phase 1", "10", "hrs", "150.00", "8", "1,500.00", "120.00", "1,620.00"),
+    ("Demo Suite license - 5 users", "5", "pcs", "200.00", "8", "1,000.00", "80.00", "1,080.00"),
+    ("Online team training", "1", "svc", "800.00", "8", "800.00", "64.00", "864.00"),
+    ("Hosting - monthly subscription", "3", "mo", "49.00", "8", "147.00", "11.76", "158.76"),
 ]
 INV_COLS = ["description", "quantity", "unit", "unit_net", "vat_rate", "net", "vat", "gross"]
 
@@ -199,34 +201,34 @@ def build_invoice(sources):
     inv = {}
     p1 = PdfPage()
     M, R = 40, 555
-    sup = p1.text(M, 60, "Demo Software Polska Sp. z o.o.", 14, True)
-    p1.text(M, 76, "ul. Przykladowa 12, 00-001 Warszawa", 9)
-    nip = p1.text(M, 90, "NIP: 1234567890", 9)
-    p1.text(R, 60, "FAKTURA VAT", 18, True, "r")
+    sup = p1.text(M, 60, "Brightline Software Inc.", 14, True)
+    p1.text(M, 76, "120 Example Street, Austin, TX 78701", 9)
+    ein = p1.text(M, 90, "EIN: 84-1234567", 9)
+    p1.text(R, 60, "INVOICE", 18, True, "r")
     sources.put(inv, "supplier_name", 0, p1, sup)
-    sources.put(inv, "supplier_tax_id", 0, p1, nip[1:])
+    sources.put(inv, "supplier_tax_id", 0, p1, ein[1:])
 
-    rows = [("Numer faktury:", "FV/2026/10/0042", "invoice_number"),
-            ("Data wystawienia:", "2026-10-14", "issue_date"),
-            ("Data sprzedazy:", "2026-10-14", "sale_date"),
-            ("Termin platnosci:", "2026-10-28", "due_date")]
+    rows = [("Invoice number:", "INV-2026-0042", "invoice_number"),
+            ("Issue date:", "2026-10-14", "issue_date"),
+            ("Sale date:", "2026-10-14", "sale_date"),
+            ("Due date:", "2026-10-28", "due_date")]
     for i, (label, value, key) in enumerate(rows):
         base = 112 + i * 14
         p1.text(380, base, label, 9)
         sources.put(inv, key, 0, p1, p1.text(R, base, value, 9, True, "r"))
 
-    p1.text(M, 130, "Nabywca:", 9, True)
-    p1.text(M, 144, "Kowalski Studio Sp. z o.o.", 9)
-    p1.text(M, 158, "NIP: 5252344078", 9)
+    p1.text(M, 130, "Bill to:", 9, True)
+    p1.text(M, 144, "Northwind Studio Ltd", 9)
+    p1.text(M, 158, "Tax ID: TX-4821-0937", 9)
 
     # table
     right = {"quantity": 255, "unit_net": 345, "vat_rate": 385, "net": 435, "vat": 490, "gross": R}
     p1.rule(M, 196, R, 196, 0.8)
-    p1.text(M, 208, "Nazwa towaru lub uslugi", 8, True)
-    for key, head in [("quantity", "Ilosc"), ("unit_net", "Cena netto"), ("vat_rate", "VAT %"),
-                      ("net", "Netto"), ("vat", "VAT"), ("gross", "Brutto")]:
+    p1.text(M, 208, "Item or service", 8, True)
+    for key, head in [("quantity", "Qty"), ("unit_net", "Unit price"), ("vat_rate", "Tax %"),
+                      ("net", "Net"), ("vat", "Tax"), ("gross", "Gross")]:
         p1.text(right[key], 208, head, 8, True, "r")
-    p1.text(262, 208, "J.m.", 8, True)
+    p1.text(262, 208, "Unit", 8, True)
     p1.rule(M, 214, R, 214, 0.8)
     inv["line_items"] = []
     for i, line in enumerate(INV_LINES):
@@ -242,54 +244,51 @@ def build_invoice(sources):
             sources.put(row, key, 0, p1, toks)
         inv["line_items"].append(row)
         p1.rule(M, base + 7, R, base + 7, 0.3)
-    p1.text(M, 330, "Zaplacono przelewem na rachunek wskazany na stronie 3.", 8)
-    p1.text(300, 810, "Strona 1/3", 8, False, "c")
+    p1.text(M, 330, "Paid by bank transfer to the account shown on page 3.", 8)
+    p1.text(300, 810, "Page 1/3", 8, False, "c")
 
     # page 2: scanned sideways, /Rotate 90 (content is drawn upright in the MediaBox)
     p2 = PdfPage(rotate=90)
-    p2.text(M, 70, "ZALACZNIK NR 1", 16, True)
-    p2.text(M, 90, "Protokol odbioru uslug do faktury FV/2026/10/0042", 10)
+    p2.text(M, 70, "ATTACHMENT NO. 1", 16, True)
+    p2.text(M, 90, "Acceptance report for services under invoice INV-2026-0042", 10)
     p2.rule(M, 100, R, 100, 0.8)
     for i, s in enumerate([
-        "1. Wykonawca oswiadcza, ze uslugi wymienione w fakturze zostaly wykonane nalezycie.",
-        "2. Zamawiajacy potwierdza odbior uslug konsultacyjnych i szkoleniowych.",
-        "3. Licencja Demo Suite zostala dostarczona w formie elektronicznej.",
-        "4. Strony nie wnosza zastrzezen do jakosci ani terminowosci realizacji.",
+        "1. The Contractor declares that the services listed in the invoice were performed properly.",
+        "2. The Client confirms receipt of the consulting and training services.",
+        "3. The Demo Suite license was delivered in electronic form.",
+        "4. The parties raise no objections to the quality or timeliness of delivery.",
     ]):
         p2.text(M, 130 + i * 22, s, 9)
-    p2.text(M, 300, "Data odbioru: 2026-10-14", 9)
+    p2.text(M, 300, "Date of acceptance: 2026-10-14", 9)
     p2.rule(M, 420, 230, 420, 0.6)
-    p2.text(M, 434, "Podpis Wykonawcy", 8)
+    p2.text(M, 434, "Contractor signature", 8)
     p2.rule(330, 420, R, 420, 0.6)
-    p2.text(330, 434, "Podpis Zamawiajacego", 8)
-    p2.text(300, 810, "Strona 2/3", 8, False, "c")
+    p2.text(330, 434, "Client signature", 8)
+    p2.text(300, 810, "Page 2/3", 8, False, "c")
 
     # page 3: totals
     p3 = PdfPage()
-    p3.text(M, 60, "PODSUMOWANIE FAKTURY", 14, True)
-    p3.text(M, 76, "FV/2026/10/0042", 9)
+    p3.text(M, 60, "INVOICE SUMMARY", 14, True)
+    p3.text(M, 76, "INV-2026-0042", 9)
     p3.rule(M, 90, R, 90, 0.8)
-    p3.text(M, 108, "Stawka VAT 23%", 9)
-    totals = [("Razem netto:", "3447,00", "net_total", False, 140),
-              ("Razem VAT:", "792,81", "vat_total", False, 158),
-              ("Razem brutto:", "4239,81", "gross_total", True, 178)]
+    p3.text(M, 108, "Tax 8%", 9)
+    totals = [("Total net:", "3,447.00", "net_total", False, 140),
+              ("Total tax:", "275.76", "vat_total", False, 158),
+              ("Total gross:", "3,722.76", "gross_total", True, 178)]
     for label, amount, key, bold, base in totals:
         p3.text(380, base, label, 10, bold)
         amt = p3.text(R - 30, base, amount, 10, bold, "r")
-        cur = p3.text(R, base, "PLN", 10, bold, "r")
+        cur = p3.text(R, base, "USD", 10, bold, "r")
         sources.put(inv, key, 2, p3, amt + cur)
     p3.rule(380, 186, R, 186, 0.6)
-    p3.text(380, 204, "Do zaplaty:", 11, True)
-    p3.text(R, 204, "4239,81 PLN", 11, True, "r")
-    p3.text(M, 260, "Dane do platnosci", 10, True)
-    p3.text(M, 276, "Bank: Demo Bank Polska S.A.", 9)
-    p3.text(M, 290, "Nr rachunku: PL61 1090 1014 0000 0712 1981 2874", 9)
-    p3.text(M, 304, "Tytul: FV/2026/10/0042", 9)
-    p3.text(M, 340, "Numer KSeF:", 9, True)
-    ksef = p3.text(M + 62, 340, "1234567890-20261014-ABCDEF123456-AB", 9)
-    sources.put(inv, "ksef", 2, p3, ksef)
-    p3.text(M, 380, "Wystawil: Jan Przykladowy", 8)
-    p3.text(300, 810, "Strona 3/3", 8, False, "c")
+    p3.text(380, 204, "Amount due:", 11, True)
+    p3.text(R, 204, "3,722.76 USD", 11, True, "r")
+    p3.text(M, 260, "Payment details", 10, True)
+    p3.text(M, 276, "Bank: Demo Bank N.A.", 9)
+    p3.text(M, 290, "Routing / account no: 021000021 / 000123456789", 9)
+    p3.text(M, 304, "Reference: INV-2026-0042", 9)
+    p3.text(M, 380, "Issued by: Jane Sample", 8)
+    p3.text(300, 810, "Page 3/3", 8, False, "c")
 
     pages = [p1, p2, p3]
     write_pdf(pages, OUT / "sample-invoice.pdf")
@@ -302,12 +301,12 @@ def build_invoice(sources):
 # ---------- long contract (30 pages, spec 013) ----------
 LONG_PAGES = 30
 LONG_CLAUSES = [
-    "Wykonawca zobowiazuje sie do swiadczenia uslug opisanych w zalaczniku nr 1.",
-    "Zamawiajacy zobowiazuje sie do terminowej zaplaty wynagrodzenia ustalonego w umowie.",
-    "Strony zachowaja poufnosc informacji uzyskanych w zwiazku z wykonaniem umowy.",
-    "Kazda ze stron moze wypowiedziec umowe z zachowaniem miesiecznego okresu wypowiedzenia.",
-    "Wszelkie zmiany umowy wymagaja formy pisemnej pod rygorem niewaznosci.",
-    "W sprawach nieuregulowanych stosuje sie przepisy Kodeksu cywilnego.",
+    "The Contractor agrees to provide the services described in Attachment No. 1.",
+    "The Client agrees to pay the fee set out in this agreement on time.",
+    "The parties shall keep confidential any information obtained in connection with this agreement.",
+    "Either party may terminate this agreement with one month of written notice.",
+    "Any amendment to this agreement must be made in writing to be valid.",
+    "Matters not covered by this agreement are governed by the applicable law.",
 ]
 
 
@@ -316,17 +315,17 @@ def build_long():
     for n in range(LONG_PAGES):
         p = PdfPage()
         M, R = 50, 545
-        p.text(M, 50, "UMOWA O SWIADCZENIE USLUG - WZOR", 9, True)
-        p.text(R, 50, f"UMO/2026/{n + 1:03d}", 9, False, "r")
+        p.text(M, 50, "SERVICE AGREEMENT - SAMPLE", 9, True)
+        p.text(R, 50, f"AGR/2026/{n + 1:03d}", 9, False, "r")
         p.rule(M, 58, R, 58, 0.5)
-        p.text(M, 100, f"Rozdzial {n // 3 + 1}. Postanowienia czesc {n % 3 + 1}", 14, True)
+        p.text(M, 100, f"Chapter {n // 3 + 1}. Provisions part {n % 3 + 1}", 14, True)
         base = 130
         for k in range(14):
             num = n * 14 + k + 1
             clause = LONG_CLAUSES[(n + k) % len(LONG_CLAUSES)]
             p.text(M, base, f"{num}. {clause}", 9)
             base += 22 if k % 4 == 3 else 16
-        p.text(300, 810, f"Strona {n + 1}/{LONG_PAGES}", 8, False, "c")
+        p.text(300, 810, f"Page {n + 1}/{LONG_PAGES}", 8, False, "c")
         pages.append(p)
     write_pdf(pages, OUT / "sample-long.pdf")
     (OUT / "sample-long.tokens.json").write_text(
@@ -335,12 +334,13 @@ def build_long():
 
 
 # ---------- receipt ----------
+# Line prices include 8% tax (tax-inclusive): 42.74 total, tax 42.74 * 8 / 108 = 3.17.
 RCP_ITEMS = [
-    ("Chleb pszenny", "1", "4,50"),
-    ("Mleko 3.2% 1L", "2", "5,98"),
-    ("Ser zolty Gouda 250g", "1", "8,99"),
-    ("Woda mineralna 1.5L", "2", "6,40"),
-    ("Kawa mielona 500g", "1", "24,99"),
+    ("Latte", "2", "9.00"),
+    ("Blueberry muffin", "1", "3.25"),
+    ("Turkey sandwich", "1", "9.50"),
+    ("Iced tea", "2", "6.00"),
+    ("Coffee beans 12oz", "1", "14.99"),
 ]
 
 
@@ -383,19 +383,19 @@ def build_receipt(sources):
     font = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 24)
     doc = ImgDoc(W, H, font)
     L, R = 40, 600
-    sources.put(rc, "merchant", 0, doc, doc.text(W / 2, 80, "ZIELONY KOSZYK Sp. z o.o.", "c"))
-    doc.text(W / 2, 112, "ul. Przykladowa 5, 31-000 Krakow", "c")
-    nip = doc.text(W / 2, 144, "NIP: 1234563218", "c")
-    sources.put(rc, "merchant_tax_id", 0, doc, nip[1:])
+    sources.put(rc, "merchant", 0, doc, doc.text(W / 2, 80, "MAPLE CORNER CAFE LLC", "c"))
+    doc.text(W / 2, 112, "45 Sample Ave, Portland, OR 97201", "c")
+    nip = doc.text(W / 2, 144, "Tax ID: 47-1234567", "c")
+    sources.put(rc, "merchant_tax_id", 0, doc, nip[2:])
     doc.text(L, 190, "-" * 40)
-    doc.text(L, 226, "PARAGON FISKALNY")
-    date = doc.text(L, 262, "Data: 2026-10-14")
+    doc.text(L, 226, "SALES RECEIPT")
+    date = doc.text(L, 262, "Date: 2026-10-14")
     sources.put(rc, "receipt_date", 0, doc, date[1:])
-    doc.text(R, 262, "Godz: 17:42", "r")
+    doc.text(R, 262, "Time: 17:42", "r")
     doc.text(L, 298, "-" * 40)
-    doc.text(L, 334, "Nazwa")
-    doc.text(420, 334, "Ilosc", "r")
-    doc.text(R, 334, "Cena", "r")
+    doc.text(L, 334, "Item")
+    doc.text(420, 334, "Qty", "r")
+    doc.text(R, 334, "Price", "r")
     rc["items"] = []
     for i, (name, qty, price) in enumerate(RCP_ITEMS):
         base = 374 + i * 36
@@ -405,19 +405,19 @@ def build_receipt(sources):
         sources.put(row, "price", 0, doc, doc.text(R, base, price, "r"))
         rc["items"].append(row)
     doc.text(L, 574, "-" * 40)
-    doc.text(L, 618, "PTU A 23%")
-    sources.put(rc, "tax_total", 0, doc, doc.text(R - 90, 618, "9,51", "r") + doc.text(R, 618, "PLN", "r"))
+    doc.text(L, 618, "Tax 8%")
+    sources.put(rc, "tax_total", 0, doc, doc.text(R - 90, 618, "3.17", "r") + doc.text(R, 618, "USD", "r"))
     big = ImageFont.truetype("C:/Windows/Fonts/consolab.ttf", 30)
-    doc.text(L, 676, "SUMA", font=big)
-    total = doc.text(R - 90, 676, "50,86", "r", big) + doc.text(R, 676, "PLN", "r", big)
+    doc.text(L, 676, "TOTAL", font=big)
+    total = doc.text(R - 90, 676, "42.74", "r", big) + doc.text(R, 676, "USD", "r", big)
     sources.put(rc, "total", 0, doc, total)
     doc.text(L, 730, "-" * 40)
-    pay = doc.text(L, 774, "KARTA PLATNICZA")
+    pay = doc.text(L, 774, "CARD PAYMENT")
     sources.put(rc, "payment_method", 0, doc, pay[:1])
-    doc.text(R, 774, "50,86", "r")
-    doc.text(L, 838, "Nr transakcji: 004271", )
-    doc.text(W / 2, 920, "DZIEKUJEMY ZA ZAKUPY", "c")
-    doc.text(W / 2, 954, "Zapraszamy ponownie!", "c")
+    doc.text(R, 774, "42.74", "r")
+    doc.text(L, 838, "Transaction no: 004271", )
+    doc.text(W / 2, 920, "THANK YOU FOR YOUR VISIT", "c")
+    doc.text(W / 2, 954, "See you again!", "c")
 
     # scan look: faint noise + very slight blur (geometry untouched)
     rng = random.Random(42)

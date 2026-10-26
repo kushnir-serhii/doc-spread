@@ -45,15 +45,15 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
   - [x] the dev seed check (`findValueMismatches`) logs nothing; failed-check seed documents (029, 030) still fail as before
   - [x] Export summary groups the totals per currency correctly, including JPY
 
-### [ ] 4. Showcase invoice and receipt in English and USD
+### [x] 4. Showcase invoice and receipt in English and USD
 - **Build:** rewrite `generate-mock-files.py` so `sample-invoice.pdf` and `sample-receipt.jpg` are an English invoice and receipt in USD (neutral supplier and merchant, a US/EU-style tax ID, no "Faktura", "NIP", "zł"). Regenerate the files, their `*.tokens.json` and `showcase-sources.ts`, and update `showcaseInvoiceValues` / `showcaseReceiptValues` so the values match what is printed. `sample-long.pdf` follows the same rules if it is Polish.
 - **Decided:** a US supplier (e.g. "Brightline Software Inc.", EIN `84-1234567`) with an 8% sales tax printed per line ("Tax 8%"), which maps to the VAT fields; the receipt is a neutral café in USD with 8% tax. The KSeF line is not printed (the field goes in slice 5).
 - **Files:** `apps/web/scripts/generate-mock-files.py`, `apps/web/public/mock/*`, `src/lib/mock/showcase-sources.ts`, `src/lib/mock/documents-seed.ts`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] the showcase invoice and receipt open in the viewer in English, in USD, and every field's highlight box lands on its printed value
-  - [ ] the values in Review equal the printed ones (totals, line items, tax), and the Invoice checks pass on the showcase invoice
-  - [ ] the script runs from a clean checkout with the steps written at its top, and its output is committed
+  - [x] the showcase invoice and receipt open in the viewer in English, in USD, and every field's highlight box lands on its printed value
+  - [x] the values in Review equal the printed ones (totals, line items, tax), and the Invoice checks pass on the showcase invoice
+  - [x] the script runs from a clean checkout with the steps written at its top, and its output is committed
 
 ### [ ] 5. Country-neutral hints and leftovers
 - **Build:** the Polish-only "In KSeF" field is removed from the Invoice template and the seed documents; template hints stop naming one country: tax ID hints say "Tax ID of the seller (VAT ID, EIN, NIP …, as printed)", the issue date hint has no "Data wystawienia". Fix the remaining Polish defaults in app code: the parse error hint "try 1 234,56 zł" becomes a currency-neutral example, design page samples use USD, comments in `types.ts` and `field-key.ts` use English examples. `fake-extract.ts` word list may mix languages but not only Polish.
@@ -96,3 +96,4 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 | 2026-10-26 | 1 | done | `currency-digits.ts` (`minorDigits`, `toMajor`, `toMinor`, `majorText`), JPY in `CURRENCIES` and the parser (`¥`); format, money input (step / inputMode by currency), parse, export cells, mock text output. `evaluate.ts` constant display left for slice 2 |
 | 2026-10-26 | 2 | done | money constants and tolerances in major units; a currency-less money scalar holds major units until `shareCurrency` converts it; money results rounded to whole minor units in the evaluator once the currency is known; `round` gets the call's currency; money tolerance compared on the major-unit difference; template tolerances `0.01`. Seed check results identical before / after. Files: `evaluate.ts`, `functions.ts`, `const-input.tsx`, `action-form.ts`, `types.ts`, `templates.ts` |
 | 2026-10-26 | 3 | done | Northwind Studio Ltd (USD), English team; shell name from `useCompany()` (skeleton while loading, hidden if unknown); Japanese supplier (JPY) and Vercel (USD) added; merchants carry a country, receipts take its currency and VAT; file stems in English; receipt items in English. Typed documents: USD 9, PLN 5, EUR 3, JPY 3, GBP 2; no seed mismatches; check outcomes unchanged (029/030 still fail). Files: `data.ts`, `documents-seed.ts`, `app-shell.tsx`, `header.tsx` |
+| 2026-10-26 | 4 | done | showcase invoice: Brightline Software Inc. (EIN) to Northwind Studio Ltd, 4 lines at 8% tax, 3,447.00 + 275.76 = 3,722.76 USD; receipt: Maple Corner Cafe, 42.74 USD incl. 3.17 tax; long sample in English. Every source box checked against its tokens; no seed mismatches; both Invoice checks pass on doc-001. No KSeF line printed (`ksef: false` without a source until slice 5). Files: `generate-mock-files.py`, `public/mock/*`, `showcase-sources.ts`, `documents-seed.ts` |

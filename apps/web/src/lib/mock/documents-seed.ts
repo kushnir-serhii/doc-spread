@@ -264,25 +264,25 @@ const invoiceValues = (c: Ctx, lineCount: number, grossOffset = 0): Record<strin
 
 const showcaseInvoiceValues = (id: string): Record<string, FieldValue> => {
   const s = INVOICE_SOURCES
-  const currency = 'PLN'
+  const currency = 'USD'
   // the same rows and amounts as printed on sample-invoice.pdf (see scripts/generate-mock-files.py)
   const lines = [
-    ['Konsultacje wdrozeniowe - etap 1', 10, 'godz.', 15000, 23, 150000, 34500, 184500],
-    ['Licencja Demo Suite - 5 uzytkownikow', 5, 'szt.', 20000, 23, 100000, 23000, 123000],
-    ['Szkolenie online dla zespolu', 1, 'usl.', 80000, 23, 80000, 18400, 98400],
-    ['Hosting - abonament miesieczny', 3, 'mc', 4900, 23, 14700, 3381, 18081],
+    ['Implementation consulting - phase 1', 10, 'hrs', 15000, 8, 150000, 12000, 162000],
+    ['Demo Suite license - 5 users', 5, 'pcs', 20000, 8, 100000, 8000, 108000],
+    ['Online team training', 1, 'svc', 80000, 8, 80000, 6400, 86400],
+    ['Hosting - monthly subscription', 3, 'mo', 4900, 8, 14700, 1176, 15876],
   ] as const
   return {
-    supplier_name: textValue('Demo Software Polska Sp. z o.o.', 0.98, s.supplier_name),
-    supplier_tax_id: taxIdValue('1234567890', 0.95, s.supplier_tax_id),
-    invoice_number: textValue('FV/2026/10/0042', 0.97, s.invoice_number),
+    supplier_name: textValue('Brightline Software Inc.', 0.98, s.supplier_name),
+    supplier_tax_id: taxIdValue('84-1234567', 0.95, s.supplier_tax_id),
+    invoice_number: textValue('INV-2026-0042', 0.97, s.invoice_number),
     issue_date: dateValue('2026-10-14', 0.96, s.issue_date),
     sale_date: dateValue('2026-10-14', 0.93, s.sale_date),
     due_date: dateValue('2026-10-28', 0.62, s.due_date),
     net_total: moneyValue(344700, currency, 0.97, s.net_total),
-    vat_total: moneyValue(79281, currency, 0.94, s.vat_total),
-    gross_total: moneyValue(423981, currency, 0.97, s.gross_total),
-    ksef: booleanValue(true, 0.74, s.ksef),
+    vat_total: moneyValue(27576, currency, 0.94, s.vat_total),
+    gross_total: moneyValue(372276, currency, 0.97, s.gross_total),
+    ksef: booleanValue(false, 0.9),
     order_number: textValue(null, 0),
     line_items: tableValue(
       lines.map((l, i) => {
@@ -340,21 +340,21 @@ const receiptValues = (c: Ctx): Record<string, FieldValue> => {
 
 const showcaseReceiptValues = (id: string): Record<string, FieldValue> => {
   const s = RECEIPT_SOURCES
-  const currency = 'PLN'
-  // the same rows and amounts as printed on sample-receipt.jpg
+  const currency = 'USD'
+  // the same rows and amounts as printed on sample-receipt.jpg (tax-inclusive, 8%)
   const items = [
-    ['Chleb pszenny', 1, 450],
-    ['Mleko 3.2% 1L', 2, 598],
-    ['Ser zolty Gouda 250g', 1, 899],
-    ['Woda mineralna 1.5L', 2, 640],
-    ['Kawa mielona 500g', 1, 2499],
+    ['Latte', 2, 900],
+    ['Blueberry muffin', 1, 325],
+    ['Turkey sandwich', 1, 950],
+    ['Iced tea', 2, 600],
+    ['Coffee beans 12oz', 1, 1499],
   ] as const
   return {
-    merchant: textValue('ZIELONY KOSZYK Sp. z o.o.', 0.96, s.merchant),
-    merchant_tax_id: taxIdValue('1234563218', 0.93, s.merchant_tax_id),
+    merchant: textValue('MAPLE CORNER CAFE LLC', 0.96, s.merchant),
+    merchant_tax_id: taxIdValue('47-1234567', 0.93, s.merchant_tax_id),
     receipt_date: dateValue('2026-10-14', 0.95, s.receipt_date),
-    total: moneyValue(5086, currency, 0.97, s.total),
-    tax_total: moneyValue(951, currency, 0.81, s.tax_total),
+    total: moneyValue(4274, currency, 0.97, s.total),
+    tax_total: moneyValue(317, currency, 0.81, s.tax_total),
     payment_method: selectValue('Card', 0.7, s.payment_method),
     items: tableValue(
       items.map((it, i) => ({
