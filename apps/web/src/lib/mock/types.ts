@@ -1,9 +1,9 @@
 export type Confidence = 'high' | 'medium' | 'low'
 
-export const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP'] as const
+export const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP', 'JPY'] as const
 export type CurrencyCode = (typeof CURRENCIES)[number]
 
-/** Amount in minor units (grosze/cents) — always an integer. */
+/** Amount in the currency's minor unit (cents, or yen for JPY) — always an integer. */
 export interface Money {
   amount: number
   currency: CurrencyCode

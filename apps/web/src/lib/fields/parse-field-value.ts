@@ -1,3 +1,4 @@
+import { toMinor } from '@/lib/fields/currency-digits'
 import { CURRENCIES, type CurrencyCode, type FieldDef, type FieldValue, type FieldValueMap, type ScalarFieldType } from '@/lib/mock/types'
 import { DEFAULT_CURRENCY } from './default-currency'
 import { isEmail, isPhone, isTaxId, normalizeTaxId } from './field-formats'
@@ -43,8 +44,8 @@ const parseNumber = (raw: string): number | null => {
   return Number.isFinite(result) ? result : null
 }
 
-const CURRENCY_SYMBOLS: Record<string, CurrencyCode> = { zł: 'PLN', zl: 'PLN', '€': 'EUR', $: 'USD', '£': 'GBP' }
-const CURRENCY_PATTERN = /zł|zl|pln|eur|usd|gbp|[€$£]/gi
+const CURRENCY_SYMBOLS: Record<string, CurrencyCode> = { zł: 'PLN', zl: 'PLN', '€': 'EUR', $: 'USD', '£': 'GBP', '¥': 'JPY' }
+const CURRENCY_PATTERN = /zł|zl|pln|eur|usd|gbp|jpy|[€$£¥]/gi
 
 const currencyOf = (code: string): CurrencyCode | null => {
   const lower = code.toLowerCase()
@@ -105,7 +106,7 @@ export const parseFieldValue = (field: ParseTarget, rawText: string, current?: F
       // no currency in the text: keep the current one, else the default, and never silently
       const kept = current?.type === 'money' ? current.value?.currency : undefined
       const currency = fromText ?? kept ?? DEFAULT_CURRENCY
-      const value: ParsedValue = { type: 'money', value: { amount: Math.round(amount * 100), currency } }
+      const value: ParsedValue = { type: 'money', value: { amount: toMinor(amount, currency), currency } }
       if (fromText) return { ok: true, value }
       return { ok: true, value, warning: `There is no currency in ${quote(text)}, so ${currency} was assumed. Check that it is right.` }
     }

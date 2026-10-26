@@ -1,6 +1,6 @@
 # 019 — Mock data without country defaults
 
-**Status:** ready · **Depends on:** — · **Route(s):** —
+**Status:** in-progress · **Depends on:** — · **Route(s):** —
 
 ## Goal
 The mock data and templates stop assuming Poland: the seed company is a neutral international one with USD as its default, seed documents use mixed currencies with USD the most common, the showcase files are in English and USD, template hints are country-neutral, and money minor digits come from the currency instead of a hard-coded 2.
@@ -16,14 +16,14 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 
 ## Slices
 
-### [ ] 1. Minor digits per currency
+### [x] 1. Minor digits per currency
 - **Build:** `minorDigits(currency)` from `Intl.NumberFormat(undefined, { style: 'currency', currency }).resolvedOptions().maximumFractionDigits` (cached per currency), plus `toMajor(amount, currency)` / `toMinor(major, currency)`. Add `JPY` to `CURRENCIES`. Replace every hard-coded `/ 100`, `* 100`, `toFixed(2)` and `padStart(2, '0')` used for money with the helper: `formatMoney`, `money-input.tsx`, `parse-field-value.ts`, `export-cells.ts`, `lib/mock/api.ts`, `lib/mock/pages.ts`, `evaluate.ts` (constant display).
 - **Files:** `src/lib/fields/currency-digits.ts`, `src/lib/mock/types.ts`, `src/lib/mock/format.ts`, `src/features/documents/fields/money-input.tsx`, `src/lib/fields/parse-field-value.ts`, `src/features/export/export-cells.ts`, `src/lib/mock/api.ts`, `src/lib/mock/pages.ts`, `src/lib/fields/evaluate.ts`
 - **Accept:**
-  - [ ] `minorDigits('USD') === 2`, `minorDigits('JPY') === 0`; no money code outside the helper divides or multiplies by 100
-  - [ ] a JPY amount of `1500` shows as ¥1,500 (browser locale), is typed as `1500` in the money input and is exported as `1500` (no decimal point)
-  - [ ] JPY can be picked in every currency select; the money input's step follows the currency
-  - [ ] 2-digit currencies look and export exactly as before
+  - [x] `minorDigits('USD') === 2`, `minorDigits('JPY') === 0`; no money code outside the helper divides or multiplies by 100
+  - [x] a JPY amount of `1500` shows as ¥1,500 (browser locale), is typed as `1500` in the money input and is exported as `1500` (no decimal point)
+  - [x] JPY can be picked in every currency select; the money input's step follows the currency
+  - [x] 2-digit currencies look and export exactly as before
 
 ### [ ] 2. Builder money in major units, `round` by currency
 - **Build:** money constants (`ActionExpr` with `type: 'money'`) and check tolerances for money are stored in major units (`12.5`, `0.01`) instead of minor units. The evaluator converts them to minor units once the shared currency is known (a constant with no known currency stays `currency_mismatch`, as today). The evaluator passes the shared currency to functions that need it, so `round(money, decimals)` uses that currency's digits instead of `MINOR_DECIMALS = 2`. Builder inputs (`const-input.tsx`, `action-form.ts`) keep the typed major-unit value as is. Migrate the template checks (`tolerance: 1` → `0.01`) and any seeded money constants.
@@ -83,6 +83,7 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
   - **Decided:** slice 1 leaves it; slice 2 stores constants in major units, so it is shown as typed.
 - The Invoice template has a Polish-only "In KSeF" field.
   - **Decided:** removed from the template and the seed documents (slice 5).
+- From slice 1: `fake-extract.ts` picks a currency as `CURRENCIES[hash % length]`, so uploaded mock documents can now come out in JPY, with amounts generated at cent scale (e.g. ¥123,456). Harmless for a mock; left as is.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -90,3 +91,4 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 | 2026-10-26 | — | drafted | from the open questions of 009 / 016 |
 | 2026-10-26 | — | ready | questions decided, split into 5 slices |
 | 2026-10-26 | — | questions | seed company, CZ/receipt currency, showcase tax, KSeF removal decided |
+| 2026-10-26 | 1 | done | `currency-digits.ts` (`minorDigits`, `toMajor`, `toMinor`, `majorText`), JPY in `CURRENCIES` and the parser (`¥`); format, money input (step / inputMode by currency), parse, export cells, mock text output. `evaluate.ts` constant display left for slice 2 |
