@@ -6,9 +6,14 @@ import type { DocumentViewerHandle } from '@/features/documents/viewer/viewer-hi
 import type { Document, DocumentType } from '@/lib/mock/types'
 import { ReviewForm } from './review-form'
 import { ReviewViewerPane } from './review-viewer-pane'
+import { ReviewShortcutsDialog } from './review-shortcuts-dialog'
 import { ReviewActions } from './review-actions'
 import { isReviewDone } from './review-done'
+import { focusFieldControl } from './focus-field-control'
+import { useNextDocument } from './use-next-document'
+import { useReviewActions } from './use-review-actions'
 import { useReviewDraft } from './use-review-draft'
+import { useReviewShortcuts } from './use-review-shortcuts'
 import { useReviewPointing } from './use-review-pointing'
 import { useReviewHighlights } from './use-review-highlights'
 
@@ -27,6 +32,22 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const { draft, setValue, confirm, save, saveNow, dirty, mutation } = useReviewDraft(doc)
   const pointing = useReviewPointing({ doc, type, draft, setValue, formRef })
   const highlights = useReviewHighlights(doc.id, draft, type)
+  const actions = useReviewActions({ doc, type, draft, dirty, saveNow })
+  const planNext = useNextDocument(doc, type)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const busy = actions.approving || actions.rejecting || mutation.isPending
+  const shortcuts = useReviewShortcuts({
+    formRef,
+    editable,
+    onApprove: () => {
+      if (!busy) void actions.approve()
+    },
+    onSave: () => {
+      if (dirty && !busy) save()
+    },
+    onNextDocument: planNext(null),
+    onHelp: () => setHelpOpen(true),
+  })
 
   const focusField = (id: string) => {
     setFocusedId(id)
@@ -36,21 +57,14 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const focusFromBox = (id: string) => {
     setFocusedId(id)
     const target = formRef.current?.querySelector<HTMLElement>(`[data-focus-id="${id}"]`)
-    focusControl(target)
-  }
-  const focusControl = (target: HTMLElement | null | undefined) => {
-    // an editable row is not focusable itself: its first control is
-    const control = target?.matches('input, button, [tabindex]')
-      ? target
-      : target?.querySelector<HTMLElement>('input, [role="combobox"], [role="switch"], button')
-    control?.focus()
+    focusFieldControl(target)
   }
   const focusIssue = (issue: ValidationIssue) => {
     const base = fieldFocusId(doc.id, issue.fieldId)
     const id = issue.cell ? cellFocusId(base, issue.cell.rowId, issue.cell.columnId) : base
     if (formRef.current?.querySelector(`[data-focus-id="${id}"]`)) focusFromBox(id)
     // a table without rows (or a cell not on screen) has no target: the field's own row is
-    else focusControl(formRef.current?.querySelector<HTMLElement>(`[data-field-id="${issue.fieldId}"]`))
+    else focusFieldControl(formRef.current?.querySelector<HTMLElement>(`[data-field-id="${issue.fieldId}"]`))
   }
 
   return (
@@ -66,6 +80,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
         onCancel={pointing.cancel}
       />
       <div className="flex flex-col gap-3">
+        <ReviewShortcutsDialog open={helpOpen} onOpenChange={setHelpOpen} editable={editable} />
         <ReviewForm
           ref={formRef}
           docId={doc.id}
@@ -79,11 +94,9 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
         />
         {editable && (
           <ReviewActions
-            doc={doc}
             type={type}
-            draft={draft}
+            actions={actions}
             dirty={dirty}
-            saveNow={saveNow}
             save={{
               isPending: mutation.isPending,
               isSuccess: mutation.isSuccess,
@@ -95,7 +108,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
         )}
       </div>
       <p role="status" className="sr-only">
-        {pointing.announcement}
+        {pointing.announcement || shortcuts.message}
       </p>
       {editable && (
         <LeaveGuard

@@ -44,7 +44,7 @@ export const TableFieldView = ({ label, columns, value, focusId, onChange }: Tab
         </p>
         <div className="flex flex-wrap items-center gap-2">
           {onChange && hasLowCell(value) && (
-            <Button type="button" variant="outline" className="min-h-touch" onClick={() => onChange(confirmTable(value))}>
+            <Button type="button" variant="outline" className="min-h-touch" data-confirm onClick={() => onChange(confirmTable(value))}>
               <Check aria-hidden="true" />
               Confirm table
             </Button>

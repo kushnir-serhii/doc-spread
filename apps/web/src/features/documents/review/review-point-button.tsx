@@ -38,13 +38,14 @@ export const ReviewPointButton = ({ fieldId, label, pointing }: ReviewPointButto
           className="size-touch shrink-0"
           data-point-id={fieldId}
           aria-pressed={false}
+          aria-keyshortcuts="P"
           aria-label={`Point on document for ${label}`}
           onClick={() => pointing.start(fieldId)}
         >
           <Crosshair aria-hidden="true" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Point on document</TooltipContent>
+      <TooltipContent>Point on document (P)</TooltipContent>
     </Tooltip>
   )
 }

@@ -43,9 +43,8 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
     <div
       role="group"
       aria-labelledby={labelId}
-      // a table holds its own focus targets; an editable row is reached through the control inside it;
-      // a read-only scalar row is the target itself
-      tabIndex={isTable || editing ? undefined : 0}
+      // J/K move focus between rows (-1: not a Tab stop, the controls inside are); a read-only scalar row is one
+      tabIndex={isTable || editing ? -1 : 0}
       data-focus-id={isTable ? undefined : focusId}
       data-field-id={field.id}
       className={cn(
@@ -94,7 +93,7 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
             <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
             Check this value — the AI isn’t sure
           </p>
-          <Button variant="outline" className="min-h-touch bg-card" aria-label={`Confirm ${field.label}`} onClick={onConfirm}>
+          <Button variant="outline" className="min-h-touch bg-card" aria-label={`Confirm ${field.label}`} data-confirm onClick={onConfirm}>
             <Check aria-hidden="true" />
             Confirm
           </Button>

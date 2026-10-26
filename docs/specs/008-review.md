@@ -1,6 +1,6 @@
 # 008 — Review (core screen)
 
-**Status:** in-progress · **Depends on:** 002, 006, 013 · **Route(s):** `/documents/:documentId`
+**Status:** done · **Depends on:** 002, 006, 013 · **Route(s):** `/documents/:documentId`
 
 ## Goal
 The user checks the AI-extracted values against the document, fixes the low-confidence ones by typing or by pointing at the document, and approves fast, mostly from the keyboard. The form is built from the document's type, so it works for any type.
@@ -64,13 +64,13 @@ The user checks the AI-extracted values against the document, fixes the low-conf
   - [x] after an action: go to the next `needs_review` document of the same type (the oldest first, like a queue), or back to the Inbox with a message if none are left
   - [x] Approve and Reject work at 375px: a sticky bottom bar with Approve / Reject / Save draft (44px targets)
 
-### [ ] 6. Keyboard
+### [x] 6. Keyboard
 - **Files:** `src/features/documents/review/`
 - **Accept:**
-  - [ ] shortcuts (bindings from **Open questions**): next/previous field, point on document, approve, next document; they don't fire while typing in a text input unless a modifier is used
-  - [ ] J/K move between field rows in a navigation mode (the row, not its input, takes focus); Enter edits the row's input, Esc returns to the row
-  - [ ] `C` confirms the current field and `Ctrl+S` saves the draft (instead of the browser's "save page")
-  - [ ] a "?" help dialog lists them; all of them work with a screen reader running
+  - [x] shortcuts (bindings from **Open questions**): next/previous field, point on document, approve, next document; they don't fire while typing in a text input unless a modifier is used
+  - [x] J/K move between field rows in a navigation mode (the row, not its input, takes focus); Enter edits the row's input, Esc returns to the row
+  - [x] `C` confirms the current field and `Ctrl+S` saves the draft (instead of the browser's "save page")
+  - [x] a "?" help dialog lists them; all of them work with a screen reader running
 
 ## Backend needs
 Field-level confidence and source boxes; the type version a document was extracted with; validation for approval from the type (required, format, tax ID checksum); re-extraction after a type change; storing examples from corrections, with the anchor label found on the server.
@@ -95,12 +95,14 @@ Field-level confidence and source boxes; the type version a document was extract
 - Both table views scroll inside `max-h-table-scroll` (70dvh): `max-h-96` showed less than one card in List mode.
 - The next document is chosen from the loaded queue before Approve/Reject runs: once the action succeeds the document refetches and the actions may unmount, so nothing is awaited afterwards. A queue that changed meanwhile (someone else approved the next one) is not handled; the backend could return the next id with the action.
 - Approve stays clickable while problems exist (it shows them instead of calling the API). The mock `approveDocuments` ignores required fields: the backend must validate again, incl. its own country-specific checksums.
+- `Ctrl/Cmd+Enter` and `Ctrl/Cmd+S` do nothing while a dialog is open or an action is running; `N` with nothing left in the queue goes to the Inbox without a notice. `aria-keyshortcuts` on Point and Confirm applies only while a row is focused.
 - Asked up front for slices 4–6 (2026-10-26), all answered as recommended and written into the slices: spreadsheet-style keys in the table grid; rows removed without a dialog; flagged cells and "Confirm table"; no pointing for cells; Change type only for `needs_review`; format checks only on the client (no country checksums); Approve saves first; reject quick picks; oldest-first queue; a sticky action bar at 375px; J/K navigation mode with Enter/Esc; `C` confirms and `Ctrl+S` saves. Slice 4 builds the shared table-field view that 015 slice 4 reuses, so it goes first.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | form built from the type schema; fixing by pointing; invoice totals check moved to 016 (field actions) |
+| 2026-10-26 | 6 | done | one document keydown listener (`use-review-shortcuts.ts`) with the decided keys, `isTypingTarget`, J/K row navigation mode with Enter/Esc, `C` and `P` click the row's own button, `Ctrl/Cmd+Enter` approve and `Ctrl/Cmd+S` save everywhere, `?` and a Shortcuts button open the help dialog (one list in `review-shortcuts.ts`), `aria-keyshortcuts` on the buttons. Spec done: Definition of Done checked. Files: `features/documents/review/` (`review-shortcuts.ts`, `review-shortcuts-dialog.tsx`, `use-review-shortcuts.ts`, `is-typing-target.ts`, `focus-field-control.ts`, workspace, actions, action bar, row, point button, `use-next-document.ts`), `features/documents/fields/table-field-view.tsx` |
 | 2026-10-26 | 5 | done | Change type (`needs_review` only, confirm dialog, re-extraction), `validateDocument` (required + formats, no checksums; shared checks in `lib/fields/field-formats.ts`), issues list linking to fields/cells, Approve saves first, Reject dialog with quick picks, oldest-first queue or Inbox with a notice (`inbox-notice.tsx`), sticky Approve/Reject/Save draft bar; `LeaveGuard` gained `isExempt`. Files: `features/documents/review/` (`change-type-control.tsx`, `reject-dialog.tsx`, `review-action-bar.tsx`, `review-actions.tsx`, `review-issues.tsx`, `review-done.ts`, `use-next-document.ts`, `use-review-actions.ts`, header, workspace, row, draft), `lib/fields/` (`validate-field-value.ts`, `field-formats.ts`, `parse-field-value.ts`), `features/documents/inbox-notice.tsx`, `pages/inbox/inbox-page.tsx`, `features/document-types/leave-guard.tsx` |
 | 2026-10-26 | 4 | done | shared `TableFieldView` (Table grid with spreadsheet keys, roving tabindex, Enter/F2/typing edits, Esc/Enter ends; List cards), Table/List toggle (md default, remembered), add/remove row (focus to a neighbour, or to Add row after the last), flagged cells + Confirm table, box click focuses the cell; `--spacing-table-scroll` token. Files: `features/documents/fields/` (`table-field-view.tsx`, `table-grid*.tsx`, `use-grid-navigation.ts`, `table-list*.tsx`, `table-view-toggle.tsx`, `use-table-view-mode.ts`, `table-*-row-button.tsx`, `table-value-ops.ts`, `field-table*.tsx`), `features/documents/review/review-field-row.tsx`, `styles/index.css` |
 | 2026-10-26 | 3 | done | "Point on document" per editable scalar field (icon button beside the input; "Cancel pointing" while active), viewer in `select-words` (opens on mobile), `parseFieldValue` for every scalar type in `lib/fields/parse-field-value.ts` (shared with 015), value + new source on success, reason in `role="alert"` with Try again on failure, inline "Use this as an example for <type>?" → `useAddFieldExample()`; an amount without a currency gets the current currency or USD (`lib/fields/default-currency.ts`), a warning, and stays unverified. `MoneyInput` defaults to USD. Files: `lib/fields/parse-field-value.ts`, `features/documents/review/` (`use-review-pointing.ts`, `review-point-button.tsx`, `review-point-feedback.tsx`, row, form, workspace, viewer pane, `use-review-draft.ts`), `lib/fields/default-currency.ts`, `features/documents/fields/money-input.tsx`, `docs/conventions.md` |

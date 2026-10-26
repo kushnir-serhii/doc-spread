@@ -20,7 +20,13 @@ export const ReviewActionBar = ({ typeName, dirty, save, approve, reject, onIssu
     <div className="sticky bottom-0 z-10 flex flex-col gap-2 border-t bg-background py-3">
       {approve.issues.length > 0 && <ReviewIssues issues={approve.issues} onSelect={onIssueSelect} />}
       <div className="flex flex-wrap items-center gap-2">
-        <Button className="min-h-touch flex-1 sm:flex-none" disabled={busy} onClick={approve.onApprove}>
+        <Button
+          className="min-h-touch flex-1 sm:flex-none"
+          disabled={busy}
+          aria-keyshortcuts="Control+Enter"
+          title="Approve (Ctrl+Enter)"
+          onClick={approve.onApprove}
+        >
           {approve.isPending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Check aria-hidden="true" />}
           {approve.isPending ? 'Approving…' : 'Approve'}
         </Button>
@@ -32,7 +38,14 @@ export const ReviewActionBar = ({ typeName, dirty, save, approve, reject, onIssu
           onReject={reject.onReject}
           onOpen={reject.onOpen}
         />
-        <Button variant="outline" className="min-h-touch flex-1 sm:flex-none" disabled={!dirty || busy} onClick={save.onSave}>
+        <Button
+          variant="outline"
+          className="min-h-touch flex-1 sm:flex-none"
+          disabled={!dirty || busy}
+          aria-keyshortcuts="Control+S"
+          title="Save draft (Ctrl+S)"
+          onClick={save.onSave}
+        >
           {save.isPending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Save aria-hidden="true" />}
           {save.isPending ? 'Saving…' : 'Save draft'}
         </Button>
