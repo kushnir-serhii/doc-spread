@@ -39,28 +39,31 @@ Arguments: none (next slice from the plan) · `012` (next open slice of that spe
    - the spec is `draft`: name it and ask for a review and `ready`;
    - a dependency in **Status** isn't `done`: name it;
    - every spec in the plan is `done`.
-2. **Plan.** Re-read the spec, [conventions.md](conventions.md) and the files the slice touches. If the slice is unclear or conflicts with the code, stop and ask. Don't guess. Choose the model (see above).
-3. **Delegate.** Start a subagent with a self-contained prompt:
+2. **Ask up front (once per spec).** The first time a spec is taken up (from the arguments or from the plan), before its first slice is delegated: read the whole spec, [product.md](product.md), [conventions.md](conventions.md) and the code it touches, and collect every question for **all** of its remaining slices: unclear or conflicting criteria, open questions, choices between options, copy, edge cases, what the mocks can't do. Ask them all in one batch, grouped by slice, each with a recommended answer. Write the answers into the spec (**Decided:** under Open questions, or into the criteria) before any code. In `parallel` mode, do this for every spec of the batch at once. The goal: you are interrupted once at the start, not slice by slice.
+   - A question that only shows up during the work (the code or a subagent's result reveals it) is still asked. Collect such questions and bring them with the slice report; stop early only when the slice can't go on without the answer.
+3. **Plan.** Re-read the spec, [conventions.md](conventions.md) and the files the slice touches. If something step 2 missed is unclear or conflicts with the code, stop and ask. Don't guess. Choose the model (see above).
+4. **Delegate.** Start a subagent with a self-contained prompt:
    - the spec path, the slice number and its full text (Build, Files, Accept), plus facts from the plan it would otherwise rediscover;
    - follow `docs/conventions.md` and `CLAUDE.md`; change only what this slice needs, and report anything else as an open question;
    - don't commit, create branches, or touch the spec's checkboxes and log;
    - run typecheck, lint and build and fix failures; report the files changed, how each criterion was met, and open questions.
-4. **Verify.** Don't trust the report. Read the diff and check it against every criterion and the conventions. From the repo root:
+5. **Verify.** Don't trust the report. Read the diff and check it against every criterion and the conventions. From the repo root:
    ```sh
    pnpm --filter @docspread/web typecheck
    pnpm --filter @docspread/web lint
    pnpm --filter @docspread/web build
    ```
    For UI slices, also check 375px width, light and dark mode, and every state in the slice (loading, empty, error, long values). Send problems back to the agent with specifics; after two rounds, report what still fails.
-5. **Record.** In the spec: mark the criteria and the slice `[x]`, add one **Log** row (date, slice, result, files touched), add new **Open questions**. Update the status in the spec header and in [roadmap.md](roadmap.md): `ready` → `in-progress` after the first slice, `in-progress` → `done` when all slices are `[x]` and the Definition of Done holds.
-6. **Report and stop** in 3–5 lines: what was built, files, open questions, and what comes next in the plan. End with a suggested commit message: `feat(web): <spec #> slice <n> — <summary>`. Wait for your OK.
-7. **Commit.** You make the commits and branches yourself. Claude never commits or creates branches.
+6. **Record.** In the spec: mark the criteria and the slice `[x]`, add one **Log** row (date, slice, result, files touched), add new **Open questions**. Update the status in the spec header and in [roadmap.md](roadmap.md): `ready` → `in-progress` after the first slice, `in-progress` → `done` when all slices are `[x]` and the Definition of Done holds.
+7. **Report and stop** in 3–5 lines: what was built, files, open questions, and what comes next in the plan. End with a suggested commit message: `feat(web): <spec #> slice <n> — <summary>`. Wait for your OK.
+8. **Commit.** You make the commits and branches yourself. Claude never commits or creates branches.
 
 Scope changes go into the spec first, then into the code.
 
 ## Other commands you can give
 
 - `spec <topic>`: draft a new spec from the template for review. No code.
+- `questions <spec #>`: step 2 on its own: every question for that spec in one batch, answers written into the spec. No code.
 - `status`: summarize [roadmap.md](roadmap.md) and the open slices.
 
 ## Definition of Done (every spec)
