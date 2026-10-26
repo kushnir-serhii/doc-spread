@@ -1,11 +1,14 @@
 import { useReducer, useRef, useState } from 'react'
 import { ArrowLeft, ScanSearch } from 'lucide-react'
 import { Link } from 'react-router'
+import { getComputedFieldIds } from '@/lib/fields/computed-fields'
+import { ActionsSection } from './actions/actions-section'
+import type { ActionEditorTarget } from './actions/action-form'
 import { resolveSelection, type Selection } from './editor-target'
 import { ErrorSummary } from './error-summary'
 import { FieldEditorPanel } from './field-editor-panel'
 import { FieldList } from './field-list'
-import { focusIssue, getInvalidIds, getIssueSelection, getTargetIssues } from './issue-targets'
+import { focusIssue, getInvalidIds, getIssueActionId, getIssueSelection, getTargetIssues } from './issue-targets'
 import { isSameDraft } from './is-same-draft'
 import { LeaveGuard } from './leave-guard'
 import { ListSettingsSection } from './list-settings-section'
@@ -34,6 +37,8 @@ export const TypeBuilder = ({ initialDraft, savedType, notice = null, onSaved }:
   const [baseline] = useState(initialDraft)
   // The selection is local state: it needn't survive a reload, and a new draft has no ids to link to.
   const [selection, setSelection] = useState<Selection>(null)
+  // Which action the dialog is open for; here so an error or a computed field can open it.
+  const [actionTarget, setActionTarget] = useState<ActionEditorTarget | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const target = resolveSelection(selection, draft.fields)
@@ -48,6 +53,11 @@ export const TypeBuilder = ({ initialDraft, savedType, notice = null, onSaved }:
   }
 
   const goToIssue = (issue: ValidationIssue) => {
+    const actionId = getIssueActionId(issue)
+    if (actionId) {
+      setActionTarget({ mode: 'edit', id: actionId })
+      return
+    }
     const next = getIssueSelection(issue)
     if (next) setSelection(next)
     // Wait for the editor (or, below lg, the sheet) to render the selected item.
@@ -109,6 +119,7 @@ export const TypeBuilder = ({ initialDraft, savedType, notice = null, onSaved }:
             fields={draft.fields}
             titleFieldId={draft.titleFieldId}
             listColumnIds={draft.listColumnIds}
+            computedIds={getComputedFieldIds(draft)}
             selection={selection}
             invalidIds={getInvalidIds(shownIssues)}
             onSelect={setSelection}
@@ -124,6 +135,8 @@ export const TypeBuilder = ({ initialDraft, savedType, notice = null, onSaved }:
           <FieldEditorPanel
             target={target}
             fields={draft.fields}
+            fieldActions={draft.actions}
+            onOpenAction={(id) => setActionTarget({ mode: 'edit', id })}
             dispatch={dispatch}
             issues={getTargetIssues(shownIssues, target)}
             onDuplicateField={actions.duplicateField}
@@ -135,6 +148,13 @@ export const TypeBuilder = ({ initialDraft, savedType, notice = null, onSaved }:
           />
         </div>
       </div>
+      <ActionsSection
+        draft={draft}
+        dispatch={dispatch}
+        typeId={savedType?.id}
+        target={actionTarget}
+        onTarget={setActionTarget}
+      />
     </>
   )
 }

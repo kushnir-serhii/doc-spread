@@ -1,12 +1,14 @@
+import { actionProblems } from './actions/action-problems'
+import { actionTitle } from './actions/action-title'
 import type { ColumnDef, FieldDef } from '@/lib/mock/types'
 import { getKeyError } from './field-key'
 import { canBeTitle, canGroupBy, MAX_LIST_COLUMNS } from './list-settings'
 import type { TypeDraft } from './type-draft'
 
 /** Which input of the editor an issue belongs to; used to focus it. */
-export type IssuePart = 'name' | 'fields' | 'label' | 'key' | 'options' | 'columns' | 'consistency'
+export type IssuePart = 'name' | 'fields' | 'label' | 'key' | 'options' | 'columns' | 'consistency' | 'action'
 
-export type IssueTarget = 'name' | 'fields' | { fieldId: string; columnId?: string }
+export type IssueTarget = 'name' | 'fields' | { fieldId: string; columnId?: string } | { actionId: string }
 
 export interface ValidationIssue {
   /** Stable within one validation run; a list key. */
@@ -109,6 +111,20 @@ const consistencyIssues = (draft: TypeDraft): ValidationIssue[] => {
   return issues
 }
 
+/** Actions that refer to something that is gone or no longer fits, or are in a cycle. They are not removed. */
+const actionIssues = (draft: TypeDraft): ValidationIssue[] =>
+  draft.actions.flatMap((action) =>
+    actionProblems(action, draft.fields, draft.actions).map(
+      (message): ValidationIssue => ({
+        id: `action:${action.id}:${message}`,
+        target: { actionId: action.id },
+        part: 'action',
+        subject: `Action “${actionTitle(action, draft.fields)}”`,
+        message,
+      }),
+    ),
+  )
+
 /** All reasons the draft can't be saved yet, in the order of the form. Empty = valid. */
 export const validateDraft = (draft: TypeDraft): ValidationIssue[] => [
   ...(draft.name.trim() === ''
@@ -125,6 +141,7 @@ export const validateDraft = (draft: TypeDraft): ValidationIssue[] => [
     ]
   }),
   ...consistencyIssues(draft),
+  ...actionIssues(draft),
 ]
 
 /** The issues of one item as the editor shows them: the label's own message, and the rest as a list. */

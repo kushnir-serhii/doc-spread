@@ -11,6 +11,8 @@ interface FieldListProps {
   fields: FieldDef[]
   titleFieldId: string | null
   listColumnIds: string[]
+  /** ids of the fields a compute action fills in */
+  computedIds: ReadonlySet<string>
   selection: Selection
   /** Ids of fields and columns with problems to show. */
   invalidIds: ReadonlySet<string>
@@ -25,6 +27,7 @@ export const FieldList = ({
   fields,
   titleFieldId,
   listColumnIds,
+  computedIds,
   selection,
   invalidIds,
   onSelect,
@@ -73,7 +76,7 @@ export const FieldList = ({
           <li key={field.id}>
             <FieldRow
               field={field}
-              badges={fieldBadges(field, titleFieldId, listColumnIds)}
+              badges={[...fieldBadges(field, titleFieldId, listColumnIds), ...(computedIds.has(field.id) ? ['Computed'] : [])]}
               selected={selection?.kind === 'field' && selection.fieldId === field.id}
               invalid={invalidIds.has(field.id)}
               isFirst={index === 0}

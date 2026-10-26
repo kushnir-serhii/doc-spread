@@ -39,7 +39,7 @@ export const SampleWorkspace = ({ initialDraft, initialSamples, proposals, saved
   const usable = proposals.map((p) => ({ ...p, examples: p.examples.filter((e) => samples.ids.includes(e.documentId)) }))
   const review = useProposalReview(usable, draft, dispatch)
   const live = review.items.filter((item) => item.status !== 'rejected').map((item) => item.field)
-  const summary = useSampleSummary(samples.ids, live)
+  const summary = useSampleSummary(samples.ids, live, draft.actions)
 
   const addSample = (id: string) => {
     if (samples.add(id) !== 'full') setChooser(null)

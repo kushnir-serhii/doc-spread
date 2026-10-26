@@ -67,13 +67,13 @@ Money follows the existing rules: arithmetic on money stays in minor units, and 
   - [x] the registry type checks argument and result types, so adding an entry with a wrong `evaluate` fails typecheck
   - [x] the Invoice template gets "Gross = Net + VAT" and "Net = sum of line nets" checks (tolerance 1, warning)
 
-### [ ] 2. Action editor in the builder
+### [x] 2. Action editor in the builder
 - **Build:** an "Actions" section in 014: Add action → Check or Computed field. The expression is built by picking: a field / a column / a constant / a function, then its arguments, the same way at every level of nesting.
 - **Accept:**
-  - [ ] only the fields and functions whose types fit are offered at each step; the expression is shown as a readable line ("Net + VAT")
-  - [ ] a check has an operator, a tolerance (for numbers and money) and a severity
-  - [ ] a computed field can't refer to itself or form a cycle with another computed field; the error says which fields
-  - [ ] a live preview evaluates the action on a sample document of the type
+  - [x] only the fields and functions whose types fit are offered at each step; the expression is shown as a readable line ("Net + VAT")
+  - [x] a check has an operator, a tolerance (for numbers and money) and a severity
+  - [x] a computed field can't refer to itself or form a cycle with another computed field; the error says which fields
+  - [x] a live preview evaluates the action on a sample document of the type
 
 ### [ ] 3. Actions in Review
 - **Accept:**
@@ -107,8 +107,11 @@ Store actions with the type version; evaluate the same checks on the server befo
 - **Decided (2026-10-26):** fields involved in a failed check are highlighted in the form, with "go to field"; no highlight in the viewer.
 - **Decided (2026-10-26):** a computed value is written into the review draft with confidence 1, so it is saved with the document and exported (009).
 - Open: per-row computed columns and per-row checks in tables.
+- Open: the "Train with samples" workspace has no Actions section (it only shows "Computed by …" on a computed field). Add it there too?
+- Open: function arguments have no ids, so the expression editor keys argument slots by position (commented). Giving `Expr` arguments ids would change the model.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-26 | 1 | done | registry of 24 functions with typed signatures, `evaluateExpr` / `runChecks` / `computeValues` / `describeExpr`; `actions` on `DocumentType`; Invoice gets 2 checks + computed "Payment term (days)"; seed doc-029/030 (USD, Gross off). `lib/fields/{functions,evaluate,action-ids,computed-fields}.ts`, `lib/mock/{types,templates,document-types-seed,documents-seed,fake-extract,api}.ts`, `type-draft.ts` |
+| 2026-10-26 | 2 | done | "Actions (n)" section, add/edit dialog with a recursive typed expression editor, readable line, check operator/tolerance/severity, generated label, cycle and broken-reference validation (blocks Save, ErrorSummary opens the action), live preview on the type's documents; computed fields marked in the field list and editor. `features/document-types/actions/*`, `type-builder.tsx`, `type-draft-reducer.ts`, `validate-draft.ts`, `issue-targets.ts`, `field-editor.tsx`, `field-extraction-settings.tsx`, `lib/fields/{describe-failure,format-eval-value}.ts`, `lib/api/builder.ts`, sample workspace passes actions |

@@ -3,8 +3,8 @@ import { Copy, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import type { ColumnDef, FieldDef, FieldType } from '@/lib/mock/types'
+import { FieldExtractionSettings } from './field-extraction-settings'
 import { FieldKeyInput } from './field-key-input'
 import { FieldOptionsEditor } from './field-options-editor'
 import { FieldTypeSelect } from './field-type-select'
@@ -28,6 +28,8 @@ interface FieldEditorProps {
   onTypeChange: (type: FieldType) => void
   onDuplicate: () => void
   onDelete: () => void
+  /** Set for a computed field: it is calculated, so hint and required don't apply. */
+  computedBy?: { text: string; onOpen?: () => void }
   /** Settings only this kind of field has, shown after the type. */
   children?: ReactNode
 }
@@ -47,10 +49,10 @@ export const FieldEditor = ({
   onTypeChange,
   onDuplicate,
   onDelete,
+  computedBy,
   children,
 }: FieldEditorProps) => {
   const id = useId()
-  const hintHelpId = `${id}-hint-help`
 
   return (
     <div data-field-editor tabIndex={-1} className="flex flex-col gap-5 outline-none">
@@ -98,29 +100,21 @@ export const FieldEditor = ({
         </ul>
       )}
 
-      <label htmlFor={`${id}-required`} className="flex min-h-touch items-center gap-3 text-sm font-medium md:min-h-9">
-        <input
-          id={`${id}-required`}
-          type="checkbox"
-          checked={field.required}
-          onChange={(event) => onPatch({ required: event.target.checked })}
-          className="size-5 accent-primary"
-        />
-        Required
-      </label>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`${id}-hint`}>Hint for the AI</Label>
-        <Textarea
-          id={`${id}-hint`}
-          value={field.hint ?? ''}
-          aria-describedby={hintHelpId}
-          onChange={(event) => onPatch({ hint: event.target.value || undefined })}
-        />
-        <p id={hintHelpId} className="text-xs text-muted-foreground">
-          Say where to look or what to ignore. Good: “The date the invoice was issued, not the sale date.”
-        </p>
-      </div>
+      {computedBy ? (
+        <div className="flex flex-col items-start gap-2 rounded-md bg-muted p-3 text-sm">
+          <p>
+            Computed by <span className="font-medium">{computedBy.text}</span>. It is calculated in Review, never read
+            from the document.
+          </p>
+          {computedBy.onOpen && (
+            <Button variant="outline" className="min-h-touch md:min-h-9" onClick={computedBy.onOpen}>
+              Open the action
+            </Button>
+          )}
+        </div>
+      ) : (
+        <FieldExtractionSettings field={field} onPatch={onPatch} />
+      )}
 
       <div className="flex flex-wrap gap-2 border-t pt-4">
         <Button variant="outline" className="min-h-touch md:min-h-9" onClick={onDuplicate}>
