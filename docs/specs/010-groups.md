@@ -1,6 +1,6 @@
 # 010 — Groups
 
-**Status:** ready · **Depends on:** 002, 014 · **Route(s):** `/groups`, `/groups/:typeId/:fieldId`
+**Status:** in-progress · **Depends on:** 002, 014 · **Route(s):** `/groups`, `/groups/:typeId/:fieldId`
 
 ## Goal
 The user sees their documents grouped by any field marked `groupable` (a supplier, a client, an employee), with the document count and totals for each value, and can open the documents behind one value. This replaces the invoice-only Suppliers screen.
@@ -21,15 +21,15 @@ Shared rules for all slices:
 
 ## Slices
 
-### [ ] 1. Groupings list
+### [x] 1. Groupings list
 - **Build:** mock `listGroupings()` + `useGroupings()` (key from `groupKeys`), `GroupingSummary` type; whitespace collapse in the mock `normalize`; `/groups` page with one card per groupable field.
 - **Files:** `src/lib/mock/api.ts`, `src/lib/mock/types.ts`, `src/lib/mock/index.ts`, `src/lib/api/groups.ts`, `src/pages/groups/groups-page.tsx`, `src/features/groups/`, `src/app/router.tsx`
 - **Accept:**
-  - [ ] one card per groupable field, ordered by type then field order: title = field label ("Supplier"), a line with the type name ("Invoice"), and "8 values · 14 documents" (singular forms for 1); a grouping without documents reads "No values yet"
-  - [ ] the card is a link to `/groups/:typeId/:fieldId`, 44px target, visible focus
-  - [ ] empty state (no groupable fields) explains how to mark a field as groupable ("Group documents by this field" in the type builder), with a link to `/types`
-  - [ ] loading skeleton, error with retry, long labels truncate with a title; works at 375px
-  - [ ] the sidebar keeps one "Groups" item
+  - [x] one card per groupable field, ordered by type then field order: title = field label ("Supplier"), a line with the type name ("Invoice"), and "8 values · 14 documents" (singular forms for 1); a grouping without documents reads "No values yet"
+  - [x] the card is a link to `/groups/:typeId/:fieldId`, 44px target, visible focus
+  - [x] empty state (no groupable fields) explains how to mark a field as groupable ("Group documents by this field" in the type builder), with a link to `/types`
+  - [x] loading skeleton, error with retry, long labels truncate with a title; works at 375px
+  - [x] the sidebar keeps one "Groups" item
 
 ### [ ] 2. Values of a grouping
 - **Build:** `GroupValue` gains `totals`; `/groups/:typeId/:fieldId` page with a values table (cards below `md`) and search.
@@ -67,3 +67,4 @@ Shared rules for all slices:
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | Suppliers → generic groups by any groupable field |
 | 2026-10-26 | — | ready | questions answered (all recommended); decisions written into the criteria |
+| 2026-10-26 | 1 | done | listGroupings + useGroupings, non-rejected counting, whitespace normalize, /groups page; features/groups/{grouping-card,groupings-skeleton,groupings-error,groupings-empty-state}.tsx, pages/groups/groups-page.tsx, lib/mock/{api,types}.ts, lib/api/{groups,document-types}.ts, app/router.tsx |

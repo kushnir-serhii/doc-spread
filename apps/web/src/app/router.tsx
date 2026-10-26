@@ -67,7 +67,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/groups',
-            lazy: placeholder('Groups', 'Documents grouped by a field, like company or counterparty.'),
+            lazy: () => import('@/pages/groups/groups-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/groups/:typeId/:fieldId',

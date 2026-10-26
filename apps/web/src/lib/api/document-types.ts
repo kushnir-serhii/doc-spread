@@ -6,6 +6,7 @@ import {
   listTemplates,
   updateDocumentType,
 } from '@/lib/mock'
+import { groupKeys } from './groups'
 import type { CreateDocumentTypeInput, UpdateDocumentTypeInput } from '@/lib/mock/types'
 
 export const documentTypeKeys = {
@@ -41,7 +42,10 @@ export const useCreateDocumentType = () => {
   return useMutation({
     mutationFn: (input: CreateDocumentTypeInput) => createDocumentType(input),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+      ]),
   })
 }
 
@@ -57,6 +61,7 @@ export const useUpdateDocumentType = () => {
           queryKey: documentTypeKeys.detail(id),
           exact: true,
         }),
+        queryClient.invalidateQueries({ queryKey: groupKeys.all }),
       ]),
   })
 }

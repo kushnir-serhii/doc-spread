@@ -18,7 +18,9 @@
  *    rows with stable row ids. Edits set confidence to 1 and are validated against the type version.
  *  - Server-side filtering by type and status, text search (file name + text-like values) and
  *    grouping: documents whose value for a groupable field matches after normalization (trim +
- *    lowercase), and a group listing (value, count, last document date) per type + field.
+ *    lowercase + collapsed whitespace), and a group listing (value, count, last document date) per
+ *    type + field over non-rejected documents, plus a summary per groupable field (value count,
+ *    document count) for the groupings list.
  *  - Transitions with validation: approve (needs_review | rejected -> approved), reject with a
  *    reason, reassign type (re-runs extraction with the current version -> needs_review).
  *    Whether approval is blocked while required fields are empty is an open question.
@@ -67,6 +69,7 @@ import type {
   FieldValue,
   FileType,
   GroupValue,
+  GroupingSummary,
   ListDocumentsParams,
   SuggestFieldInput,
   SuggestTableInput,
@@ -101,7 +104,7 @@ function later(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-const normalize = (text: string) => text.trim().toLowerCase()
+const normalize = (text: string) => text.trim().toLowerCase().replace(/\s+/g, ' ')
 
 // ---------- lookups ----------
 function currentVersions(): DocumentType[] {
@@ -547,17 +550,14 @@ export async function addFieldExample(typeId: string, fieldId: string, example: 
   return copy(type)
 }
 
-export async function listGroupValues(typeId: string, fieldId: string): Promise<GroupValue[]> {
-  await delay()
-  const field = findCurrentType(typeId).fields.find((f) => f.id === fieldId)
-  if (!field) throw new Error(`Field not found: ${fieldId}`)
-  if (!field.groupable) throw new Error(`Field is not groupable: ${field.key}`)
+/** Groups of the counted documents (every status except rejected) by normalized value of a field. */
+function buildGroups(typeId: string, fieldId: string): Map<string, GroupValue> {
   const groups = new Map<string, GroupValue>()
   for (const doc of db.documents) {
-    if (doc.typeId !== typeId) continue
+    if (doc.typeId !== typeId || doc.status === 'rejected') continue
     const value = doc.values[fieldId]
     const text = value ? scalarText(value) : null
-    if (text === null) continue
+    if (text === null || normalize(text) === '') continue
     const key = normalize(text)
     const group = groups.get(key)
     if (!group) {
@@ -567,7 +567,37 @@ export async function listGroupValues(typeId: string, fieldId: string): Promise<
       if (doc.uploadedAt > group.lastDocumentAt) group.lastDocumentAt = doc.uploadedAt
     }
   }
-  return copy([...groups.values()].sort((a, b) => b.count - a.count))
+  return groups
+}
+
+export async function listGroupValues(typeId: string, fieldId: string): Promise<GroupValue[]> {
+  await delay()
+  const field = findCurrentType(typeId).fields.find((f) => f.id === fieldId)
+  if (!field) throw new Error(`Field not found: ${fieldId}`)
+  if (!field.groupable) throw new Error(`Field is not groupable: ${field.key}`)
+  return copy([...buildGroups(typeId, fieldId).values()].sort((a, b) => b.count - a.count))
+}
+
+/** One entry per groupable field of every current type, in type list order then field order. */
+export async function listGroupings(): Promise<GroupingSummary[]> {
+  await delay()
+  const types = currentVersions().sort((a, b) => a.name.localeCompare(b.name))
+  const out: GroupingSummary[] = []
+  for (const type of types) {
+    for (const field of type.fields) {
+      if (!field.groupable) continue
+      const groups = [...buildGroups(type.id, field.id).values()]
+      out.push({
+        typeId: type.id,
+        typeName: type.name,
+        fieldId: field.id,
+        fieldLabel: field.label,
+        valueCount: groups.length,
+        documentCount: groups.reduce((sum, g) => sum + g.count, 0),
+      })
+    }
+  }
+  return out
 }
 
 // ---------- export ----------

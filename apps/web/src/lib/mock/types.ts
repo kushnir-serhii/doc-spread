@@ -304,7 +304,7 @@ export interface ListDocumentsParams {
   status?: DocumentStatus
   /** file name and any text-like value, case-insensitive */
   search?: string
-  /** documents whose value for the field equals `value` (trimmed, case-insensitive) */
+  /** documents whose value for the field equals `value` (trimmed, case-insensitive, whitespace collapsed) */
   group?: { fieldId: string; value: string }
 }
 
@@ -323,6 +323,18 @@ export interface GroupValue {
   count: number
   /** ISO datetime of the newest document in the group */
   lastDocumentAt: string
+}
+
+/** One groupable field of one type, for the groupings list. Counts exclude rejected documents. */
+export interface GroupingSummary {
+  typeId: string
+  typeName: string
+  fieldId: string
+  fieldLabel: string
+  /** distinct values after normalization */
+  valueCount: number
+  /** counted documents that have a value */
+  documentCount: number
 }
 
 export interface SuggestFieldInput {
