@@ -29,7 +29,7 @@ Every task gets one spec file in [specs/](specs/). Every spec is split into **sl
 - Implementation goes to subagents on **Sonnet**: components, hooks, mocks, slices in general. Use the `designer` agent type for slices that are mostly UI.
 - The simplest mechanical work goes to **Haiku**: moving or renaming files, copy changes, adding a shadcn primitive.
 - A slice's `**Model:**` line overrides this choice.
-- Subagents can run in parallel when their slices are independent: their dependencies are `done` and they don't touch the same files. Each parallel agent works in its own worktree (`isolation: "worktree"`). The approval loop still holds: the batch is reported together.
+- Subagents can run in parallel when their slices are independent: their dependencies are `done` and they don't touch the same files. Each parallel agent works in its own worktree (`isolation: "worktree"`). Their results are verified and reported together.
 
 ## The loop (`/run-implement`, `/run-i`)
 
@@ -55,8 +55,8 @@ Arguments: none (next slice from the plan) · `012` (next open slice of that spe
    ```
    For UI slices, also check 375px width, light and dark mode, and every state in the slice (loading, empty, error, long values). Send problems back to the agent with specifics; after two rounds, report what still fails.
 6. **Record.** In the spec: mark the criteria and the slice `[x]`, add one **Log** row (date, slice, result, files touched), add new **Open questions**. Update the status in the spec header and in [roadmap.md](roadmap.md): `ready` → `in-progress` after the first slice, `in-progress` → `done` when all slices are `[x]` and the Definition of Done holds.
-7. **Report and stop** in 3–5 lines: what was built, files, open questions, and what comes next in the plan. End with a suggested commit message: `feat(web): <spec #> slice <n> — <summary>`. Wait for your OK.
-8. **Commit.** You make the commits and branches yourself. Claude never commits or creates branches.
+7. **Commit and go on.** Commit the slice (`feat(web): <spec #> slice <n> — <summary>`) on the spec's branch and start the next `[ ]` slice of the same spec at step 3, without stopping: every question was settled in step 2. Stop early only for a new question the slice can't go on without.
+8. **Report once, when the spec is done** (or blocked): what was built per slice, the commits, open questions, what you should look at in the app, and what comes next in the plan. You merge the branch (PR) into `main`.
 
 Scope changes go into the spec first, then into the code.
 

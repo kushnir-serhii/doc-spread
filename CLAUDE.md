@@ -44,4 +44,4 @@ All process documents live in `docs/`:
 - `docs/conventions.md`: the rules every slice is checked against.
 - `docs/specs/`: one spec per task, split into slices (`_template.md` for new ones).
 
-`/run-implement` (short: `/run-i`) runs one step of the loop in `docs/process.md`. Key rules: one slice at a time, stop for approval after each; Opus orchestrates, Sonnet implements, Haiku takes mechanical work; the user makes all commits and branches — never run `git commit` or create branches, suggest the message instead.
+`/run-implement` (short: `/run-i`) runs one step of the loop in `docs/process.md`. Key rules: all questions for a spec are asked once, up front; then its slices run one after another without stopping (each verified and committed on the spec's branch) and are reported once at the end; Opus orchestrates, Sonnet implements, Haiku takes mechanical work; the user merges branches into `main` (PRs).
