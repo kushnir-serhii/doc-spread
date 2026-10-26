@@ -4,6 +4,10 @@ import { PageHeader } from '@/components/layout/page-header'
 import { ExportEmpty } from '@/features/export/export-empty'
 import { ExportError } from '@/features/export/export-error'
 import { ExportForm } from '@/features/export/export-form'
+import { ExportHistory } from '@/features/export/export-history'
+import { panelId, tabId } from '@/features/export/export-tab-ids'
+import { ExportTabs } from '@/features/export/export-tabs'
+import type { ExportTab } from '@/features/export/export-tab-ids'
 import type { ExportResult } from '@/features/export/export-result'
 import { ExportSkeleton } from '@/features/export/export-skeleton'
 import { ExportSuccess } from '@/features/export/export-success'
@@ -32,13 +36,16 @@ const ExportPage = () => {
     setResult(undefined)
     setSearchParams({ type: typeId }, { replace: true })
   }
-  // slice 4 adds the History tab behind ?tab=history
-  const viewHistory = () =>
+  // switching tabs keeps ?type= (and the rest)
+  const tab: ExportTab = searchParams.get('tab') === 'history' ? 'history' : 'new'
+  const changeTab = (next: ExportTab) =>
     setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.set('tab', 'history')
-      return next
+      const params = new URLSearchParams(prev)
+      if (next === 'history') params.set('tab', 'history')
+      else params.delete('tab')
+      return params
     })
+  const viewHistory = () => changeTab('history')
   const retry = () => {
     void typesQuery.refetch()
     void approvedQuery.refetch()
@@ -72,7 +79,12 @@ const ExportPage = () => {
   return (
     <>
       <PageHeader title="Export" description="Turn approved documents of one type into a spreadsheet or a PDF bundle." />
-      {body()}
+      <div className="flex flex-col gap-6">
+        <ExportTabs value={tab} onChange={changeTab} />
+        <div role="tabpanel" id={panelId(tab)} aria-labelledby={tabId(tab)}>
+          {tab === 'history' ? <ExportHistory onNewExport={() => changeTab('new')} /> : body()}
+        </div>
+      </div>
     </>
   )
 }
