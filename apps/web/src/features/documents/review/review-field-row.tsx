@@ -8,6 +8,9 @@ import { FieldValueView } from '@/features/documents/fields/field-value-view'
 import { isLowConfidence } from '@/lib/fields/confidence'
 import type { FieldDef, FieldValue } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
+import { ReviewPointButton } from './review-point-button'
+import { ReviewPointFeedback } from './review-point-feedback'
+import type { ReviewPointing } from './use-review-pointing'
 
 interface ReviewFieldRowProps {
   field: FieldDef
@@ -16,6 +19,8 @@ interface ReviewFieldRowProps {
   /** set when the form is editable; tables stay read-only until slice 4 */
   onChange?: (next: FieldValue) => void
   onConfirm?: () => void
+  /** pointing at the document; set for editable scalar rows */
+  pointing?: ReviewPointing
 }
 
 /** A table has no confidence of its own: show its weakest cell, or nothing for an empty table. */
@@ -25,7 +30,7 @@ const confidenceOf = (value: FieldValue): number | null => {
   return scores.length === 0 ? null : Math.min(...scores)
 }
 
-export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm }: ReviewFieldRowProps) => {
+export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, pointing }: ReviewFieldRowProps) => {
   const labelId = useId()
   const inputId = useId()
   const isTable = value.type === 'table'
@@ -62,10 +67,16 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm }: R
         {score !== null && <ConfidenceBadge score={score} />}
       </div>
       {editing ? (
-        <FieldValueEdit id={inputId} field={field} value={value} onChange={onChange} />
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <FieldValueEdit id={inputId} field={field} value={value} onChange={onChange} />
+          </div>
+          {pointing && <ReviewPointButton fieldId={field.id} label={field.label} pointing={pointing} />}
+        </div>
       ) : (
         <FieldValueView field={field} value={value} focusId={focusId} />
       )}
+      {editing && pointing && <ReviewPointFeedback fieldId={field.id} pointing={pointing} />}
       {low && (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="flex items-center gap-1.5 text-sm">

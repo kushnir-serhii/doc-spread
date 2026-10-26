@@ -19,9 +19,10 @@ export const useReviewDraft = (doc: Document) => {
 
   const changedIds = Object.keys(draft).filter((id) => differs(draft[id], saved[id]))
 
-  const setValue = (fieldId: string, next: FieldValue) => {
+  /** `verify: false` keeps the value's own confidence, e.g. when part of it was assumed and still needs a check. */
+  const setValue = (fieldId: string, next: FieldValue, { verify = true }: { verify?: boolean } = {}) => {
     if (!mutation.isIdle) mutation.reset()
-    setDraft((current) => ({ ...current, [fieldId]: verified(next) }))
+    setDraft((current) => ({ ...current, [fieldId]: verify ? verified(next) : next }))
   }
   const confirm = (fieldId: string) => {
     const current = draft[fieldId]

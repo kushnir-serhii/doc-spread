@@ -6,6 +6,7 @@ import { ReviewForm } from './review-form'
 import { ReviewViewerPane } from './review-viewer-pane'
 import { ReviewSaveBar } from './review-save-bar'
 import { useReviewDraft } from './use-review-draft'
+import { useReviewPointing } from './use-review-pointing'
 import { useReviewHighlights } from './use-review-highlights'
 
 interface ReviewWorkspaceProps {
@@ -21,6 +22,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const editable = doc.status === 'needs_review'
   const { draft, setValue, confirm, save, dirty, mutation } = useReviewDraft(doc)
+  const pointing = useReviewPointing({ doc, type, draft, setValue, formRef })
   const highlights = useReviewHighlights(doc.id, draft, type)
 
   const focusField = (id: string) => {
@@ -46,6 +48,9 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
         highlights={highlights}
         activeHighlightId={hoveredId ?? focusedId}
         onHighlightClick={focusFromBox}
+        mode={editable ? pointing.mode : 'view'}
+        onSelect={pointing.select}
+        onCancel={pointing.cancel}
       />
       <div className="flex flex-col gap-3">
         <ReviewForm
@@ -55,6 +60,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
           values={draft}
           onValueChange={editable ? setValue : undefined}
           onConfirm={editable ? confirm : undefined}
+          pointing={editable ? pointing : undefined}
           onFieldFocus={focusField}
           onFieldHover={setHoveredId}
         />
@@ -68,6 +74,9 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
           />
         )}
       </div>
+      <p role="status" className="sr-only">
+        {pointing.announcement}
+      </p>
       {editable && (
         <LeaveGuard
           dirty={dirty}
