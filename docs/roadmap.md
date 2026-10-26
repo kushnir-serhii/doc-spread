@@ -14,14 +14,14 @@ The single source of truth for what is done, what is next, and in which order. `
 | 006 | [Inbox](specs/006-inbox.md) | done | 002, 012 |
 | 007 | [Upload](specs/007-upload.md) | done | 002, 012 |
 | 008 | [Review](specs/008-review.md) | done | 002, 006, 013 |
-| 009 | [Export](specs/009-export.md) | draft | 002, 006 |
+| 009 | [Export](specs/009-export.md) | ready | 002, 006 |
 | 010 | [Groups](specs/010-groups.md) | draft | 002, 014 |
 | 011 | [Settings](specs/011-settings.md) | draft | 002 |
 | 012 | [Document model](specs/012-document-model.md) | done | — |
 | 013 | [Document viewer](specs/013-document-viewer.md) | done | 002, 012 |
 | 014 | [Document types (builder)](specs/014-document-types.md) | done | 002, 012 |
 | 015 | [Type from a sample](specs/015-type-from-sample.md) | done | 013, 014 |
-| 016 | [Field actions](specs/016-field-actions.md) | draft | 008, 014 |
+| 016 | [Field actions](specs/016-field-actions.md) | ready | 008, 014 |
 
 Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 
