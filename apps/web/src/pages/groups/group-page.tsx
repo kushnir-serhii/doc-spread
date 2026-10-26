@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router'
 import { PageHeader } from '@/components/layout/page-header'
 import { TypeNotFound } from '@/features/document-types/type-not-found'
 import { GroupBackLink } from '@/features/groups/group-back-link'
+import { GroupValueView } from '@/features/groups/group-value-view'
 import { GroupValuesEmpty } from '@/features/groups/group-values-empty'
 import { GroupValuesError } from '@/features/groups/group-values-error'
 import { GroupValuesSkeleton } from '@/features/groups/group-values-skeleton'
@@ -20,6 +21,7 @@ const GroupPage = () => {
   const valuesQuery = useGroupValues(typeId, fieldId, { enabled: Boolean(field) })
   const values = valuesQuery.data ?? []
   const search = searchParams.get('q') ?? ''
+  const selectedValue = searchParams.get('value') ?? ''
 
   const commitSearch = useCallback(
     (value: string) =>
@@ -38,6 +40,13 @@ const GroupPage = () => {
     const next = new URLSearchParams(searchParams)
     next.set('value', value)
     return `?${next.toString()}`
+  }
+
+  const valuesHref = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('value')
+    const query = next.toString()
+    return `/groups/${encodeURIComponent(typeId)}/${encodeURIComponent(fieldId)}${query ? `?${query}` : ''}`
   }
 
   if (typesQuery.isError) {
@@ -61,6 +70,27 @@ const GroupPage = () => {
       <>
         <GroupBackLink />
         <TypeNotFound title="This grouping doesn't exist" backTo="/groups" backLabel="Back to groups" />
+      </>
+    )
+  }
+
+  if (selectedValue) {
+    return (
+      <>
+        <GroupBackLink to={valuesHref()} label={`${field.label} values`} />
+        {valuesQuery.isError ? (
+          <GroupValuesError onRetry={() => void valuesQuery.refetch()} />
+        ) : valuesQuery.isPending ? (
+          <GroupValuesSkeleton />
+        ) : (
+          <GroupValueView
+            type={type}
+            fieldId={field.id}
+            values={values}
+            value={selectedValue}
+            valuesHref={valuesHref()}
+          />
+        )}
       </>
     )
   }

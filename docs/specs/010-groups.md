@@ -1,6 +1,6 @@
 # 010 — Groups
 
-**Status:** in-progress · **Depends on:** 002, 014 · **Route(s):** `/groups`, `/groups/:typeId/:fieldId`
+**Status:** done · **Depends on:** 002, 014 · **Route(s):** `/groups`, `/groups/:typeId/:fieldId`
 
 ## Goal
 The user sees their documents grouped by any field marked `groupable` (a supplier, a client, an employee), with the document count and totals for each value, and can open the documents behind one value. This replaces the invoice-only Suppliers screen.
@@ -42,14 +42,14 @@ Shared rules for all slices:
   - [x] loading skeleton, empty (no documents yet, with a link to Upload), error with retry, long values truncate with a title; table from `md`, stacked cards below
   - [x] an unknown type, an unknown field or a field that isn't groupable shows not-found (checked before the request) with a link back to `/groups`
 
-### [ ] 3. Documents of a value
+### [x] 3. Documents of a value
 - **Build:** `?value=` on the grouping page switches to the value's documents.
 - **Files:** `src/pages/groups/group-page.tsx`, `src/features/groups/`
 - **Accept:**
-  - [ ] `?value=` lists the value's documents (all counted and rejected ones, via `useDocuments({ typeId, group })`) with `InboxResults`: the type's columns plus Status, selection, bulk Approve and Export for this type
-  - [ ] the header shows the value, the document count and its totals, taken from the matching `useGroupValues` row; a back link returns to the values list keeping `?q=`
-  - [ ] a value with no counted documents (stale link) shows "No documents for ‘X’ any more" with a link back to the values
-  - [ ] loading, error with retry, long value in the header wraps
+  - [x] `?value=` lists the value's documents (all counted and rejected ones, via `useDocuments({ typeId, group })`) with `InboxResults`: the type's columns plus Status, selection, bulk Approve and Export for this type
+  - [x] the header shows the value, the document count and its totals, taken from the matching `useGroupValues` row; a back link returns to the values list keeping `?q=`
+  - [x] a value with no counted documents (stale link) shows "No documents for ‘X’ any more" with a link back to the values
+  - [x] loading, error with retry, long value in the header wraps
 
 ## Backend needs
 - Group listing per (type, field): value, document count, last document date, totals per money field and currency, over non-rejected documents; a summary per groupable field (value count, document count) for the groupings list.
@@ -69,3 +69,4 @@ Shared rules for all slices:
 | 2026-10-26 | — | ready | questions answered (all recommended); decisions written into the criteria |
 | 2026-10-26 | 1 | done | listGroupings + useGroupings, non-rejected counting, whitespace normalize, /groups page; features/groups/{grouping-card,groupings-skeleton,groupings-error,groupings-empty-state}.tsx, pages/groups/groups-page.tsx, lib/mock/{api,types}.ts, lib/api/{groups,document-types}.ts, app/router.tsx |
 | 2026-10-26 | 2 | done | GroupValue.totals (money list columns, per currency), lib/fields/total-fields.ts, useGroupValues enabled guard, InboxSearch label/placeholder props, /groups/:typeId/:fieldId page; features/groups/group-values-{view,table,skeleton,error,empty,no-results}.tsx, group-value-cards.tsx, group-amounts.tsx, group-back-link.tsx |
+| 2026-10-26 | 3 | done | ?value= view: InboxResults with type columns, header count + totals from the values row, stale-value state; features/groups/{find-group-value.ts,group-value-view,group-value-header,group-value-documents,group-value-gone}.tsx, group-back-link.tsx, pages/groups/group-page.tsx. Not yet checked in a browser (375px, dark mode) |
