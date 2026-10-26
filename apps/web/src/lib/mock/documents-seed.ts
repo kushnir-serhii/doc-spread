@@ -252,7 +252,6 @@ const invoiceValues = (c: Ctx, lineCount: number, grossOffset = 0): Record<strin
     net_total: moneyValue(net, currency, conf()),
     vat_total: moneyValue(vat, currency, conf()),
     gross_total: moneyValue(net + vat + grossOffset, currency, review && index % 3 === 0 ? 0.42 : conf()),
-    ksef: booleanValue(supplier.country === 'PL' && rng() > 0.4, conf()),
     line_items: tableValue(rows),
   }
   // version 2 of the Invoice type added the order number
@@ -282,7 +281,6 @@ const showcaseInvoiceValues = (id: string): Record<string, FieldValue> => {
     net_total: moneyValue(344700, currency, 0.97, s.net_total),
     vat_total: moneyValue(27576, currency, 0.94, s.vat_total),
     gross_total: moneyValue(372276, currency, 0.97, s.gross_total),
-    ksef: booleanValue(false, 0.9),
     order_number: textValue(null, 0),
     line_items: tableValue(
       lines.map((l, i) => {

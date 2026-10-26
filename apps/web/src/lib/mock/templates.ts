@@ -126,17 +126,17 @@ const invoice = ((): DocumentTemplate => {
     id: 'tpl-invoice',
     name: 'Invoice',
     description:
-      'A sales or purchase invoice (faktura VAT) issued by a supplier, with totals and line items.',
+      'A sales or purchase invoice issued by a supplier, with totals and line items.',
     fields: [
       f('supplier_name', 'Supplier', 'text', 'Name of the company that issued the invoice (the seller), not the buyer.', {
         required: true,
         groupable: true,
       }),
-      f('supplier_tax_id', 'Supplier tax ID', 'tax_id', 'Tax ID of the seller: NIP for Polish companies, VAT ID with country prefix for foreign ones.'),
+      f('supplier_tax_id', 'Supplier tax ID', 'tax_id', 'Tax ID of the seller (VAT ID, EIN, NIP … , as printed).'),
       f('invoice_number', 'Invoice number', 'text', 'The invoice number exactly as printed, for example FV/2026/05/123.', {
         required: true,
       }),
-      f('issue_date', 'Issue date', 'date', 'Date the invoice was issued, usually labelled "Data wystawienia".', {
+      f('issue_date', 'Issue date', 'date', 'Date the invoice was issued, usually labelled "Issue date" or "Invoice date".', {
         required: true,
       }),
       f('sale_date', 'Sale date', 'date', 'Date of sale or delivery, usually labelled "Data sprzedaży". Leave empty if absent.'),
@@ -145,7 +145,6 @@ const invoice = ((): DocumentTemplate => {
       f('net_total', 'Net total', 'money', 'Total net amount (netto) of the whole invoice.', { required: true }),
       f('vat_total', 'VAT total', 'money', 'Total VAT amount of the whole invoice.'),
       f('gross_total', 'Gross total', 'money', 'Total gross amount (brutto) to be paid.', { required: true }),
-      f('ksef', 'In KSeF', 'boolean', 'True if the invoice shows a KSeF number or was issued through KSeF.'),
       makeTable(t, 'line_items', 'Line items', 'One row per invoiced item or service.', [
         c('description', 'Description', 'text', 'Name or description of the item or service.'),
         c('quantity', 'Quantity', 'number', 'Number of units.'),
@@ -188,7 +187,7 @@ const receipt = ((): DocumentTemplate => {
         required: true,
         groupable: true,
       }),
-      f('merchant_tax_id', 'Merchant tax ID', 'tax_id', 'NIP of the merchant, usually printed near the top.'),
+      f('merchant_tax_id', 'Merchant tax ID', 'tax_id', 'Tax ID of the merchant (VAT ID, EIN, NIP …, as printed), usually near the top.'),
       f('receipt_date', 'Date', 'date', 'Date of the purchase.', { required: true }),
       f('total', 'Total', 'money', 'Total amount paid, including tax.', { required: true }),
       f('tax_total', 'Tax total', 'money', 'Total tax (VAT) amount on the receipt.'),
@@ -230,7 +229,7 @@ const contract = ((): DocumentTemplate => {
       f('contract_number', 'Contract number', 'text', 'Contract number or reference, if the document has one.'),
       makeTable('contract', 'parties', 'Parties', 'One row per contracting party, including our own company.', [
         pc('name', 'Name', 'text', 'Full legal name of the party.'),
-        pc('tax_id', 'Tax ID', 'tax_id', 'Tax ID of the party: NIP for Polish companies.'),
+        pc('tax_id', 'Tax ID', 'tax_id', 'Tax ID of the party (VAT ID, EIN, NIP …, as printed).'),
       ]),
       f('counterparty', 'Counterparty', 'text', 'The other party to the contract (not our company).', {
         groupable: true,

@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { formatMoney } from '@/lib/mock/format'
 import { DOCUMENT_STATUSES } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
 import { FieldTypesSection } from './field-types-section'
@@ -184,15 +185,15 @@ const DesignPage = () => {
       <Section id="amounts" title="Amounts" description="Use the `amount` utility (tabular-nums), right-align in tables, always show currency.">
         <div className="max-w-sm divide-y rounded-lg border text-sm">
           {[
-            ['Net', '12 480,00', 'PLN'],
-            ['VAT 23%', '2 870,40', 'PLN'],
-            ['Gross', '15 350,40', 'PLN'],
-            ['Gross', '1 111,11', 'EUR'],
-          ].map(([label, value, currency], i) => (
-            <div key={i} className="flex items-center justify-between px-3 py-2">
+            { label: 'Net', amount: 1248000, currency: 'USD' },
+            { label: 'Tax 8%', amount: 99840, currency: 'USD' },
+            { label: 'Gross', amount: 1347840, currency: 'USD' },
+            { label: 'Gross', amount: 111111, currency: 'EUR' },
+          ].map(({ label, amount, currency }) => (
+            <div key={`${label}-${currency}`} className="flex items-center justify-between px-3 py-2">
               <span className="text-muted-foreground">{label}</span>
               <span className="amount font-medium">
-                {value} <span className="text-muted-foreground">{currency}</span>
+                {formatMoney(amount, currency)} <span className="text-muted-foreground">{currency}</span>
               </span>
             </div>
           ))}

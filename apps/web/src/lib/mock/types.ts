@@ -119,7 +119,7 @@ export interface FieldExample {
   page: number
   bbox: BBox
   text: string
-  /** nearby label, e.g. "Data wystawienia:" */
+  /** nearby label, e.g. "Issue date:" */
   anchorText?: string
 }
 

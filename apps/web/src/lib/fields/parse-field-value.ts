@@ -101,7 +101,7 @@ export const parseFieldValue = (field: ParseTarget, rawText: string, current?: F
     case 'money': {
       const found = text.match(CURRENCY_PATTERN)
       const amount = parseNumber(text.replace(CURRENCY_PATTERN, ''))
-      if (amount === null || (found?.length ?? 0) > 1) return fail(`${quote(text)} isn't an amount (try 1 234,56 zł).`)
+      if (amount === null || (found?.length ?? 0) > 1) return fail(`${quote(text)} isn't an amount (try 1,234.56 USD).`)
       const fromText = found ? currencyOf(found[0]) : null
       // no currency in the text: keep the current one, else the default, and never silently
       const kept = current?.type === 'money' ? current.value?.currency : undefined

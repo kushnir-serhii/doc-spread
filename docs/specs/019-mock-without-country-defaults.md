@@ -1,6 +1,6 @@
 # 019 — Mock data without country defaults
 
-**Status:** in-progress · **Depends on:** — · **Route(s):** —
+**Status:** done · **Depends on:** — · **Route(s):** —
 
 ## Goal
 The mock data and templates stop assuming Poland: the seed company is a neutral international one with USD as its default, seed documents use mixed currencies with USD the most common, the showcase files are in English and USD, template hints are country-neutral, and money minor digits come from the currency instead of a hard-coded 2.
@@ -55,14 +55,14 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
   - [x] the values in Review equal the printed ones (totals, line items, tax), and the Invoice checks pass on the showcase invoice
   - [x] the script runs from a clean checkout with the steps written at its top, and its output is committed
 
-### [ ] 5. Country-neutral hints and leftovers
+### [x] 5. Country-neutral hints and leftovers
 - **Build:** the Polish-only "In KSeF" field is removed from the Invoice template and the seed documents; template hints stop naming one country: tax ID hints say "Tax ID of the seller (VAT ID, EIN, NIP …, as printed)", the issue date hint has no "Data wystawienia". Fix the remaining Polish defaults in app code: the parse error hint "try 1 234,56 zł" becomes a currency-neutral example, design page samples use USD, comments in `types.ts` and `field-key.ts` use English examples. `fake-extract.ts` word list may mix languages but not only Polish.
 - **Files:** `src/lib/mock/templates.ts`, `src/lib/fields/parse-field-value.ts`, `src/pages/design/design-page.tsx`, `src/pages/design/field-types-section.tsx`, `src/lib/mock/types.ts`, `src/features/document-types/field-key.ts`, `src/lib/mock/fake-extract.ts`
 - **Model:** haiku
 - **Accept:**
-  - [ ] `grep -rniE "Data wystawienia|NIP for Polish|1 234,56 zł|pl-PL"` over `apps/web/src` finds nothing
-  - [ ] no `ksef` is left in `apps/web/src` or the generator script
-  - [ ] the design page shows USD samples; the parse hint names an amount with a currency code that isn't tied to a country (e.g. "1,234.56 USD")
+  - [x] `grep -rniE "Data wystawienia|NIP for Polish|1 234,56 zł|pl-PL"` over `apps/web/src` finds nothing
+  - [x] no `ksef` is left in `apps/web/src` or the generator script
+  - [x] the design page shows USD samples; the parse hint names an amount with a currency code that isn't tied to a country (e.g. "1,234.56 USD")
 
 ## Backend needs
 - Money constants and money tolerances in actions are stored in major units (decimal), not minor units; the backend converts with the currency's minor digits (ISO 4217) at evaluation.
@@ -97,3 +97,5 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 | 2026-10-26 | 2 | done | money constants and tolerances in major units; a currency-less money scalar holds major units until `shareCurrency` converts it; money results rounded to whole minor units in the evaluator once the currency is known; `round` gets the call's currency; money tolerance compared on the major-unit difference; template tolerances `0.01`. Seed check results identical before / after. Files: `evaluate.ts`, `functions.ts`, `const-input.tsx`, `action-form.ts`, `types.ts`, `templates.ts` |
 | 2026-10-26 | 3 | done | Northwind Studio Ltd (USD), English team; shell name from `useCompany()` (skeleton while loading, hidden if unknown); Japanese supplier (JPY) and Vercel (USD) added; merchants carry a country, receipts take its currency and VAT; file stems in English; receipt items in English. Typed documents: USD 9, PLN 5, EUR 3, JPY 3, GBP 2; no seed mismatches; check outcomes unchanged (029/030 still fail). Files: `data.ts`, `documents-seed.ts`, `app-shell.tsx`, `header.tsx` |
 | 2026-10-26 | 4 | done | showcase invoice: Brightline Software Inc. (EIN) to Northwind Studio Ltd, 4 lines at 8% tax, 3,447.00 + 275.76 = 3,722.76 USD; receipt: Maple Corner Cafe, 42.74 USD incl. 3.17 tax; long sample in English. Every source box checked against its tokens; no seed mismatches; both Invoice checks pass on doc-001. No KSeF line printed (`ksef: false` without a source until slice 5). Files: `generate-mock-files.py`, `public/mock/*`, `showcase-sources.ts`, `documents-seed.ts` |
+| 2026-10-26 | 5 | done | "In KSeF" removed from the Invoice template and seeds; tax ID / issue date hints country-neutral; parse hint "1,234.56 USD"; design page samples in USD via `formatMoney`; English comment examples; mixed `fake-extract` words. Seed re-checked: no mismatches, only 029/030 fail; typed documents USD 11, EUR 3, PLN 3, JPY 3, GBP 2. Files: `templates.ts`, `documents-seed.ts`, `parse-field-value.ts`, `design-page.tsx`, `field-types-section.tsx`, `types.ts`, `field-key.ts`, `fake-extract.ts` |
+| 2026-10-26 | — | done | all slices done; typecheck, lint, build green |
