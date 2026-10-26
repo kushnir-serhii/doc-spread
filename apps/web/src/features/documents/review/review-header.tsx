@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router'
 import { StatusBadge } from '@/components/domain/status-badge'
 import type { Document } from '@/lib/mock/types'
+import { ChangeTypeControl } from './change-type-control'
 
 interface ReviewHeaderProps {
   doc: Document
@@ -24,10 +25,13 @@ export const ReviewHeader = ({ doc, typeName }: ReviewHeaderProps) => (
       </h1>
       <StatusBadge status={doc.status} />
     </div>
-    <p className="text-sm text-muted-foreground">
-      <span className="sr-only">Type: </span>
-      {/* a typed document whose type is still loading shows nothing rather than "No type yet" */}
-      {typeName ?? (doc.typeId === null ? 'No type yet' : ' ')}
-    </p>
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+      <p className="text-sm text-muted-foreground">
+        <span className="sr-only">Type: </span>
+        {/* a typed document whose type is still loading shows nothing rather than "No type yet" */}
+        {typeName ?? (doc.typeId === null ? 'No type yet' : ' ')}
+      </p>
+      {doc.status === 'needs_review' && doc.typeId !== null && <ChangeTypeControl doc={doc} />}
+    </div>
   </header>
 )

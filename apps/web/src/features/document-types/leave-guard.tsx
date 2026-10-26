@@ -16,12 +16,15 @@ interface LeaveGuardProps {
   dirty: boolean
   /** what is lost on leaving; defaults to the type builder's text */
   description?: string
+  /** navigations that are intended even when dirty, judged by their `location.state` */
+  isExempt?: (state: unknown) => boolean
 }
 
 /** Asks before leaving with unsaved changes: in-app navigation (router) and closing the tab (browser). */
 export const LeaveGuard = ({
   dirty,
   description = 'You changed this type and haven’t saved it. If you leave now, the changes are lost.',
+  isExempt,
 }: LeaveGuardProps) => {
   // The dialog has no trigger, so "Stay" would drop focus on <body>: send it back to what started the leave.
   const returnFocus = useRef<HTMLElement | null>(null)
@@ -30,6 +33,7 @@ export const LeaveGuard = ({
       dirty &&
       // The save of a new type navigates with its notice; that leave is intended.
       readSavedNotice(nextLocation.state) === null &&
+      !isExempt?.(nextLocation.state) &&
       (currentLocation.pathname !== nextLocation.pathname || currentLocation.search !== nextLocation.search),
   )
 

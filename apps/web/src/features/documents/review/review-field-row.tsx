@@ -4,6 +4,7 @@ import { ConfidenceBadge } from '@/components/domain/confidence-badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { FieldValueEdit } from '@/features/documents/fields/field-value-edit'
+import { TableFieldView } from '@/features/documents/fields/table-field-view'
 import { FieldValueView } from '@/features/documents/fields/field-value-view'
 import { isLowConfidence } from '@/lib/fields/confidence'
 import type { FieldDef, FieldValue } from '@/lib/mock/types'
@@ -16,7 +17,7 @@ interface ReviewFieldRowProps {
   field: FieldDef
   value: FieldValue
   focusId: string
-  /** set when the form is editable; tables stay read-only until slice 4 */
+  /** set when the form is editable */
   onChange?: (next: FieldValue) => void
   onConfirm?: () => void
   /** pointing at the document; set for editable scalar rows */
@@ -35,16 +36,17 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
   const inputId = useId()
   const isTable = value.type === 'table'
   const editing = onChange !== undefined && !isTable
+  const editingTable = onChange !== undefined && value.type === 'table'
   const score = confidenceOf(value)
   const low = editing && score !== null && isLowConfidence(score)
   return (
     <div
       role="group"
       aria-labelledby={labelId}
-      // a table holds its own focus targets; an editable row is reached through the control inside it;
-      // a read-only scalar row is the target itself
-      tabIndex={isTable || editing ? undefined : 0}
+      // J/K move focus between rows (-1: not a Tab stop, the controls inside are); a read-only scalar row is one
+      tabIndex={isTable || editing ? -1 : 0}
       data-focus-id={isTable ? undefined : focusId}
+      data-field-id={field.id}
       className={cn(
         'flex flex-col gap-1.5 rounded-md border bg-card p-3 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         low && 'rounded-lg border-transparent bg-confidence-low-bg ring-1 ring-confidence-low-dot/50 ring-inset [&_input]:bg-card',
@@ -66,7 +68,15 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
         </Label>
         {score !== null && <ConfidenceBadge score={score} />}
       </div>
-      {editing ? (
+      {editingTable ? (
+        <TableFieldView
+          label={field.label}
+          columns={field.columns ?? []}
+          value={value}
+          focusId={focusId}
+          onChange={onChange}
+        />
+      ) : editing ? (
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
             <FieldValueEdit id={inputId} field={field} value={value} onChange={onChange} />
@@ -83,7 +93,7 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
             <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
             Check this value — the AI isn’t sure
           </p>
-          <Button variant="outline" className="min-h-touch bg-card" aria-label={`Confirm ${field.label}`} onClick={onConfirm}>
+          <Button variant="outline" className="min-h-touch bg-card" aria-label={`Confirm ${field.label}`} data-confirm onClick={onConfirm}>
             <Check aria-hidden="true" />
             Confirm
           </Button>

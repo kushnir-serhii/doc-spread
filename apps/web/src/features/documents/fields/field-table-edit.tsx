@@ -1,8 +1,11 @@
 import type { TableValue } from '@/lib/mock/types'
-import { FieldTable } from './field-table'
 import type { FieldEditProps } from './field-types'
+import { TableFieldView } from './table-field-view'
 
-/** Slice 4 adds adding, editing and removing rows; until then the editor shows the read-only table. */
-export const FieldTableEdit = ({ id, field, value }: FieldEditProps<TableValue>) => (
-  <FieldTable field={field} value={value} focusId={id} />
+/**
+ * Registry editor: the shared table view, editable. The registry contract has no viewer box id, so cells are keyed by
+ * the input id; a screen that points cells at the document renders `TableFieldView` itself with the real `focusId`.
+ */
+export const FieldTableEdit = ({ id, field, value, onChange }: FieldEditProps<TableValue>) => (
+  <TableFieldView label={field.label} columns={field.columns ?? []} value={value} focusId={id} onChange={onChange} />
 )

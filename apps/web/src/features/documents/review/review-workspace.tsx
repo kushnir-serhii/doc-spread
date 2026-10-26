@@ -1,11 +1,19 @@
 import { useRef, useState } from 'react'
 import { LeaveGuard } from '@/features/document-types/leave-guard'
+import { cellFocusId, fieldFocusId } from '@/features/documents/fields/field-focus-ids'
+import type { ValidationIssue } from '@/lib/fields/validate-field-value'
 import type { DocumentViewerHandle } from '@/features/documents/viewer/viewer-highlights'
 import type { Document, DocumentType } from '@/lib/mock/types'
 import { ReviewForm } from './review-form'
 import { ReviewViewerPane } from './review-viewer-pane'
-import { ReviewSaveBar } from './review-save-bar'
+import { ReviewShortcutsDialog } from './review-shortcuts-dialog'
+import { ReviewActions } from './review-actions'
+import { isReviewDone } from './review-done'
+import { focusFieldControl } from './focus-field-control'
+import { useNextDocument } from './use-next-document'
+import { useReviewActions } from './use-review-actions'
 import { useReviewDraft } from './use-review-draft'
+import { useReviewShortcuts } from './use-review-shortcuts'
 import { useReviewPointing } from './use-review-pointing'
 import { useReviewHighlights } from './use-review-highlights'
 
@@ -21,9 +29,25 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const editable = doc.status === 'needs_review'
-  const { draft, setValue, confirm, save, dirty, mutation } = useReviewDraft(doc)
+  const { draft, setValue, confirm, save, saveNow, dirty, mutation } = useReviewDraft(doc)
   const pointing = useReviewPointing({ doc, type, draft, setValue, formRef })
   const highlights = useReviewHighlights(doc.id, draft, type)
+  const actions = useReviewActions({ doc, type, draft, dirty, saveNow })
+  const planNext = useNextDocument(doc, type)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const busy = actions.approving || actions.rejecting || mutation.isPending
+  const shortcuts = useReviewShortcuts({
+    formRef,
+    editable,
+    onApprove: () => {
+      if (!busy) void actions.approve()
+    },
+    onSave: () => {
+      if (dirty && !busy) save()
+    },
+    onNextDocument: planNext(null),
+    onHelp: () => setHelpOpen(true),
+  })
 
   const focusField = (id: string) => {
     setFocusedId(id)
@@ -33,11 +57,14 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const focusFromBox = (id: string) => {
     setFocusedId(id)
     const target = formRef.current?.querySelector<HTMLElement>(`[data-focus-id="${id}"]`)
-    // an editable row is not focusable itself: its first control is
-    const control = target?.matches('input, button, [tabindex]')
-      ? target
-      : target?.querySelector<HTMLElement>('input, [role="combobox"], [role="switch"], button')
-    control?.focus()
+    focusFieldControl(target)
+  }
+  const focusIssue = (issue: ValidationIssue) => {
+    const base = fieldFocusId(doc.id, issue.fieldId)
+    const id = issue.cell ? cellFocusId(base, issue.cell.rowId, issue.cell.columnId) : base
+    if (formRef.current?.querySelector(`[data-focus-id="${id}"]`)) focusFromBox(id)
+    // a table without rows (or a cell not on screen) has no target: the field's own row is
+    else focusFieldControl(formRef.current?.querySelector<HTMLElement>(`[data-field-id="${issue.fieldId}"]`))
   }
 
   return (
@@ -53,6 +80,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
         onCancel={pointing.cancel}
       />
       <div className="flex flex-col gap-3">
+        <ReviewShortcutsDialog open={helpOpen} onOpenChange={setHelpOpen} editable={editable} />
         <ReviewForm
           ref={formRef}
           docId={doc.id}
@@ -65,21 +93,27 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
           onFieldHover={setHoveredId}
         />
         {editable && (
-          <ReviewSaveBar
+          <ReviewActions
+            type={type}
+            actions={actions}
             dirty={dirty}
-            isPending={mutation.isPending}
-            isSuccess={mutation.isSuccess}
-            errorMessage={mutation.isError ? mutation.error.message : null}
-            onSave={save}
+            save={{
+              isPending: mutation.isPending,
+              isSuccess: mutation.isSuccess,
+              errorMessage: mutation.isError ? mutation.error.message : null,
+              onSave: save,
+            }}
+            onIssueSelect={focusIssue}
           />
         )}
       </div>
       <p role="status" className="sr-only">
-        {pointing.announcement}
+        {pointing.announcement || shortcuts.message}
       </p>
       {editable && (
         <LeaveGuard
           dirty={dirty}
+          isExempt={isReviewDone}
           description="You changed values in this document and haven’t saved them. If you leave now, the changes are lost."
         />
       )}
