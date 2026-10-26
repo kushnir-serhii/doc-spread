@@ -43,26 +43,32 @@ The user builds a type by showing a real document instead of typing a schema: th
   - [x] every action except the pointing itself works from the keyboard; a field can always be added through 014's editor instead
 
 ### [ ] 3. Fix a field by pointing
-- **Files:** `src/features/document-types/sample/`, `src/lib/fields/parse-field-value.ts`
+- **Build:** "Point again" per field; values parsed with `parseFieldValue` (shared with 008), also inside the mock `testExtract`, so dates, amounts and numbers match their box. The viewer toolbar gets compact (icon-only "Rotate all" with a tooltip when the toolbar is narrow).
+- **Files:** `src/features/document-types/sample/`, `src/lib/fields/parse-field-value.ts`, `src/lib/mock/api.ts`, `src/features/documents/viewer/viewer-toolbar.tsx`
 - **Accept:**
   - [ ] "Point again" on a field replaces its example for this sample and updates its value
   - [ ] a field the AI didn't find shows "Not found: point to it" as its call to action
+  - [ ] text that doesn't parse into the field's type offers to change the type ("This looks like Text — change the field to Text?", Change type / Cancel); with no better type, the reason is shown and the old value kept
+  - [ ] an amount without a currency follows conventions.md (Money): the current currency or USD, a visible warning, and the value stays unverified
+  - [ ] the viewer toolbar fits on one line in a narrow column, without losing any action or its accessible name
 
 ### [ ] 4. Table from a region
-- **Build:** the `useSuggestTable()` hook and the `suggestTable` mock (columns from the header row, the first rows as a preview).
+- **Build:** an "Add a table" button next to "Point to add" switches the viewer to `select-region`; the `useSuggestTable()` hook and the `suggestTable` mock: the first line in the region is the header, column types are guessed from the values (date, money, number, else text), the first 5 rows are the preview. The keyboard alternative is adding a table field by hand in 014's editor.
 - **Files:** `src/lib/mock/api.ts`, `src/lib/api/builder.ts`, `src/features/document-types/sample/`
 - **Accept:**
   - [ ] in `select-region`, a rectangle over a table creates a `table` field with columns guessed from the header row and a preview of the first rows
   - [ ] the columns can be renamed, retyped or removed in the editor from 014
 
 ### [ ] 5. Test run on more samples
-- **Build:** tabs for samples 1–5. Adding a sample runs `testExtract` with the current draft (not saved yet). The `/types/:typeId/train` route loads the saved type into the draft.
+- **Build:** tabs for samples 1–5. A sample is added by uploading a file or by picking a document without a type (Inbox) or a demo document; adding one runs `testExtract` with the current draft (not saved yet). The `/types/:typeId/train` route loads the saved type into the draft, and the documents its examples come from (up to 5) as the samples.
 - **Files:** `src/features/document-types/sample/`, `src/pages/types/train-type-page.tsx`, `src/app/router.tsx`
 - **Accept:**
   - [ ] each field shows the value found and its confidence for the active sample; low confidence (`< LOW_CONFIDENCE`) and "not found" are flagged with an icon, not color alone
   - [ ] fixing by pointing on any sample adds an example (more samples → better hint); a short summary shows "12/14 fields found on all samples" and is announced (`role="status"`)
   - [ ] the sixth sample is refused with an explanation
-  - [ ] after Save, every sample is assigned to the new type (`useReassignDocumentType()`) and shows up in the Inbox under it
+  - [ ] a sample can be removed from the set; the examples taken from it are removed from the draft
+  - [ ] the mock can't read uploaded files (a blank page without words), so the sample step says so and offers "Try with an example document"
+  - [ ] after Save, every sample without a type is assigned to the new type (`useReassignDocumentType()`) and shows up in the Inbox under it; a sample that already has another type is left as is, and the success message says so ("3 samples assigned; 1 is an Invoice and was left as is")
   - [ ] Save goes through the same validation, impact dialog, versioning and leave guard as 014; `/types/:typeId/train` reopens this screen for an existing type
 
 ## Backend needs
@@ -77,6 +83,8 @@ OCR tokens right after upload; an LLM call that proposes fields (label, key, typ
 - Should a field added by pointing be selected (opening its editor)? **Decided:** no. Label, type and hint are set in the suggestion panel, the "Added …" status line confirms the add, and focus returns to "Point to add", so several fields can be added in a row; Edit opens the editor when needed.
 - A rejected field's box is ignored by the overlap check ("Fix … instead").
 - 014's `FieldPatch` now also allows `examples`, so fixing an accepted field goes through `updateField`.
+- Asked up front for slices 3–5 (2026-10-26), all answered as recommended and written into the slices above: a type mismatch offers a type change; the Money rule from conventions.md; the compact viewer toolbar in slice 3; "Add a table" with the header from the first line and a 5-row preview; samples from upload, documents without a type or demo documents; removing a sample drops its examples; `/train` loads the documents behind the examples; Save assigns only samples without a type; the mock's blank uploads point to an example document.
+- Is a grid the friendliest way to show a table field (preview here, editing in 008 slice 4)? A list of cards per row as an option is being considered; slice 4 waits for that decision.
 - How many examples per field are stored at most? **Decided:** one per sample, so at most 5 (see **Data**).
 - Should corrections made in Review (008) add examples automatically or ask first? **Decided in 008 slice 3:** ask with a non-blocking prompt.
 
