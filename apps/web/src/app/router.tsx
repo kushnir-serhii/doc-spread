@@ -33,6 +33,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/onboarding',
+            handle: { ownsCard: true },
             lazy: () => import('@/pages/onboarding/onboarding-page').then((m) => ({ Component: m.default })),
           },
         ],

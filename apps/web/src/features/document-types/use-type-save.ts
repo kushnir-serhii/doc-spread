@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { useCreateDocumentType, useUpdateDocumentType } from '@/lib/api'
+import { appendToParam, safeReturnTo } from '@/lib/return-to'
 import { describeReextract, computeImpact } from './type-impact'
 import { savedNoticeState } from './saved-notice'
 import type { TypeDraft } from './type-draft'
@@ -30,6 +31,7 @@ export type SaveRequest = 'invalid' | 'confirm' | 'saving'
 /** Validation, the impact check and the create/update calls behind the Save button. */
 export const useTypeSave = ({ draft, baseline, savedType, onSaved, afterSave }: UseTypeSaveOptions) => {
   const navigate = useNavigate()
+  const returnTo = safeReturnTo(useSearchParams()[0].get('returnTo'))
   const create = useCreateDocumentType()
   const update = useUpdateDocumentType()
   // Errors show only after the first Save, then follow the draft live.
@@ -53,7 +55,8 @@ export const useTypeSave = ({ draft, baseline, savedType, onSaved, afterSave }: 
       } else {
         const created = await create.mutateAsync(draft)
         const extra = await afterSave?.(created.id)
-        navigate(`/types/${created.id}`, {
+        // Opened from onboarding: go back there, with the new type in `created`.
+        navigate(returnTo ? appendToParam(returnTo, 'created', created.id) : `/types/${created.id}`, {
           replace: true,
           state: savedNoticeState(extra ? `Type saved · ${extra}` : 'Type saved'),
         })

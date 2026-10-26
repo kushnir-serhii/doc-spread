@@ -1,6 +1,7 @@
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createDocumentType,
+  createDocumentTypes,
   getDocumentType,
   listDocumentTypes,
   listTemplates,
@@ -41,6 +42,19 @@ export const useCreateDocumentType = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: CreateDocumentTypeInput) => createDocumentType(input),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+      ]),
+  })
+}
+
+/** Several types in one request, all or nothing (onboarding). */
+export const useCreateDocumentTypes = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (inputs: CreateDocumentTypeInput[]) => createDocumentTypes(inputs),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),

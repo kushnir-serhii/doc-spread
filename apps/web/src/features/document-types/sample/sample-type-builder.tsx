@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { useDemoDocuments } from '@/lib/api'
+import { safeReturnTo } from '@/lib/return-to'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/layout/page-header'
 import { SampleLoader } from './sample-loader'
@@ -15,6 +16,7 @@ interface SampleTypeBuilderProps {
 
 /** Entry of "type from a sample": pick or upload a sample, then read it and propose fields. */
 export const SampleTypeBuilder = ({ documentId }: SampleTypeBuilderProps) => {
+  const returnTo = safeReturnTo(useSearchParams()[0].get('returnTo'))
   const [uploadedId, setUploadedId] = useState<string | null>(null)
   const sampleId = documentId ?? uploadedId
   const demoId = useDemoDocuments()[0]?.data?.id
@@ -22,11 +24,11 @@ export const SampleTypeBuilder = ({ documentId }: SampleTypeBuilderProps) => {
   return (
     <>
       <Link
-        to="/types/new"
+        to={returnTo ?? '/types/new'}
         className="mb-4 -ml-2 inline-flex min-h-touch items-center gap-1 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring md:min-h-9"
       >
         <ArrowLeft className="size-4" aria-hidden />
-        Back to new type
+        {returnTo ? 'Back to onboarding' : 'Back to new type'}
       </Link>
       <PageHeader title="Type from a sample" description="Show a real document and AI suggests the fields to extract." />
       {sampleId ? (
