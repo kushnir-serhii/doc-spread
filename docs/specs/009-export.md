@@ -27,10 +27,10 @@ The user turns approved documents of one type into a spreadsheet (or a PDF bundl
   - [x] table fields offer: XLSX → a separate sheet linked by a document id column; CSV → a separate file in a zip, or one row per table row (the header values repeated)
   - [x] the mapping is saved per type and restored next time; a preview shows the first 3 rows
 
-### [ ] 3. Create export
+### [x] 3. Create export
 - **Accept:**
-  - [ ] the submit summary shows the count, the money totals per currency (for each money column) and the destination
-  - [ ] pending, success (announced) and error with retry; exported documents leave the approved list
+  - [x] the submit summary shows the count, the money totals per currency (for each money column) and the destination
+  - [x] pending, success (announced) and error with retry; exported documents leave the approved list
 
 ### [ ] 4. History
 - **Accept:**
@@ -56,6 +56,7 @@ Export job creation with a column mapping, file generation (CSV, XLSX with sever
 - **Decided (2026-10-26):** no retry for failed jobs in History (out of scope); only the status badge.
 - Open: table columns keep their keys as headers in a separate sheet/file or a flattened table; a per-column mapping for line items may be needed (import templates often fix those headers).
 - Open: money is exported with 2 decimals (as `formatMoney`); a currency with other minor units would need `export-cells.ts` changed.
+- Open: document types have no key, so the CSV file name uses a slug of the type name.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -63,3 +64,4 @@ Export job creation with a column mapping, file generation (CSV, XLSX with sever
 | 2026-10-22 | — | rescoped | export per type, column mapping, table fields |
 | 2026-10-26 | 1 | done | `/export` page: type select with approved counts (`?type=`), approved documents with selection (`?ids=` preselects, otherwise all), format and destination radio groups, saved recipients or another address; empty, not-found, loading and error states. `pages/export/export-page.tsx`, `features/export/*`, `router.tsx`, `Company.recipients` in `lib/mock/{types,data}.ts`, `use-selection.ts` takes initial ids |
 | 2026-10-26 | 2 | done | column mapping: built-in Document ID / File name, include, header, up/down, Reset to default; table modes per format (XLSX sheet, CSV zip file or one row per table row, one table only), Document ID forced for separate tables; unique non-empty headers incl. `_currency`; PDF note; preview of the first 3 rows. Mapping model + `getExportMapping` / `useExportMapping`; `createExportJob` saves the mapping it gets (wired to Submit in slice 3). Computed fields are computed at export time when not stored. `features/export/{export-form-body,column-mapping,column-row,table-mode-control,mapping-preview,export-cells,export-plan,export-header-errors}`, `lib/fields/export-mapping.ts`, `lib/mock/{types,api,data}.ts`, `lib/api/export.ts` |
+| 2026-10-26 | 3 | done | summary (count, money totals per currency per money column, format, destination), blocked submit focuses the first problem, pending / error with retry / announced success panel; a real RFC 4180 CSV (BOM, CRLF) for a one-file CSV download, an honest "generated on the server" note for XLSX, zip and PDF; exported documents leave the approved list. `features/export/{build-csv,download-csv,export-summary,export-result,submit-summary,export-submit,export-success}`, `export-page.tsx`, `export-form*.tsx`, destination/recipient inputs |

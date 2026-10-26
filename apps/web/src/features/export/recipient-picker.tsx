@@ -9,10 +9,11 @@ import { RadioOption } from './radio-option'
 interface RecipientPickerProps {
   value: RecipientChoice
   onChange: (choice: RecipientChoice) => void
+  showErrors?: boolean
 }
 
 /** Saved recipients from Settings plus "Other address". */
-export const RecipientPicker = ({ value, onChange }: RecipientPickerProps) => {
+export const RecipientPicker = ({ value, onChange, showErrors }: RecipientPickerProps) => {
   const name = useId()
   const company = useCompany()
   const recipients = company.data?.recipients ?? []
@@ -46,7 +47,11 @@ export const RecipientPicker = ({ value, onChange }: RecipientPickerProps) => {
         onSelect={() => onChange({ kind: 'other', address: '' })}
       >
         {value.kind === 'other' && (
-          <OtherAddressInput value={value.address} onChange={(address) => onChange({ kind: 'other', address })} />
+          <OtherAddressInput
+            value={value.address}
+            onChange={(address) => onChange({ kind: 'other', address })}
+            showError={showErrors}
+          />
         )}
       </RadioOption>
     </div>

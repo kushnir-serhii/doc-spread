@@ -7,9 +7,11 @@ import { RecipientPicker } from './recipient-picker'
 interface DestinationFieldsetProps {
   value: DestinationOption
   onChange: (destination: DestinationOption) => void
+  /** show address errors now, e.g. after a blocked submit */
+  showErrors?: boolean
 }
 
-export const DestinationFieldset = ({ value, onChange }: DestinationFieldsetProps) => {
+export const DestinationFieldset = ({ value, onChange, showErrors }: DestinationFieldsetProps) => {
   const name = useId()
   const firstRecipient = useCompany().data?.recipients[0]
   return (
@@ -35,7 +37,11 @@ export const DestinationFieldset = ({ value, onChange }: DestinationFieldsetProp
         }
       >
         {value.kind === 'email' && (
-          <RecipientPicker value={value.recipient} onChange={(recipient) => onChange({ kind: 'email', recipient })} />
+          <RecipientPicker
+            value={value.recipient}
+            onChange={(recipient) => onChange({ kind: 'email', recipient })}
+            showErrors={showErrors}
+          />
         )}
       </RadioOption>
     </fieldset>
