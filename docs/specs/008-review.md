@@ -47,7 +47,7 @@ The user checks the AI-extracted values against the document, fixes the low-conf
 ### [ ] 4. Table fields
 - **Files:** `src/features/documents/fields/`
 - **Accept:**
-  - [ ] a table field renders as an editable table with its columns; rows can be added and removed
+  - [ ] a table field renders with the shared table-field view: "Table" (grid) or "List" (a card per row), Table by default from `md` up and List below, a "Table | List" toggle remembered by the browser; in both modes cells are editable and rows can be added and removed
   - [ ] 50+ rows stay usable (sticky header, contained scroll); amounts are right-aligned with `tabular-nums`
 
 ### [ ] 5. Type + approve / reject / next
@@ -80,6 +80,7 @@ Field-level confidence and source boxes; the type version a document was extract
 - Money pointed at without a currency? **Decided:** keep the field's current currency, else `DEFAULT_CURRENCY` (USD), and always warn: the row shows "There is no currency in …, so USD was assumed" and the value stays unverified (flagged, with Confirm). No country defaults anywhere (conventions.md, Money).
 - `1,234` (one comma, exactly three digits after it) is read as 1234 (thousands); `12,5` and `1234,56` are decimals. Ambiguous for some locales; no country-specific rule is added.
 - The point button is an icon beside the input (tooltip + `aria-label`), not a labelled button under it: a row per field stays short.
+- Table or list for table fields? **Decided:** one shared table-field view with two modes, "Table" (a grid) and "List" (a card per row with label: value pairs). Table by default from `md` up, List below it; a "Table | List" toggle next to the field switches it, and the browser remembers the choice (localStorage, a per-viewer convenience). Used for the preview here (015 slice 4) and for viewing and editing in Review (008 slice 4).
 - Cross-field rules (Gross = Net + VAT, totals = sum of a column) moved to [016 Field actions](016-field-actions.md); Review shows their results there.
 
 ## Log

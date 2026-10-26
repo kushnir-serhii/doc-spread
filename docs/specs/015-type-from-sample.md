@@ -58,6 +58,7 @@ The user builds a type by showing a real document instead of typing a schema: th
 - **Accept:**
   - [ ] in `select-region`, a rectangle over a table creates a `table` field with columns guessed from the header row and a preview of the first rows
   - [ ] the columns can be renamed, retyped or removed in the editor from 014
+  - [ ] the preview uses the shared table-field view (Table / List, see Open questions)
 
 ### [ ] 5. Test run on more samples
 - **Build:** tabs for samples 1–5. A sample is added by uploading a file or by picking a document without a type (Inbox) or a demo document; adding one runs `testExtract` with the current draft (not saved yet). The `/types/:typeId/train` route loads the saved type into the draft, and the documents its examples come from (up to 5) as the samples.
@@ -84,7 +85,7 @@ OCR tokens right after upload; an LLM call that proposes fields (label, key, typ
 - A rejected field's box is ignored by the overlap check ("Fix … instead").
 - 014's `FieldPatch` now also allows `examples`, so fixing an accepted field goes through `updateField`.
 - Asked up front for slices 3–5 (2026-10-26), all answered as recommended and written into the slices above: a type mismatch offers a type change; the Money rule from conventions.md; the compact viewer toolbar in slice 3; "Add a table" with the header from the first line and a 5-row preview; samples from upload, documents without a type or demo documents; removing a sample drops its examples; `/train` loads the documents behind the examples; Save assigns only samples without a type; the mock's blank uploads point to an example document.
-- Is a grid the friendliest way to show a table field (preview here, editing in 008 slice 4)? A list of cards per row as an option is being considered; slice 4 waits for that decision.
+- Is a grid the friendliest way to show a table field? **Decided:** one shared table-field view with two modes, "Table" (a grid) and "List" (a card per row with label: value pairs). Table by default from `md` up, List below it; a "Table | List" toggle next to the field switches it, and the browser remembers the choice (localStorage, a per-viewer convenience). Used for the preview here (015 slice 4) and for viewing and editing in Review (008 slice 4).
 - How many examples per field are stored at most? **Decided:** one per sample, so at most 5 (see **Data**).
 - Should corrections made in Review (008) add examples automatically or ask first? **Decided in 008 slice 3:** ask with a non-blocking prompt.
 
