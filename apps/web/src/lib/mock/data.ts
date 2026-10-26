@@ -1,3 +1,4 @@
+import { defaultExportMapping } from '@/lib/fields/export-mapping'
 import type { Company, Document, ExportJob, TeamMember } from './types'
 import { seedDocumentTypeVersions } from './document-types-seed'
 import { buildSeedDocuments } from './documents-seed'
@@ -12,6 +13,7 @@ export const seedCompany: Company = {
   name: 'Kowalski Studio Sp. z o.o.',
   taxId: '5252344078',
   accountantEmail: 'ksiegowosc@biuro-rachunkowe.pl',
+  recipients: [{ id: 'rcp-001', name: 'Accountant', email: 'ksiegowosc@biuro-rachunkowe.pl' }],
   defaultCurrency: 'PLN',
 }
 
@@ -46,13 +48,20 @@ const exportedIds = (typeId: string) =>
   seedDocuments.filter((d) => d.status === 'exported' && d.typeId === typeId).map((d) => d.id)
 const exportedInvoices = exportedIds('type-invoice')
 const exportedReceipts = exportedIds('type-receipt')
+const seedMapping = (typeId: string) => {
+  const versions = seedDocumentTypeVersions.filter((t) => t.id === typeId)
+  const latest = versions.reduce((a, b) => (b.version > a.version ? b : a))
+  return defaultExportMapping(latest)
+}
+const invoiceColumns = seedMapping('type-invoice')
+const receiptColumns = seedMapping('type-receipt')
 
 export const seedExportJobs: ExportJob[] = [
-  { id: 'exp_001', createdAt: '2026-10-19T14:05:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: seedCompany.accountantEmail, status: 'completed' },
-  { id: 'exp_002', createdAt: '2026-10-12T09:40:00.000Z', format: 'csv', typeId: 'type-receipt', documentIds: exportedReceipts, destination: 'download', status: 'completed' },
-  { id: 'exp_003', createdAt: '2026-10-05T16:20:00.000Z', format: 'pdf_bundle', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 1), destination: 'email', recipient: seedCompany.accountantEmail, status: 'completed' },
-  { id: 'exp_004', createdAt: '2026-09-28T11:00:00.000Z', format: 'csv', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: 'stary-ksiegowy@example.pl', status: 'failed' },
-  { id: 'exp_005', createdAt: '2026-09-21T08:15:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(1, 2), destination: 'download', status: 'completed' },
+  { id: 'exp_001', createdAt: '2026-10-19T14:05:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: seedCompany.accountantEmail, columns: invoiceColumns, status: 'completed' },
+  { id: 'exp_002', createdAt: '2026-10-12T09:40:00.000Z', format: 'csv', typeId: 'type-receipt', documentIds: exportedReceipts, destination: 'download', columns: receiptColumns, status: 'completed' },
+  { id: 'exp_003', createdAt: '2026-10-05T16:20:00.000Z', format: 'pdf_bundle', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 1), destination: 'email', recipient: seedCompany.accountantEmail, columns: invoiceColumns, status: 'completed' },
+  { id: 'exp_004', createdAt: '2026-09-28T11:00:00.000Z', format: 'csv', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: 'stary-ksiegowy@example.pl', columns: invoiceColumns, status: 'failed' },
+  { id: 'exp_005', createdAt: '2026-09-21T08:15:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(1, 2), destination: 'download', columns: invoiceColumns, status: 'completed' },
 ]
 
 // The types can't tie a value to its field id, so check the seeds in dev (log only, never throw)

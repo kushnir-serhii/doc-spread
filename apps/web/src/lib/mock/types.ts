@@ -11,10 +11,18 @@ export interface Money {
 
 export type FileType = 'pdf' | 'jpg' | 'png'
 
+/** A saved export recipient (edited in Settings, spec 011). */
+export interface Recipient {
+  id: string
+  name: string
+  email: string
+}
+
 export interface Company {
   name: string
   taxId: string
   accountantEmail: string
+  recipients: Recipient[]
   defaultCurrency: CurrencyCode
 }
 
@@ -31,6 +39,36 @@ export type ExportFormat = 'csv' | 'xlsx' | 'pdf_bundle'
 export type ExportDestination = 'download' | 'email'
 export type ExportStatus = 'queued' | 'processing' | 'completed' | 'failed'
 
+/** Columns the export can add besides the type's fields. */
+export const EXPORT_BUILTIN_COLUMNS = ['document_id', 'file_name'] as const
+export type ExportBuiltinColumn = (typeof EXPORT_BUILTIN_COLUMNS)[number]
+
+export type ExportColumnSource =
+  | { kind: 'field'; fieldId: string }
+  | { kind: 'builtin'; id: ExportBuiltinColumn }
+
+/** One row of the mapping, in output order. For a table field `header` names its sheet, file or column prefix. */
+export interface ExportColumn {
+  source: ExportColumnSource
+  include: boolean
+  header: string
+}
+
+/** separate = own sheet/file linked by Document ID; flatten = CSV, one row per table row */
+export type TableExportMode = 'separate' | 'flatten'
+
+export interface ExportColumnMapping {
+  columns: ExportColumn[]
+  /** table field id -> mode */
+  tables: Record<string, TableExportMode>
+}
+
+/** The saved mapping of a type; shared by the team and stored apart from the type (it does not change its version). */
+export interface ExportMapping extends ExportColumnMapping {
+  typeId: string
+  updatedAt: string
+}
+
 export interface ExportJob {
   id: string
   createdAt: string
@@ -39,6 +77,8 @@ export interface ExportJob {
   documentIds: string[]
   destination: ExportDestination
   recipient?: string
+  /** the mapping used for this job */
+  columns: ExportColumnMapping
   status: ExportStatus
 }
 
@@ -48,6 +88,7 @@ export interface CreateExportJobInput {
   documentIds: string[]
   destination: ExportDestination
   recipient?: string
+  columns: ExportColumnMapping
 }
 
 export const FIELD_TYPES = [
