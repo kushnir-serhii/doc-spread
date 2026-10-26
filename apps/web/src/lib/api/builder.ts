@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { addFieldExample, proposeFields, suggestField, suggestTable, testExtract } from '@/lib/mock'
-import type { FieldDef, FieldExample, SuggestFieldInput, SuggestTableInput, TestExtractInput } from '@/lib/mock/types'
+import type { FieldAction, FieldDef, FieldExample, SuggestFieldInput, SuggestTableInput, TestExtractInput } from '@/lib/mock/types'
+import { getComputedFieldIds } from '@/lib/fields/computed-fields'
 import { documentTypeKeys } from './document-types'
 
 export const builderKeys = {
@@ -8,7 +9,7 @@ export const builderKeys = {
   proposals: (documentId: string) =>
     [...builderKeys.all, 'proposals', documentId] as const,
   /** what the AI reads of a field: renaming a label doesn't change the extraction */
-  preview: (documentId: string, fields: FieldDef[]) =>
+  preview: (documentId: string, fields: FieldDef[], actions: FieldAction[] = []) =>
     [
       ...builderKeys.all,
       'preview',
@@ -20,6 +21,8 @@ export const builderKeys = {
         options,
         examples.map((e) => [e.documentId, e.page, e.bbox, e.text]),
       ]),
+      // computed fields are not extracted
+      [...getComputedFieldIds({ actions })],
     ] as const,
 }
 
@@ -53,20 +56,20 @@ export const useTestExtract = () =>
  * Values and confidence of an unsaved schema on one document (the same call as `useTestExtract`,
  * read as a query so it reruns when a field's type or hint changes). Saves nothing.
  */
-export const useTestExtractPreview = (documentId: string, fields: FieldDef[]) =>
+export const useTestExtractPreview = (documentId: string, fields: FieldDef[], actions: FieldAction[] = []) =>
   useQuery({
-    queryKey: builderKeys.preview(documentId, fields),
-    queryFn: () => testExtract({ documentId, fields }),
+    queryKey: builderKeys.preview(documentId, fields, actions),
+    queryFn: () => testExtract({ documentId, fields, actions }),
     enabled: fields.length > 0,
     placeholderData: keepPreviousData,
   })
 
 /** The same query as `useTestExtractPreview` for several documents (shared cache), in the order of `documentIds`. */
-export const useTestExtractPreviews = (documentIds: string[], fields: FieldDef[]) =>
+export const useTestExtractPreviews = (documentIds: string[], fields: FieldDef[], actions: FieldAction[] = []) =>
   useQueries({
     queries: documentIds.map((documentId) => ({
-      queryKey: builderKeys.preview(documentId, fields),
-      queryFn: () => testExtract({ documentId, fields }),
+      queryKey: builderKeys.preview(documentId, fields, actions),
+      queryFn: () => testExtract({ documentId, fields, actions }),
       enabled: fields.length > 0,
       placeholderData: keepPreviousData,
     })),

@@ -55,6 +55,8 @@ interface DocPlan {
   long?: boolean
   /** unclassified only; omitted means no classification at all */
   classification?: number
+  /** invoices: minor units added to Gross, so Gross != Net + VAT (a failed check in Review) */
+  grossOffset?: number
 }
 
 const PLAN: DocPlan[] = [
@@ -93,6 +95,9 @@ const PLAN: DocPlan[] = [
   /* 026 */ { status: 'error', kind: null, fileType: 'pdf' },
   /* 027 */ { status: 'error', kind: null, fileType: 'jpg' },
   /* 028 */ { status: 'needs_review', kind: 'contract', supplier: 2, long: true },
+  // Gross is off by $10.00 / -$25.00 from Net + VAT, so the Invoice checks fail in Review
+  /* 029 */ { status: 'needs_review', kind: 'invoice', supplier: 11, currency: 'USD', lines: 3, grossOffset: 1000 },
+  /* 030 */ { status: 'needs_review', kind: 'invoice', supplier: 11, currency: 'USD', lines: 2, grossOffset: -2500 },
 ]
 
 const ERROR_MESSAGES = [
@@ -190,7 +195,7 @@ interface Ctx {
 }
 
 // ---------- invoices ----------
-const invoiceValues = (c: Ctx, lineCount: number): Record<string, FieldValue> => {
+const invoiceValues = (c: Ctx, lineCount: number, grossOffset = 0): Record<string, FieldValue> => {
   const { rng, id, index, review, supplier, currency } = c
   const conf = makeConfidence(rng, review)
   const vatChoices = VAT_BY_COUNTRY[supplier.country] ?? [0]
@@ -232,7 +237,7 @@ const invoiceValues = (c: Ctx, lineCount: number): Record<string, FieldValue> =>
       review && index % 3 === 1 ? dateValue(null, 0) : dateValue(isoDate(issueMs + 14 * DAY), conf()),
     net_total: moneyValue(net, currency, conf()),
     vat_total: moneyValue(vat, currency, conf()),
-    gross_total: moneyValue(net + vat, currency, review && index % 3 === 0 ? 0.42 : conf()),
+    gross_total: moneyValue(net + vat + grossOffset, currency, review && index % 3 === 0 ? 0.42 : conf()),
     ksef: booleanValue(supplier.country === 'PL' && rng() > 0.4, conf()),
     line_items: tableValue(rows),
   }
@@ -444,7 +449,7 @@ export const buildSeedDocuments = (
         ? showcaseReceiptValues(id)
         : showcaseInvoiceValues(id)
       : plan.kind === 'invoice'
-        ? invoiceValues(ctx, plan.lines ?? 1 + Math.floor(rng() * 5))
+        ? invoiceValues(ctx, plan.lines ?? 1 + Math.floor(rng() * 5), plan.grossOffset)
         : plan.kind === 'receipt'
           ? receiptValues(ctx)
           : contractValues(ctx, company)

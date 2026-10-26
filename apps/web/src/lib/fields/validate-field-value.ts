@@ -1,4 +1,5 @@
 import type { DocumentType, FieldDef, FieldValue } from '@/lib/mock/types'
+import { getComputedFieldIds } from './computed-fields'
 import { isEmail, isIsoDate, isPhone, isTaxId } from './field-formats'
 
 type Checked = Pick<FieldDef, 'required' | 'options' | 'type'>
@@ -52,10 +53,12 @@ export const validateFieldValue = (field: Checked, value: FieldValue): string | 
   return value.type === field.type ? formatReason(field, value) : `Expected ${field.type}.`
 }
 
-/** Every problem that blocks approval, in the type's field order. */
+/** Every problem that blocks approval, in the type's field order. Computed fields are skipped: nobody enters them. */
 export const validateDocument = (type: DocumentType, values: Record<string, FieldValue>): ValidationIssue[] => {
   const issues: ValidationIssue[] = []
+  const computedIds = getComputedFieldIds(type)
   for (const field of type.fields) {
+    if (computedIds.has(field.id)) continue
     const value = values[field.id]
     if (value === undefined) {
       if (field.required) issues.push({ fieldId: field.id, label: field.label, reason: 'Required.' })

@@ -1,5 +1,6 @@
 import { useTestExtractPreviews } from '@/lib/api'
-import type { FieldDef, FieldValue } from '@/lib/mock/types'
+import { getComputedFieldIds } from '@/lib/fields/computed-fields'
+import type { FieldAction, FieldDef, FieldValue } from '@/lib/mock/types'
 
 /** Nothing was read for the field: no value, or a table without rows. */
 export const isFieldEmpty = (value: FieldValue | undefined): boolean => {
@@ -21,17 +22,24 @@ export type SampleSummary =
   | { status: 'ready'; found: number; total: number; missing: MissingField[] }
 
 /** How many fields were found on every sample; runs the same previews as the tabs, so the cache is shared. */
-export const useSampleSummary = (sampleIds: string[], fields: FieldDef[]): SampleSummary => {
-  const results = useTestExtractPreviews(sampleIds, fields)
-  if (fields.length === 0) return { status: 'ready', found: 0, total: 0, missing: [] }
+export const useSampleSummary = (
+  sampleIds: string[],
+  fields: FieldDef[],
+  actions: FieldAction[] = [],
+): SampleSummary => {
+  const results = useTestExtractPreviews(sampleIds, fields, actions)
+  // A computed field is calculated, never read from the sample, so it isn't counted.
+  const computed = getComputedFieldIds({ actions })
+  const read = fields.filter((field) => !computed.has(field.id))
+  if (read.length === 0) return { status: 'ready', found: 0, total: 0, missing: [] }
   if (results.some((result) => result.isError)) {
     return { status: 'failed', retry: () => results.forEach((result) => void result.refetch()) }
   }
   if (results.some((result) => !result.data)) return { status: 'loading' }
 
-  const missing = fields.flatMap((field): MissingField[] => {
+  const missing = read.flatMap((field): MissingField[] => {
     const samples = results.flatMap((result, index) => (isFieldEmpty(result.data?.[field.id]) ? [index + 1] : []))
     return samples.length > 0 ? [{ fieldId: field.id, label: field.label.trim() || 'Untitled field', samples }] : []
   })
-  return { status: 'ready', found: fields.length - missing.length, total: fields.length, missing }
+  return { status: 'ready', found: read.length - missing.length, total: read.length, missing }
 }

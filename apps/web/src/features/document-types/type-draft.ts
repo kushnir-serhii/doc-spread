@@ -1,3 +1,4 @@
+import { mapActionIds } from '@/lib/fields/action-ids'
 import type { ColumnDef, CreateDocumentTypeInput, DocumentType, FieldDef } from '@/lib/mock/types'
 import type { DocumentTemplate } from '@/lib/mock/templates'
 
@@ -8,6 +9,7 @@ export const blankDraft = (): TypeDraft => ({
   name: '',
   description: '',
   fields: [],
+  actions: [],
   titleFieldId: null,
   listColumnIds: [],
 })
@@ -30,6 +32,8 @@ export const draftFromTemplate = (template: DocumentTemplate): TypeDraft => {
     name: template.name,
     description: template.description,
     fields,
+    // actions point at field ids, so they follow the fresh ids; unknown ids get fresh ones too
+    actions: template.actions.map((action) => mapActionIds(action, (id) => idMap.get(id) ?? fresh(id))),
     titleFieldId: template.titleFieldId === null ? null : (idMap.get(template.titleFieldId) ?? null),
     listColumnIds: template.listColumnIds.flatMap((id) => idMap.get(id) ?? []),
   }
@@ -40,6 +44,7 @@ export const draftFromType = (type: DocumentType): TypeDraft => ({
   name: type.name,
   description: type.description,
   fields: type.fields,
+  actions: type.actions,
   titleFieldId: type.titleFieldId,
   listColumnIds: type.listColumnIds,
 })

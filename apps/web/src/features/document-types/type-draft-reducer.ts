@@ -1,4 +1,4 @@
-import type { FieldDef, FieldType } from '@/lib/mock/types'
+import type { FieldAction, FieldDef, FieldType } from '@/lib/mock/types'
 import { sanitizeKey, slugifyKey, uniqueKey } from './field-key'
 import { canBeTitle, canGroupBy, MAX_LIST_COLUMNS } from './list-settings'
 import { moveItem, type BuilderState, type FieldPatch, type TypeDraft } from './type-draft'
@@ -21,6 +21,9 @@ export type BuilderAction =
   | { type: 'toggleListColumn'; id: string }
   | { type: 'moveListColumn'; id: string; direction: 'up' | 'down' }
   | { type: 'column'; fieldId: string; op: ColumnOp }
+  | { type: 'addAction'; action: FieldAction }
+  | { type: 'updateAction'; action: FieldAction }
+  | { type: 'removeAction'; id: string }
 
 export const createBuilderState = (draft: TypeDraft): BuilderState => ({
   draft,
@@ -172,6 +175,16 @@ export const builderReducer = (state: BuilderState, action: BuilderAction): Buil
     }
     case 'column':
       return columnsReducer(state, action.fieldId, action.op)
+    // Actions are kept when a field is deleted: validation points at them instead.
+    case 'addAction':
+      return { ...state, draft: { ...draft, actions: [...draft.actions, action.action] } }
+    case 'updateAction':
+      return {
+        ...state,
+        draft: { ...draft, actions: draft.actions.map((a) => (a.id === action.action.id ? action.action : a)) },
+      }
+    case 'removeAction':
+      return { ...state, draft: { ...draft, actions: draft.actions.filter((a) => a.id !== action.id) } }
     default: {
       const unreachable: never = action
       return unreachable

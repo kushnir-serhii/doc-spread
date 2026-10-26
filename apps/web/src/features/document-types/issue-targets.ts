@@ -5,9 +5,15 @@ import type { ValidationIssue } from './validate-draft'
 export const getInvalidIds = (issues: readonly ValidationIssue[]) =>
   new Set(
     issues.flatMap(({ target }) =>
-      typeof target === 'string' ? [] : [target.fieldId, ...(target.columnId ? [target.columnId] : [])],
+      typeof target === 'string' || 'actionId' in target
+        ? []
+        : [target.fieldId, ...(target.columnId ? [target.columnId] : [])],
     ),
   )
+
+/** The id of the action an issue is about, if any. */
+export const getIssueActionId = ({ target }: ValidationIssue): string | null =>
+  typeof target !== 'string' && 'actionId' in target ? target.actionId : null
 
 /** The problems of exactly the selected field or column. */
 export const getTargetIssues = (issues: readonly ValidationIssue[], target: EditorTarget | null) => {
@@ -15,14 +21,14 @@ export const getTargetIssues = (issues: readonly ValidationIssue[], target: Edit
   const fieldId = target.kind === 'field' ? target.field.id : target.table.id
   const columnId = target.kind === 'column' ? target.column.id : undefined
   return issues.filter(
-    ({ target: t }) => typeof t !== 'string' && t.fieldId === fieldId && t.columnId === columnId,
+    ({ target: t }) => typeof t !== 'string' && 'fieldId' in t && t.fieldId === fieldId && t.columnId === columnId,
   )
 }
 
 /** What to select to show an issue; null for issues outside the editor. */
 export const getIssueSelection = (issue: ValidationIssue): Selection => {
   const { target } = issue
-  if (typeof target === 'string') return null
+  if (typeof target === 'string' || 'actionId' in target) return null
   return target.columnId
     ? { kind: 'column', fieldId: target.fieldId, columnId: target.columnId }
     : { kind: 'field', fieldId: target.fieldId }
@@ -34,6 +40,8 @@ export const focusIssue = ({ part }: ValidationIssue, nameInput: HTMLElement | n
     nameInput?.focus()
     return
   }
+  // An action's dialog takes focus itself.
+  if (part === 'action') return
   if (part === 'fields') {
     document.querySelector<HTMLElement>('[data-add-field]')?.focus()
     return

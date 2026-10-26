@@ -1,6 +1,6 @@
 # 009 — Export
 
-**Status:** draft · **Depends on:** 002, 006 · **Route(s):** `/export`
+**Status:** ready · **Depends on:** 002, 006 · **Route(s):** `/export`
 
 ## Goal
 The user turns approved documents of one type into a spreadsheet (or a PDF bundle), with the columns they need, and downloads it or emails it. They can see past exports.
@@ -40,7 +40,8 @@ The user turns approved documents of one type into a spreadsheet (or a PDF bundl
 Export job creation with a column mapping, file generation (CSV, XLSX with several sheets, a PDF bundle), email delivery, job status, download URL; storing the mapping per type.
 
 ## Open questions
-- Do saved mappings belong to the type (shared by the team) or to each user?
+- **Decided (2026-10-26):** a saved column mapping belongs to the type and is shared by the team, not kept per user.
+- **Decided (2026-10-26):** the export fields go into the 012 model. `ExportJob` gets `columns` (the mapping used for that job), and the per-type mapping is stored next to the type. `exported` already exists in `DOCUMENT_STATUSES`, and the mock `createExportJob` already moves approved documents to it, so slice 3 only has to refresh the approved list.
 
 ## Log
 | Date | Slice | Result | Notes / files |

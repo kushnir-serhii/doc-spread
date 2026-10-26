@@ -1,6 +1,7 @@
 import type { Ref } from 'react'
 import { fieldFocusId } from '@/features/documents/fields/field-focus-ids'
 import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
+import type { ComputeOutcome } from '@/lib/fields/evaluate'
 import type { DocumentType, FieldValue } from '@/lib/mock/types'
 import { ReviewFieldRow } from './review-field-row'
 import type { ReviewPointing } from './use-review-pointing'
@@ -14,6 +15,10 @@ interface ReviewFormProps {
   onValueChange?: (fieldId: string, next: FieldValue) => void
   onConfirm?: (fieldId: string) => void
   pointing?: ReviewPointing
+  /** one outcome per computed field */
+  computed: Record<string, ComputeOutcome>
+  /** fields read by a failed check */
+  involvedFieldIds: ReadonlySet<string>
   /** a field (or table cell) took focus; id as in field-focus-ids.ts */
   onFieldFocus: (id: string) => void
   onFieldHover: (id: string | null) => void
@@ -31,6 +36,8 @@ export const ReviewForm = ({
   onValueChange,
   onConfirm,
   pointing,
+  computed,
+  involvedFieldIds,
   onFieldFocus,
   onFieldHover,
   ref,
@@ -57,6 +64,9 @@ export const ReviewForm = ({
         onChange={onValueChange && ((next) => onValueChange(field.id, next))}
         onConfirm={onConfirm && (() => onConfirm(field.id))}
         pointing={pointing}
+        computed={computed[field.id]}
+        involved={involvedFieldIds.has(field.id)}
+        fields={type.fields}
       />
     ))}
   </div>

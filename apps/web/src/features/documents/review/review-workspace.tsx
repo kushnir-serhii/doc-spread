@@ -5,6 +5,9 @@ import type { ValidationIssue } from '@/lib/fields/validate-field-value'
 import type { DocumentViewerHandle } from '@/features/documents/viewer/viewer-highlights'
 import type { Document, DocumentType } from '@/lib/mock/types'
 import { ReviewForm } from './review-form'
+import { ReviewIssues } from './review-issues'
+import { summarizeChecks } from './summarize-checks'
+import { runChecks } from '@/lib/fields/evaluate'
 import { ReviewViewerPane } from './review-viewer-pane'
 import { ReviewShortcutsDialog } from './review-shortcuts-dialog'
 import { ReviewActions } from './review-actions'
@@ -29,10 +32,20 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const editable = doc.status === 'needs_review'
-  const { draft, setValue, confirm, save, saveNow, dirty, mutation } = useReviewDraft(doc)
-  const pointing = useReviewPointing({ doc, type, draft, setValue, formRef })
-  const highlights = useReviewHighlights(doc.id, draft, type)
-  const actions = useReviewActions({ doc, type, draft, dirty, saveNow })
+  const { values, computed, setValue, confirm, save, saveNow, dirty, needsSave, mutation } = useReviewDraft(doc, type)
+  // checks run live on the draft, computed values included
+  const checks = summarizeChecks(type, runChecks(type, { values }))
+  const pointing = useReviewPointing({ doc, type, draft: values, setValue, formRef })
+  const highlights = useReviewHighlights(doc.id, values, type)
+  const actions = useReviewActions({
+    doc,
+    type,
+    draft: values,
+    needsSave,
+    blockingChecks: checks.blocking,
+    warnings: checks.warnings,
+    saveNow,
+  })
   const planNext = useNextDocument(doc, type)
   const [helpOpen, setHelpOpen] = useState(false)
   const busy = actions.approving || actions.rejecting || mutation.isPending
@@ -81,11 +94,22 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
       />
       <div className="flex flex-col gap-3">
         <ReviewShortcutsDialog open={helpOpen} onOpenChange={setHelpOpen} editable={editable} />
+        {editable && checks.listed.length > 0 && (
+          <ReviewIssues
+            issues={checks.listed}
+            onSelect={focusIssue}
+            tone="warning"
+            role="status"
+            title={`${checks.listed.length} ${checks.listed.length === 1 ? 'check needs' : 'checks need'} attention`}
+          />
+        )}
         <ReviewForm
           ref={formRef}
           docId={doc.id}
           type={type}
-          values={draft}
+          values={values}
+          computed={computed}
+          involvedFieldIds={checks.involvedFieldIds}
           onValueChange={editable ? setValue : undefined}
           onConfirm={editable ? confirm : undefined}
           pointing={editable ? pointing : undefined}

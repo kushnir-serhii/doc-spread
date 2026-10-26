@@ -1,5 +1,7 @@
 import type { Dispatch } from 'react'
-import { FIELD_TYPES, type FieldDef } from '@/lib/mock/types'
+import { getComputeActions } from '@/lib/fields/computed-fields'
+import { describeExpr } from '@/lib/fields/evaluate'
+import { FIELD_TYPES, type FieldAction, type FieldDef } from '@/lib/mock/types'
 import type { EditorActions, EditorTarget } from './editor-target'
 import { FieldEditor } from './field-editor'
 import { getKeyError, isScalarFieldType } from './field-key'
@@ -17,16 +19,21 @@ const COLUMN_TYPES = FIELD_TYPES.filter(isScalarFieldType)
 interface SelectedEditorProps extends EditorActions {
   target: EditorTarget
   fields: FieldDef[]
+  /** the type's actions: a field computed by one shows "Computed by …" */
+  fieldActions: FieldAction[]
+  /** opens the action's editor; leave out where there is none */
+  onOpenAction?: (actionId: string) => void
   dispatch: Dispatch<BuilderAction>
   /** Problems of the selected item to show; empty until a Save was tried. */
   issues: ValidationIssue[]
 }
 
 /** Wires the shared FieldEditor to a field or to a column of a table. */
-export const SelectedEditor = ({ target, fields, dispatch, issues, ...actions }: SelectedEditorProps) => {
+export const SelectedEditor = ({ target, fields, fieldActions, onOpenAction, dispatch, issues, ...actions }: SelectedEditorProps) => {
   const shown = splitEditorIssues(issues)
   if (target.kind === 'field') {
     const { field } = target
+    const computed = getComputeActions({ actions: fieldActions }).get(field.id)
     return (
       <FieldEditor
         field={field}
@@ -34,6 +41,7 @@ export const SelectedEditor = ({ target, fields, dispatch, issues, ...actions }:
         keyError={getKeyError(field, fields)}
         {...shown}
         deleteLabel="Delete field"
+        computedBy={computed && { text: describeExpr(computed.expr, fields), onOpen: onOpenAction && (() => onOpenAction(computed.id)) }}
         onLabelChange={(label) => dispatch({ type: 'setFieldLabel', id: field.id, label })}
         onKeyChange={(key) => dispatch({ type: 'setFieldKey', id: field.id, key })}
         onPatch={(patch) => dispatch({ type: 'updateField', id: field.id, patch })}
