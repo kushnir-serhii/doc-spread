@@ -18,7 +18,8 @@ import type {
   Document,
 } from '@/lib/mock/types'
 import { getComputeActions } from './computed-fields'
-import { exprTypeOfField, fail, getFunction, ok, parseIsoDate, signatureFits } from './functions'
+import { toMajor, toMinor } from './currency-digits'
+import { exprTypeOfField, fail, getFunction, ok, parseIsoDate, roundHalfAway, signatureFits } from './functions'
 import type { EvalFailureReason, EvalResult, ExprType, TypeName } from './functions'
 
 export type { EvalFailureReason, EvalResult } from './functions'
@@ -40,6 +41,11 @@ export interface EvalContext {
 }
 
 // ---------- internal values ----------
+/**
+ * A money scalar with `currency: null` holds its amount in MAJOR units (a constant the builder typed,
+ * or a result computed only from such constants); once it has a currency (`adopt` in `shareCurrency`
+ * converts it) the amount is in MINOR units, as for money read from a document.
+ */
 type Scalar =
   | { type: 'text'; value: string }
   | { type: 'number'; value: number }
@@ -148,7 +154,9 @@ const shareCurrency = (nodes: readonly Node[]): EvalResult<{ nodes: Node[]; curr
   if (currencies.size > 1) return fail('currency_mismatch')
   const currency = [...currencies][0] ?? null
   const adopt = (scalar: Scalar): Scalar =>
-    scalar.type === 'money' && scalar.currency === null ? { ...scalar, currency } : scalar
+    scalar.type === 'money' && scalar.currency === null
+      ? { ...scalar, amount: currency === null ? scalar.amount : toMinor(scalar.amount, currency), currency }
+      : scalar
   return ok({
     nodes: nodes.map((node): Node => {
       switch (node.kind) {
@@ -203,7 +211,7 @@ const evalConst = (expr: Extract<Expr, { kind: 'const' }>): EvalResult<Node> => 
   if (type === 'date' && (typeof expr.value !== 'string' || parseIsoDate(expr.value) === null)) {
     return fail('type_mismatch')
   }
-  // a money constant is the amount in minor units, its currency is decided by its neighbours
+  // a money constant is the amount in major units (12.5), its currency is decided by its neighbours
   const scalar = toScalar(type, expr.value, null)
   return scalar === null ? fail('type_mismatch') : scalarNode(scalar)
 }
@@ -232,9 +240,14 @@ const evalCall = (expr: Extract<Expr, { kind: 'call' }>, ctx: EvalContext): Eval
     else return fail('missing_value')
   }
 
-  const result = signature.evaluate(args)
+  const result = signature.evaluate(args, { currency })
   if (!result.ok) return result
-  const scalar = toScalar(signature.result, result.value, currency)
+  // money results are whole minor units once the currency is known; without it they stay in major units
+  const value =
+    signature.result === 'money' && currency !== null && isRecord(result.value) && typeof result.value.amount === 'number'
+      ? { amount: roundHalfAway(result.value.amount) }
+      : result.value
+  const scalar = toScalar(signature.result, value, currency)
   return scalar === null ? fail('type_mismatch') : scalarNode(scalar)
 }
 
@@ -337,7 +350,7 @@ const INFIX: Partial<Record<FunctionId, { symbol: string; precedence: number }>>
 }
 
 const describeConst = (expr: Extract<Expr, { kind: 'const' }>): string => {
-  if (expr.type === 'money' && typeof expr.value === 'number') return (expr.value / 100).toFixed(2)
+  if (expr.type === 'money' && typeof expr.value === 'number') return String(expr.value)
   if (typeof expr.value === 'string') return expr.type === 'date' ? expr.value : `"${expr.value}"`
   return String(expr.value)
 }
@@ -482,7 +495,7 @@ export const allowedOps = (type: ExprType): readonly CompareOp[] => {
   }
 }
 
-/** Only numbers (absolute) and money (minor units) have a tolerance. */
+/** Only numbers (absolute) and money (major units of the document's currency) have a tolerance. */
 export const supportsTolerance = (type: ExprType): boolean => type === 'number' || type === 'money'
 
 export type CheckOutcome =
@@ -520,6 +533,33 @@ const compareNumbers = (left: number, op: CompareOp, right: number, tolerance: n
   }
 }
 
+/**
+ * Same as `compareNumbers` for money: the tolerance is in major units, the amounts are integer minor
+ * units. The integer difference is converted to major units and compared with the tolerance (no
+ * `tolerance * 100`, which would bring back float error).
+ */
+const compareMoney = (left: number, op: CompareOp, right: number, currency: CurrencyCode, tolerance: number): boolean => {
+  const diff = toMajor(left - right, currency) // left minus right, in major units
+  switch (op) {
+    case 'eq':
+      return Math.abs(diff) <= tolerance
+    case 'neq':
+      return Math.abs(diff) > tolerance
+    case 'lt':
+      return -diff > tolerance
+    case 'lte':
+      return diff <= tolerance
+    case 'gt':
+      return diff > tolerance
+    case 'gte':
+      return -diff <= tolerance
+    default: {
+      const unreachable: never = op
+      throw new Error(`Unknown operator: ${String(unreachable)}`)
+    }
+  }
+}
+
 /** null: these two values can't be compared with this operator. */
 const compareValues = (left: EvalValue, op: CompareOp, right: EvalValue, tolerance: number): boolean | null => {
   if (!allowedOps(left.type).includes(op)) return null
@@ -527,7 +567,9 @@ const compareValues = (left: EvalValue, op: CompareOp, right: EvalValue, toleran
     case 'number':
       return right.type === 'number' ? compareNumbers(left.value, op, right.value, tolerance) : null
     case 'money':
-      return right.type === 'money' ? compareNumbers(left.value.amount, op, right.value.amount, tolerance) : null
+      return right.type === 'money'
+        ? compareMoney(left.value.amount, op, right.value.amount, left.value.currency, tolerance)
+        : null
     case 'date': {
       if (right.type !== 'date') return null
       const [a, b] = [parseIsoDate(left.value), parseIsoDate(right.value)]

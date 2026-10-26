@@ -25,15 +25,15 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
   - [x] JPY can be picked in every currency select; the money input's step follows the currency
   - [x] 2-digit currencies look and export exactly as before
 
-### [ ] 2. Builder money in major units, `round` by currency
+### [x] 2. Builder money in major units, `round` by currency
 - **Build:** money constants (`ActionExpr` with `type: 'money'`) and check tolerances for money are stored in major units (`12.5`, `0.01`) instead of minor units. The evaluator converts them to minor units once the shared currency is known (a constant with no known currency stays `currency_mismatch`, as today). The evaluator passes the shared currency to functions that need it, so `round(money, decimals)` uses that currency's digits instead of `MINOR_DECIMALS = 2`. Builder inputs (`const-input.tsx`, `action-form.ts`) keep the typed major-unit value as is. Migrate the template checks (`tolerance: 1` → `0.01`) and any seeded money constants.
 - **Files:** `src/lib/mock/types.ts`, `src/lib/fields/evaluate.ts`, `src/lib/fields/functions.ts`, `src/features/document-types/actions/const-input.tsx`, `src/features/document-types/actions/action-form.ts`, `src/lib/mock/templates.ts`
 - **Accept:**
-  - [ ] the type comments say money constants and money tolerances are in major units of the document's currency
-  - [ ] "Gross = Net + VAT" with tolerance `0.01` passes on a USD document off by 1 cent and on a JPY document off by 0 yen, and fails on a JPY document off by 1 yen
-  - [ ] `round(x, 0)` on 12.50 USD gives 13.00 USD; on JPY it leaves the amount unchanged; `round(x, -2)` on 1,250 JPY gives 1,300 JPY
-  - [ ] a constant `5` added to a USD amount adds $5.00, to a JPY amount ¥5
-  - [ ] the live preview in the builder and the checks in Review show the same results as before for the existing seed data
+  - [x] the type comments say money constants and money tolerances are in major units of the document's currency
+  - [x] "Gross = Net + VAT" with tolerance `0.01` passes on a USD document off by 1 cent and on a JPY document off by 0 yen, and fails on a JPY document off by 1 yen
+  - [x] `round(x, 0)` on 12.50 USD gives 13.00 USD; on JPY it leaves the amount unchanged; `round(x, -2)` on 1,250 JPY gives 1,300 JPY
+  - [x] a constant `5` added to a USD amount adds $5.00, to a JPY amount ¥5
+  - [x] the live preview in the builder and the checks in Review show the same results as before for the existing seed data
 
 ### [ ] 3. Neutral seed company and mixed-currency seed documents
 - **Build:** the seed company becomes a neutral international one (e.g. "Northwind Studio Ltd", a generic tax ID, English-named team, accountant on a non-country domain) with `defaultCurrency: 'USD'`. `app-shell.tsx` stops hard-coding "Nordwind Trading Sp. z o.o." and shows the same name (through the existing company query, or a shared constant if the shell has no query yet; say which). Seed documents: USD is the most common currency, then EUR, GBP, PLN and a few JPY; add a Japanese supplier with JPY; receipts are no longer forced to PLN; `CZ` no longer maps to EUR (use a currency in `CURRENCIES`, or EUR with a comment saying it is a sample choice); the fallback is `DEFAULT_CURRENCY`, never `'PLN'`. VAT rates follow the supplier's country as today.
@@ -84,6 +84,7 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 - The Invoice template has a Polish-only "In KSeF" field.
   - **Decided:** removed from the template and the seed documents (slice 5).
 - From slice 1: `fake-extract.ts` picks a currency as `CURRENCIES[hash % length]`, so uploaded mock documents can now come out in JPY, with amounts generated at cent scale (e.g. ¥123,456). Harmless for a mock; left as is.
+- From slice 2: a money constant with more decimals than its currency (`0.005` on USD) is rounded to a whole minor unit when it gets the currency; a tolerance with more decimals (`0.001` on USD) is compared as typed, so it is stricter than one cent. Both are fine as is.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -92,3 +93,4 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 | 2026-10-26 | — | ready | questions decided, split into 5 slices |
 | 2026-10-26 | — | questions | seed company, CZ/receipt currency, showcase tax, KSeF removal decided |
 | 2026-10-26 | 1 | done | `currency-digits.ts` (`minorDigits`, `toMajor`, `toMinor`, `majorText`), JPY in `CURRENCIES` and the parser (`¥`); format, money input (step / inputMode by currency), parse, export cells, mock text output. `evaluate.ts` constant display left for slice 2 |
+| 2026-10-26 | 2 | done | money constants and tolerances in major units; a currency-less money scalar holds major units until `shareCurrency` converts it; money results rounded to whole minor units in the evaluator once the currency is known; `round` gets the call's currency; money tolerance compared on the major-unit difference; template tolerances `0.01`. Seed check results identical before / after. Files: `evaluate.ts`, `functions.ts`, `const-input.tsx`, `action-form.ts`, `types.ts`, `templates.ts` |

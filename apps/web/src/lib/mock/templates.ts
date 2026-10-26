@@ -78,7 +78,7 @@ const invoiceActions: FieldAction[] = [
         { kind: 'field', fieldId: 'tpl-invoice-f-vat-total' },
       ],
     },
-    tolerance: 1,
+    tolerance: 0.01,
     severity: 'warning',
   },
   {
@@ -92,7 +92,7 @@ const invoiceActions: FieldAction[] = [
       fn: 'sum',
       args: [{ kind: 'column', fieldId: 'tpl-invoice-f-line-items', columnId: 'tpl-invoice-f-line-items-c-net' }],
     },
-    tolerance: 1,
+    tolerance: 0.01,
     severity: 'warning',
   },
   {

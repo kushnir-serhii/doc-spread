@@ -2,9 +2,12 @@
 // Adding a function = one new entry in FUNCTIONS (and its id in FUNCTION_IDS). The builder lists
 // functions from here and Review evaluates through the same entries.
 //
-// Currencies are handled by the evaluator, not here: a function sees money as `{ amount }` in minor
-// units (all money arguments of one call share a currency) and returns money the same way.
-import type { FieldType, FunctionId } from '@/lib/mock/types'
+// Currencies are handled by the evaluator, not here: a function sees money as `{ amount }` (all money
+// arguments of one call share a currency) and returns money the same way, unrounded. The amounts are
+// minor units when the currency is known (`context.currency`) and major units when it is null (a call
+// of constants only); the evaluator rounds a money result to whole minor units once the currency is known.
+import type { CurrencyCode, FieldType, FunctionId } from '@/lib/mock/types'
+import { minorDigits } from './currency-digits'
 
 // ---------- results ----------
 export type EvalFailureReason = 'missing_value' | 'type_mismatch' | 'currency_mismatch' | 'division_by_zero'
@@ -47,7 +50,7 @@ export const exprTypeOfField = (type: FieldType): ExprType | null => {
   }
 }
 
-/** Money as a function sees it: minor units, no currency. */
+/** Money as a function sees it: no currency; minor units when the call's currency is known, else major units. */
 export interface MoneyAmount {
   amount: number
 }
@@ -82,13 +85,19 @@ export type SignatureParams =
   /** `min` or more arguments, all of type `arg` */
   | { kind: 'variadic'; arg: ExprType; min: number }
 
+/** What the evaluator tells a function about its call. */
+export interface EvalCallContext {
+  /** The one currency of the call's money; null when the call has no money or only constants. */
+  currency: CurrencyCode | null
+}
+
 export interface Signature {
   params: SignatureParams
   result: ExprType
   /** true: empty arguments are passed as null instead of failing with `missing_value` */
   acceptsEmpty: boolean
   /** Takes the arguments in the declared types (checked where the signature is built); see `fixed`. */
-  evaluate: (args: readonly unknown[]) => EvalResult<unknown>
+  evaluate: (args: readonly unknown[], context: EvalCallContext) => EvalResult<unknown>
 }
 
 const VARIADIC_MIN = 2
@@ -102,46 +111,46 @@ const VARIADIC_MIN = 2
 export const fixed = <const A extends readonly TypeName[], R extends ExprType>(
   args: A,
   result: R,
-  evaluate: (args: ArgValues<A>) => EvalResult<ValueTypes[R]>,
+  evaluate: (args: ArgValues<A>, context: EvalCallContext) => EvalResult<ValueTypes[R]>,
 ): Signature => ({
   params: { kind: 'fixed', args },
   result,
   acceptsEmpty: false,
-  evaluate: (values) => evaluate(values as ArgValues<A>),
+  evaluate: (values, context) => evaluate(values as ArgValues<A>, context),
 })
 
 export const variadic = <T extends ExprType, R extends ExprType>(
   arg: T,
   result: R,
-  evaluate: (args: ValueTypes[T][]) => EvalResult<ValueTypes[R]>,
+  evaluate: (args: ValueTypes[T][], context: EvalCallContext) => EvalResult<ValueTypes[R]>,
 ): Signature => ({
   params: { kind: 'variadic', arg, min: VARIADIC_MIN },
   result,
   acceptsEmpty: false,
-  evaluate: (values) => evaluate(values as ValueTypes[T][]),
+  evaluate: (values, context) => evaluate(values as ValueTypes[T][], context),
 })
 
 /** Like `fixed`, but empty arguments arrive as null (coalesce, if_empty). */
 export const fixedNullable = <const A extends readonly ExprType[], R extends ExprType>(
   args: A,
   result: R,
-  evaluate: (args: NullableArgValues<A>) => EvalResult<ValueTypes[R]>,
+  evaluate: (args: NullableArgValues<A>, context: EvalCallContext) => EvalResult<ValueTypes[R]>,
 ): Signature => ({
   params: { kind: 'fixed', args },
   result,
   acceptsEmpty: true,
-  evaluate: (values) => evaluate(values as NullableArgValues<A>),
+  evaluate: (values, context) => evaluate(values as NullableArgValues<A>, context),
 })
 
 export const variadicNullable = <T extends ExprType, R extends ExprType>(
   arg: T,
   result: R,
-  evaluate: (args: (ValueTypes[T] | null)[]) => EvalResult<ValueTypes[R]>,
+  evaluate: (args: (ValueTypes[T] | null)[], context: EvalCallContext) => EvalResult<ValueTypes[R]>,
 ): Signature => ({
   params: { kind: 'variadic', arg, min: VARIADIC_MIN },
   result,
   acceptsEmpty: true,
-  evaluate: (values) => evaluate(values as (ValueTypes[T] | null)[]),
+  evaluate: (values, context) => evaluate(values as (ValueTypes[T] | null)[], context),
 })
 
 // ---------- function definitions ----------
@@ -165,7 +174,7 @@ export interface FunctionDef<I extends FunctionId = FunctionId> {
 }
 
 // ---------- helpers ----------
-const roundHalfAway = (n: number) => Math.sign(n) * Math.round(Math.abs(n))
+export const roundHalfAway = (n: number) => Math.sign(n) * Math.round(Math.abs(n))
 
 /** Rounds to `decimals` places, half away from zero, without binary-float surprises (1.005 -> 1.01). */
 const roundDecimals = (n: number, decimals: number) => {
@@ -175,9 +184,8 @@ const roundDecimals = (n: number, decimals: number) => {
   return Math.sign(n) * Number(`${shifted}e${-decimals}`)
 }
 
-const MINOR_DECIMALS = 2
-
-const money = (amount: number): EvalResult<MoneyAmount> => ok({ amount: roundHalfAway(amount) })
+/** Money result; not rounded here, the evaluator rounds it to whole minor units once the currency is known. */
+const money = (amount: number): EvalResult<MoneyAmount> => ok({ amount })
 
 const sum = (items: number[]) => items.reduce((total, n) => total + n, 0)
 
@@ -274,16 +282,19 @@ export const FUNCTIONS: { [I in FunctionId]: FunctionDef<I> } = {
     id: 'round',
     label: 'Round',
     description:
-      'Rounds to a number of decimals (half away from zero). For money, the decimals are those of the major unit: 2 keeps cents, 0 rounds to whole dollars.',
+      'Rounds to a number of decimals (half away from zero). For money, the decimals are those of the major unit: 2 keeps cents, 0 rounds to whole units; a currency without minor units, like JPY, is left as is at 0.',
     group: 'arithmetic',
     signatures: [
       fixed(['number', 'number'], 'number', ([a, decimals]) =>
         Number.isInteger(decimals) ? ok(roundDecimals(a, decimals)) : fail('type_mismatch'),
       ),
-      fixed(['money', 'number'], 'money', ([a, decimals]) => {
+      fixed(['money', 'number'], 'money', ([a, decimals], { currency }) => {
         if (!Number.isInteger(decimals)) return fail('type_mismatch')
+        // no currency yet: the amount is in major units, round it like a number
+        if (currency === null) return money(roundDecimals(a.amount, decimals))
         // minor units per rounding step; 1 when the money already has at most that many decimals
-        const step = decimals >= MINOR_DECIMALS ? 1 : 10 ** (MINOR_DECIMALS - decimals)
+        const digits = minorDigits(currency)
+        const step = decimals >= digits ? 1 : 10 ** (digits - decimals)
         return money(roundHalfAway(a.amount / step) * step)
       }),
     ],

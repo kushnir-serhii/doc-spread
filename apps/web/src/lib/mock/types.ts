@@ -183,7 +183,7 @@ export type Expr =
   | { kind: 'field'; fieldId: string }
   /** all values of a table column, as a list */
   | { kind: 'column'; fieldId: string; columnId: string }
-  /** money: `value` is the amount in minor units; the currency comes from the other money in the same call or comparison */
+  /** money: `value` is the amount in major units of the document's currency (12.5); the currency comes from the other money in the same call or comparison */
   | { kind: 'const'; type: ScalarFieldType; value: unknown }
   | { kind: 'call'; fn: FunctionId; args: Expr[] }
 
@@ -198,7 +198,7 @@ export interface CheckAction {
   left: Expr
   op: CompareOp
   right: Expr
-  /** allowed difference: minor units of the document's currency for money, absolute for numbers */
+  /** allowed difference: major units of the document's currency for money (0.01), absolute for numbers */
   tolerance?: number
   severity: 'warning' | 'blocking'
 }
