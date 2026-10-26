@@ -21,12 +21,14 @@ interface UseTypeSaveOptions {
   savedType?: SavedTypeInfo
   /** Called after a saved type got its next version. A new type navigates away instead. */
   onSaved?: (notice: string) => void
+  /** Runs once the type is stored (before the screen moves on); its text, if any, is added to the success message. */
+  afterSave?: (typeId: string) => Promise<string>
 }
 
 export type SaveRequest = 'invalid' | 'confirm' | 'saving'
 
 /** Validation, the impact check and the create/update calls behind the Save button. */
-export const useTypeSave = ({ draft, baseline, savedType, onSaved }: UseTypeSaveOptions) => {
+export const useTypeSave = ({ draft, baseline, savedType, onSaved, afterSave }: UseTypeSaveOptions) => {
   const navigate = useNavigate()
   const create = useCreateDocumentType()
   const update = useUpdateDocumentType()
@@ -46,10 +48,15 @@ export const useTypeSave = ({ draft, baseline, savedType, onSaved }: UseTypeSave
       if (savedType) {
         const next = await update.mutateAsync({ id: savedType.id, patch: draft })
         const queued = reextract && impact.added > 0 ? ` · ${describeReextract(impact.added)}` : ''
-        onSaved?.(`Saved as version ${next.version}${queued}`)
+        const extra = await afterSave?.(next.id)
+        onSaved?.(`Saved as version ${next.version}${queued}${extra ? ` · ${extra}` : ''}`)
       } else {
         const created = await create.mutateAsync(draft)
-        navigate(`/types/${created.id}`, { replace: true, state: savedNoticeState('Type saved') })
+        const extra = await afterSave?.(created.id)
+        navigate(`/types/${created.id}`, {
+          replace: true,
+          state: savedNoticeState(extra ? `Type saved · ${extra}` : 'Type saved'),
+        })
       }
     } catch {
       // The failure is on the mutation (`error`); the draft stays as it is.

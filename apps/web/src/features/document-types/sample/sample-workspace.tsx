@@ -1,126 +1,96 @@
-import { useReducer, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { DocumentViewer } from '@/features/documents/viewer/document-viewer'
-import type { DocumentViewerHandle } from '@/features/documents/viewer/viewer-highlights'
-import { useTestExtractPreview } from '@/lib/api'
-import type { Document, FieldDef } from '@/lib/mock/types'
-import { resolveSelection, type Selection } from '../editor-target'
-import { FieldEditorPanel } from '../field-editor-panel'
-import { blankDraft } from '../type-draft'
+import { useReducer, useState } from 'react'
+import type { FieldDef } from '@/lib/mock/types'
+import type { Selection } from '../editor-target'
+import { blankDraft, type TypeDraft } from '../type-draft'
 import { builderReducer, createBuilderState } from '../type-draft-reducer'
-import { useDraftActions } from '../use-draft-actions'
-import { buildProposalHighlights } from './proposal-highlights'
-import { AddTableButton } from './add-table-button'
-import { PointingPanels } from './pointing-panels'
-import { PointButton } from './point-button'
-import { ProposalList } from './proposal-list'
+import type { SavedTypeInfo } from '../use-type-save'
+import { AddSampleDialog } from './add-sample-dialog'
+import type { AddSampleView } from './add-sample-body'
+import { SampleReview } from './sample-review'
 import { SampleSaveSection } from './sample-save-section'
-import { useAddTable } from './use-add-table'
-import { usePointAgain } from './use-point-again'
-import { usePointToAdd } from './use-point-to-add'
-import { useProposalActivation } from './use-proposal-activation'
+import { SampleSummary } from './sample-summary'
+import { SampleTabs } from './sample-tabs'
 import { useProposalReview } from './use-proposal-review'
-import { useSamplePointing } from './use-sample-pointing'
+import { useSampleRemoval } from './use-sample-removal'
+import { useSampleSummary } from './use-sample-summary'
+import { useSamples } from './use-samples'
 
 interface SampleWorkspaceProps {
-  documentId: string
-  file: Document['file']
+  /** Read once on mount: a saved type's draft when training, a blank one for a new type. */
+  initialDraft?: TypeDraft
+  /** The documents to test on, in tab order (up to 5). */
+  initialSamples: string[]
+  /** Proposed from the first sample; none when training a type that exists. */
   proposals: FieldDef[]
+  savedType?: SavedTypeInfo
+  notice?: string | null
+  onSaved?: (notice: string, sampleIds: string[]) => void
 }
 
-/** The viewer, the proposed fields and the field editor. The draft holds what was accepted until Save. */
-export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspaceProps) => {
-  const [{ draft }, dispatch] = useReducer(builderReducer, undefined, () => createBuilderState(blankDraft()))
-  const [baseline] = useState(blankDraft)
+/** One draft tested on up to 5 samples: the draft, the proposal review and the chooser outlive a tab switch. */
+export const SampleWorkspace = ({ initialDraft, initialSamples, proposals, savedType, notice, onSaved }: SampleWorkspaceProps) => {
+  const [{ draft }, dispatch] = useReducer(builderReducer, initialDraft, (d) => createBuilderState(d ?? blankDraft()))
+  const [baseline] = useState(() => initialDraft ?? blankDraft())
   const [selection, setSelection] = useState<Selection>(null)
-  const viewerRef = useRef<DocumentViewerHandle>(null)
-  const pointRef = useRef<HTMLButtonElement>(null)
-  const tableRef = useRef<HTMLButtonElement>(null)
-  const { activeId, activate } = useProposalActivation(viewerRef)
-  const review = useProposalReview(proposals, draft, dispatch)
-  const actions = useDraftActions(dispatch, setSelection)
-  const point = usePointToAdd(documentId, review.items, dispatch, pointRef)
-  const table = useAddTable(documentId, dispatch, tableRef)
-
+  const [chooser, setChooser] = useState<AddSampleView | null>(initialSamples.length === 0 ? 'examples' : null)
+  const samples = useSamples(initialSamples)
+  const removeExamples = useSampleRemoval(draft, dispatch)
+  // A sample that was removed no longer backs an unaccepted proposal's box.
+  const usable = proposals.map((p) => ({ ...p, examples: p.examples.filter((e) => samples.ids.includes(e.documentId)) }))
+  const review = useProposalReview(usable, draft, dispatch)
   const live = review.items.filter((item) => item.status !== 'rejected').map((item) => item.field)
-  const preview = useTestExtractPreview(documentId, live)
-  const again = usePointAgain(documentId, review.items, preview.data, dispatch)
-  const highlights = buildProposalHighlights(review.items, preview.data)
-  const selectedId = selection?.fieldId ?? null
-  const target = resolveSelection(selection, draft.fields)
+  const summary = useSampleSummary(samples.ids, live)
 
-  const pointing = useSamplePointing(point, again, table)
-
-  const selectField = (id: string) => {
-    setSelection({ kind: 'field', fieldId: id })
-    // The list is long on real documents: bring the row of a clicked box into view.
-    document.querySelector(`[data-proposal-id="${id}"]`)?.scrollIntoView({ block: 'nearest' })
+  const addSample = (id: string) => {
+    if (samples.add(id) !== 'full') setChooser(null)
   }
 
   return (
     <>
-      <SampleSaveSection draft={draft} baseline={baseline} dispatch={dispatch} onSelect={setSelection} />
-      <div className="grid gap-6 lg:grid-cols-5 2xl:grid-cols-7">
-        <div className="h-sample-pane min-w-0 lg:sticky lg:top-24 lg:col-span-3">
-          <DocumentViewer
-            ref={viewerRef}
-            documentId={documentId}
-            file={file}
-            highlights={highlights}
-            activeHighlightId={activeId ?? selectedId}
-            onHighlightClick={selectField}
-            mode={pointing.mode}
-            onSelect={pointing.select}
-            onCancel={pointing.cancel}
-          />
-        </div>
-        <div className="flex min-w-0 flex-col gap-3 lg:col-span-2">
-          <PointingPanels point={point} table={table} />
-          <ProposalList
-            pointAction={
-              <div className="flex flex-wrap justify-center gap-2">
-                <PointButton ref={pointRef} pointing={point.pointing} onToggle={pointing.togglePoint} />
-                <AddTableButton ref={tableRef} pointing={table.pointing} onToggle={pointing.toggleTable} />
-              </div>
-            }
-            items={review.items}
-            openCount={review.openCount}
-            values={preview.data}
-            valuesLoading={preview.isPending && live.length > 0}
-            valuesFailed={preview.isError}
-            selectedId={selectedId}
-            pointAgain={{ ...again, start: pointing.startAgain }}
-            onRetryValues={() => void preview.refetch()}
-            onAcceptAll={review.acceptAll}
-            onActivate={activate}
-            onSelect={selectField}
-            onAccept={review.accept}
-            onReject={review.reject}
-            onRestore={review.restore}
-            onRename={review.rename}
-          />
-          <Button variant="outline" onClick={actions.addField} className="min-h-touch self-start md:min-h-9">
-            <Plus aria-hidden /> Add a field manually
-          </Button>
-        </div>
-        {/* below 2xl the editor is a sheet (portal), so this cell takes no grid space */}
-        <div className="min-w-0 max-2xl:contents 2xl:col-span-2">
-          <FieldEditorPanel
-            besideFrom="(min-width: 1536px)"
-            target={target}
-            fields={draft.fields}
-            dispatch={dispatch}
-            issues={[]}
-            onDuplicateField={actions.duplicateField}
-            onDeleteField={actions.deleteField}
-            onAddColumn={actions.addColumn}
-            onDuplicateColumn={actions.duplicateColumn}
-            onDeleteColumn={actions.deleteColumn}
-            onClose={() => setSelection(null)}
-          />
-        </div>
-      </div>
+      <SampleSaveSection
+        draft={draft}
+        baseline={baseline}
+        dispatch={dispatch}
+        onSelect={setSelection}
+        sampleIds={samples.ids}
+        savedType={savedType}
+        notice={notice}
+        onSaved={onSaved && ((message) => onSaved(message, samples.ids))}
+      />
+      <SampleTabs
+        ids={samples.ids}
+        activeId={samples.activeId}
+        full={samples.full}
+        onSelect={samples.setActive}
+        onRemove={(id) => {
+          if (samples.remove(id)) removeExamples(id)
+        }}
+        onAdd={() => setChooser('upload')}
+      />
+      <SampleSummary summary={summary} sampleCount={samples.ids.length} />
+      <AddSampleDialog
+        open={chooser !== null}
+        initialView={chooser ?? 'upload'}
+        takenIds={samples.ids}
+        onOpenChange={(open) => !open && setChooser(null)}
+        onAdd={addSample}
+      />
+      {samples.activeId !== null && (
+        <SampleReview
+          key={samples.activeId}
+          documentId={samples.activeId}
+          draft={draft}
+          dispatch={dispatch}
+          items={review.items}
+          openCount={review.openCount}
+          live={live}
+          heading={proposals.length > 0 ? 'Proposed fields' : 'Fields'}
+          selection={selection}
+          onSelection={setSelection}
+          reviewActions={review}
+          onTryExample={() => setChooser('examples')}
+        />
+      )}
     </>
   )
 }

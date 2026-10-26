@@ -64,6 +64,11 @@ export const useDocumentsByIds = (ids: string[]) =>
     })),
   })
 
+/** Seeded documents with real OCR words: ready-made samples for a try-out (mock data; the backend lists its own). */
+const DEMO_DOCUMENT_IDS = ['doc-001', 'doc-002']
+
+export const useDemoDocuments = () => useDocumentsByIds(DEMO_DOCUMENT_IDS)
+
 /** null id skips the request */
 export const useDocumentPages = (id: string | null) =>
   useQuery({

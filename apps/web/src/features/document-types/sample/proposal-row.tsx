@@ -1,10 +1,11 @@
 import { useId } from 'react'
-import { Check, Crosshair, Pencil, RotateCcw, X } from 'lucide-react'
+import { Check, Crosshair, Pencil, RotateCcw, TriangleAlert, X } from 'lucide-react'
 import { ConfidenceBadge } from '@/components/domain/confidence-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { isLowConfidence } from '@/lib/fields/confidence'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import type { FieldValue } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
@@ -18,6 +19,8 @@ interface ProposalRowProps {
   item: ProposalItem
   /** From the test extraction; undefined until it arrives. */
   value: FieldValue | undefined
+  /** The active sample: only its example counts as "a box here". */
+  documentId: string
   valueLoading: boolean
   selected: boolean
   pointAgain: PointAgain
@@ -40,6 +43,7 @@ const BUTTON = 'min-h-touch md:min-h-9'
 export const ProposalRow = ({
   item,
   value,
+  documentId,
   valueLoading,
   selected,
   pointAgain,
@@ -96,7 +100,14 @@ export const ProposalRow = ({
             </span>
           )}
           {confidence !== undefined && <ConfidenceBadge score={confidence} />}
-          {field.examples.length === 0 && <span className="text-xs text-muted-foreground">No box on the document</span>}
+          {!valueLoading && !notFound && confidence !== undefined && isLowConfidence(confidence) && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium">
+              <TriangleAlert className="size-3.5" aria-hidden /> Low confidence: check it
+            </span>
+          )}
+          {!field.examples.some((e) => e.documentId === documentId) && (
+            <span className="text-xs text-muted-foreground">No box on this sample</span>
+          )}
         </div>
       )}
       {status !== 'rejected' && <PointAgainFeedback fieldId={field.id} pointAgain={pointAgain} />}

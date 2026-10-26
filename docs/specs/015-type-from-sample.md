@@ -1,6 +1,6 @@
 # 015 — Type from a sample
 
-**Status:** in-progress · **Depends on:** 013, 014 · **Route(s):** `/types/new?from=sample`, `/types/new?documentId=:id`, `/types/:typeId/train`
+**Status:** done · **Depends on:** 013, 014 · **Route(s):** `/types/new?from=sample`, `/types/new?documentId=:id`, `/types/:typeId/train`
 
 ## Goal
 The user builds a type by showing a real document instead of typing a schema: the AI proposes fields with boxes on the document, the user keeps, renames or removes them, points at anything that's missing or wrong, and test-runs the type on a second sample before saving.
@@ -60,17 +60,17 @@ The user builds a type by showing a real document instead of typing a schema: th
   - [x] the columns can be renamed, retyped or removed in the editor from 014
   - [x] the preview uses the shared table-field view (Table / List, see Open questions)
 
-### [ ] 5. Test run on more samples
+### [x] 5. Test run on more samples
 - **Build:** tabs for samples 1–5. A sample is added by uploading a file or by picking a document without a type (Inbox) or a demo document; adding one runs `testExtract` with the current draft (not saved yet). The `/types/:typeId/train` route loads the saved type into the draft, and the documents its examples come from (up to 5) as the samples.
 - **Files:** `src/features/document-types/sample/`, `src/pages/types/train-type-page.tsx`, `src/app/router.tsx`
 - **Accept:**
-  - [ ] each field shows the value found and its confidence for the active sample; low confidence (`< LOW_CONFIDENCE`) and "not found" are flagged with an icon, not color alone
-  - [ ] fixing by pointing on any sample adds an example (more samples → better hint); a short summary shows "12/14 fields found on all samples" and is announced (`role="status"`)
-  - [ ] the sixth sample is refused with an explanation
-  - [ ] a sample can be removed from the set; the examples taken from it are removed from the draft
-  - [ ] the mock can't read uploaded files (a blank page without words), so the sample step says so and offers "Try with an example document"
-  - [ ] after Save, every sample without a type is assigned to the new type (`useReassignDocumentType()`) and shows up in the Inbox under it; a sample that already has another type is left as is, and the success message says so ("3 samples assigned; 1 is an Invoice and was left as is")
-  - [ ] Save goes through the same validation, impact dialog, versioning and leave guard as 014; `/types/:typeId/train` reopens this screen for an existing type
+  - [x] each field shows the value found and its confidence for the active sample; low confidence (`< LOW_CONFIDENCE`) and "not found" are flagged with an icon, not color alone
+  - [x] fixing by pointing on any sample adds an example (more samples → better hint); a short summary shows "12/14 fields found on all samples" and is announced (`role="status"`)
+  - [x] the sixth sample is refused with an explanation
+  - [x] a sample can be removed from the set; the examples taken from it are removed from the draft
+  - [x] the mock can't read uploaded files (a blank page without words), so the sample step says so and offers "Try with an example document"
+  - [x] after Save, every sample without a type is assigned to the new type (`useReassignDocumentType()`) and shows up in the Inbox under it; a sample that already has another type is left as is, and the success message says so ("3 samples assigned; 1 is an Invoice and was left as is")
+  - [x] Save goes through the same validation, impact dialog, versioning and leave guard as 014; `/types/:typeId/train` reopens this screen for an existing type
 
 ## Backend needs
 OCR tokens right after upload; an LLM call that proposes fields (label, key, type, hint, bbox) for a sample; inference of label, type and hint from a selection plus its anchor; table columns and rows from a region; test extraction with an unsaved schema; examples passed to extraction as few-shot hints, including their bboxes as a "usually here" hint.
@@ -89,12 +89,16 @@ OCR tokens right after upload; an LLM call that proposes fields (label, key, typ
 - "Point again" offers a type change only when the text parses as another type without assuming anything: "12" reads as a number, not money (`guessFieldType` in `lib/fields/guess-field-type.ts`).
 - The assumed-currency warning stays in the row until the next pointing action; the builder has no Confirm (the value stays below `LOW_CONFIDENCE`). Backend: lower a value's confidence when part of it was assumed.
 - `suggestTable` reads the page's OCR tokens inside the rectangle itself (like `suggestField`); a money column without a currency gets USD at 0.5 confidence and the panel shows a warning naming the columns. Column types come from the values; an amount without a currency reads as a number, so the mock also looks at money-like header words (price, total, netto…) — a heuristic the backend replaces. Test document: `doc-001`.
+- 014's `useTypeSave` gained an optional `afterSave(typeId)`: a new type navigates away right after it's created, so the samples are assigned there; failures are counted ("1 couldn't be assigned"), never thrown, so a created type is never saved twice.
+- The demo documents are hard-coded (`useDemoDocuments()` over `doc-001`, `doc-002` in `lib/api/documents.ts`) and already have a type, so Save leaves them as is. Backend: say which documents are examples.
+- The summary counts the fields currently listed (not rejected), not only accepted ones; with no samples it says nothing. `proposal-row.tsx` and `sample-review.tsx` are ~152 lines (target ~150).
 - How many examples per field are stored at most? **Decided:** one per sample, so at most 5 (see **Data**).
 - Should corrections made in Review (008) add examples automatically or ask first? **Decided in 008 slice 3:** ask with a non-blocking prompt.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-26 | 5 | done | shared draft over sample tabs (1–5, `?sample=`), Add sample (upload, documents without a type, example documents), remove a sample with its examples, unreadable-upload notice with "Try with an example document", per-sample values and a summary over all samples, assign samples after Save, `/types/:typeId/train` with a "Train with samples" link. Spec done: Definition of Done checked. Files: `features/document-types/sample/` (`use-samples.ts`, `sample-tabs.tsx`, `sample-tab.tsx`, `add-sample-*.tsx`, `sample-document-list.tsx`, `use-sample-readability.ts`, `unreadable-notice.tsx`, `sample-viewer.tsx`, `sample-review.tsx`, `use-sample-summary.ts`, `sample-summary.tsx`, `use-assign-samples.ts`, save section, workspace…), `features/document-types/use-type-save.ts`, `features/document-types/type-builder.tsx`, `pages/types/train-type-page.tsx`, `app/router.tsx`, `lib/api/builder.ts`, `lib/api/documents.ts` |
 | 2026-10-26 | 4 | done | "Add a table" → `select-region` → `useSuggestTable()` (mock `suggest-table.ts`: header from the first line, columns by x, types from values, 5-row preview, assumed-currency warning) → panel with name, columns and the shared read-only `TableFieldView` → Add table; one pointing flow at a time (`use-sample-pointing.ts`). Files: `features/document-types/sample/` (`add-table-button.tsx`, `use-add-table.ts`, `table-suggestion-panel.tsx`, `table-suggestion-form.tsx`, `use-sample-pointing.ts`, `pointing-panels.tsx`, workspace), `lib/mock/suggest-table.ts`, `lib/mock/api.ts`, `lib/mock/types.ts`, `lib/mock/propose-fields.ts`, `lib/api/builder.ts` |
 | 2026-10-26 | 3 | done | "Point again" per row (icon button) and "Not found: point to it"; parse with `parseFieldValue`, else offer a type change (`guessFieldType`), else the reason; assumed currency warns and stays flagged; mock `testExtract` parses examples for every scalar type; viewer toolbar is a size container (icon-only Fit width / Rotate all when narrow, one line). Files: `features/document-types/sample/` (`use-point-again.ts`, `point-again-button.tsx`, `point-again-feedback.tsx`, `replace-example.ts`, row, list, workspace, `use-point-to-add.ts`), `lib/fields/guess-field-type.ts`, `lib/mock/api.ts`, `features/documents/viewer/viewer-toolbar.tsx` |
 | 2026-10-23 | 2 | done | "Point to add" (header and empty state) → `select-words` → `useSuggestField()` (new mock `suggestField`: anchor label left or above, type from patterns incl. email/tax ID/number/phone) → an editable panel (label, type, hint; loading, error with retry) → Add; overlap offers "Fix <label> instead"; `testExtract` uses examples for text-like fields; preview key includes examples. Files: `features/document-types/sample/` (`use-point-to-add.ts`, `selection-overlap.ts`, `point-button.tsx`, `suggestion-panel.tsx`, `suggestion-form.tsx`, workspace, list, empty state), `lib/mock/api.ts`, `lib/mock/propose-fields.ts`, `lib/mock/types.ts`, `lib/api/builder.ts`, `features/document-types/type-draft.ts` |
