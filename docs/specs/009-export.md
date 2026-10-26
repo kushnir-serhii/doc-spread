@@ -42,6 +42,17 @@ Export job creation with a column mapping, file generation (CSV, XLSX with sever
 ## Open questions
 - **Decided (2026-10-26):** a saved column mapping belongs to the type and is shared by the team, not kept per user.
 - **Decided (2026-10-26):** the export fields go into the 012 model. `ExportJob` gets `columns` (the mapping used for that job), and the per-type mapping is stored next to the type. `exported` already exists in `DOCUMENT_STATUSES`, and the mock `createExportJob` already moves approved documents to it, so slice 3 only has to refresh the approved list.
+- **Decided (2026-10-26):** the branch starts from 016, so computed fields are exported like any other field.
+- **Decided (2026-10-26):** recipients — the mock `Company` gets `recipients: { id, name, email }[]` (the seed has the accountant). Export offers a saved recipient or "Other address" with email validation. Editing the list is 011.
+- **Decided (2026-10-26):** the type is in the URL (`?type=`); the document selection is local. Without `?ids=` every approved document of the type is selected. The page has tabs "New export" and "History" (`?tab=`).
+- **Decided (2026-10-26):** the page works at 375px; the column mapping is desktop-first.
+- **Decided (2026-10-26):** slice 2 — values are machine-readable: ISO dates, a dot as the decimal separator, money split into two columns `<header>` (the amount) and `<header>_currency`, booleans as true/false.
+- **Decided (2026-10-26):** optional built-in columns "Document ID" and "File name" at the top of the list, off by default. Document ID is forced on when a table goes to a separate sheet or file.
+- **Decided (2026-10-26):** CSV "one row per table row" is allowed for one table only (two would multiply rows); the other tables go to separate files in the zip.
+- **Decided (2026-10-26):** for the PDF bundle the mapping is hidden, with a note that the file holds the original documents, not columns.
+- **Decided (2026-10-26):** the mapping is saved for the type when an export is created and restored next time; "Reset to default"; no separate "Save mapping" button. New fields of the type are added at the end, included; deleted fields drop out.
+- **Decided (2026-10-26):** slices 3–4 — the mock generates a real CSV for a CSV export that is one file. XLSX, zip and PDF can only be made by the backend, so the success state says so honestly (Download is unavailable, with the reason). No libraries are added.
+- **Decided (2026-10-26):** no retry for failed jobs in History (out of scope); only the status badge.
 
 ## Log
 | Date | Slice | Result | Notes / files |
