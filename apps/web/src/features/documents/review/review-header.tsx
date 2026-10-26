@@ -26,7 +26,8 @@ export const ReviewHeader = ({ doc, typeName }: ReviewHeaderProps) => (
     </div>
     <p className="text-sm text-muted-foreground">
       <span className="sr-only">Type: </span>
-      {typeName ?? 'No type yet'}
+      {/* a typed document whose type is still loading shows nothing rather than "No type yet" */}
+      {typeName ?? (doc.typeId === null ? 'No type yet' : ' ')}
     </p>
   </header>
 )

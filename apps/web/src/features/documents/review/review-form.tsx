@@ -1,12 +1,17 @@
 import type { Ref } from 'react'
 import { fieldFocusId } from '@/features/documents/fields/field-focus-ids'
 import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
-import type { Document, DocumentType } from '@/lib/mock/types'
+import type { DocumentType, FieldValue } from '@/lib/mock/types'
 import { ReviewFieldRow } from './review-field-row'
 
 interface ReviewFormProps {
-  doc: Document
+  docId: string
   type: DocumentType
+  /** the draft values */
+  values: Record<string, FieldValue>
+  /** omitted when the document is read-only */
+  onValueChange?: (fieldId: string, next: FieldValue) => void
+  onConfirm?: (fieldId: string) => void
   /** a field (or table cell) took focus; id as in field-focus-ids.ts */
   onFieldFocus: (id: string) => void
   onFieldHover: (id: string | null) => void
@@ -16,8 +21,17 @@ interface ReviewFormProps {
 const focusIdOf = (target: EventTarget): string | null =>
   target instanceof HTMLElement ? (target.closest<HTMLElement>('[data-focus-id]')?.dataset.focusId ?? null) : null
 
-/** Every field of the type, in order, read-only. Focus and hover are caught once here instead of on every field. */
-export const ReviewForm = ({ doc, type, onFieldFocus, onFieldHover, ref }: ReviewFormProps) => (
+/** Every field of the type, in order. Focus and hover are caught once here instead of on every field. */
+export const ReviewForm = ({
+  docId,
+  type,
+  values,
+  onValueChange,
+  onConfirm,
+  onFieldFocus,
+  onFieldHover,
+  ref,
+}: ReviewFormProps) => (
   <div
     ref={ref}
     role="group"
@@ -35,8 +49,10 @@ export const ReviewForm = ({ doc, type, onFieldFocus, onFieldHover, ref }: Revie
       <ReviewFieldRow
         key={field.id}
         field={field}
-        value={doc.values[field.id] ?? FIELD_TYPE_META[field.type].empty()}
-        focusId={fieldFocusId(doc.id, field.id)}
+        value={values[field.id] ?? FIELD_TYPE_META[field.type].empty()}
+        focusId={fieldFocusId(docId, field.id)}
+        onChange={onValueChange && ((next) => onValueChange(field.id, next))}
+        onConfirm={onConfirm && (() => onConfirm(field.id))}
       />
     ))}
   </div>

@@ -1,8 +1,11 @@
 import { useRef, useState } from 'react'
+import { LeaveGuard } from '@/features/document-types/leave-guard'
 import type { DocumentViewerHandle } from '@/features/documents/viewer/viewer-highlights'
 import type { Document, DocumentType } from '@/lib/mock/types'
 import { ReviewForm } from './review-form'
 import { ReviewViewerPane } from './review-viewer-pane'
+import { ReviewSaveBar } from './review-save-bar'
+import { useReviewDraft } from './use-review-draft'
 import { useReviewHighlights } from './use-review-highlights'
 
 interface ReviewWorkspaceProps {
@@ -16,7 +19,9 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const formRef = useRef<HTMLDivElement>(null)
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const highlights = useReviewHighlights(doc, type)
+  const editable = doc.status === 'needs_review'
+  const { draft, setValue, confirm, save, dirty, mutation } = useReviewDraft(doc)
+  const highlights = useReviewHighlights(doc.id, draft, type)
 
   const focusField = (id: string) => {
     setFocusedId(id)
@@ -25,7 +30,12 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   }
   const focusFromBox = (id: string) => {
     setFocusedId(id)
-    formRef.current?.querySelector<HTMLElement>(`[data-focus-id="${id}"]`)?.focus()
+    const target = formRef.current?.querySelector<HTMLElement>(`[data-focus-id="${id}"]`)
+    // an editable row is not focusable itself: its first control is
+    const control = target?.matches('input, button, [tabindex]')
+      ? target
+      : target?.querySelector<HTMLElement>('input, [role="combobox"], [role="switch"], button')
+    control?.focus()
   }
 
   return (
@@ -37,7 +47,33 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
         activeHighlightId={hoveredId ?? focusedId}
         onHighlightClick={focusFromBox}
       />
-      <ReviewForm ref={formRef} doc={doc} type={type} onFieldFocus={focusField} onFieldHover={setHoveredId} />
+      <div className="flex flex-col gap-3">
+        <ReviewForm
+          ref={formRef}
+          docId={doc.id}
+          type={type}
+          values={draft}
+          onValueChange={editable ? setValue : undefined}
+          onConfirm={editable ? confirm : undefined}
+          onFieldFocus={focusField}
+          onFieldHover={setHoveredId}
+        />
+        {editable && (
+          <ReviewSaveBar
+            dirty={dirty}
+            isPending={mutation.isPending}
+            isSuccess={mutation.isSuccess}
+            errorMessage={mutation.isError ? mutation.error.message : null}
+            onSave={save}
+          />
+        )}
+      </div>
+      {editable && (
+        <LeaveGuard
+          dirty={dirty}
+          description="You changed values in this document and haven’t saved them. If you leave now, the changes are lost."
+        />
+      )}
     </div>
   )
 }

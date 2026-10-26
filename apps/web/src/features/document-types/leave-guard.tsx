@@ -14,10 +14,15 @@ import { readSavedNotice } from './saved-notice'
 
 interface LeaveGuardProps {
   dirty: boolean
+  /** what is lost on leaving; defaults to the type builder's text */
+  description?: string
 }
 
 /** Asks before leaving with unsaved changes: in-app navigation (router) and closing the tab (browser). */
-export const LeaveGuard = ({ dirty }: LeaveGuardProps) => {
+export const LeaveGuard = ({
+  dirty,
+  description = 'You changed this type and haven’t saved it. If you leave now, the changes are lost.',
+}: LeaveGuardProps) => {
   // The dialog has no trigger, so "Stay" would drop focus on <body>: send it back to what started the leave.
   const returnFocus = useRef<HTMLElement | null>(null)
   const blocker = useBlocker(
@@ -49,7 +54,7 @@ export const LeaveGuard = ({ dirty }: LeaveGuardProps) => {
         <AlertDialogHeader>
           <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
           <AlertDialogDescription>
-            You changed this type and haven’t saved it. If you leave now, the changes are lost.
+            {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

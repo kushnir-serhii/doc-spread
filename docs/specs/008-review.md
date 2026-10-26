@@ -29,13 +29,13 @@ The user checks the AI-extracted values against the document, fixes the low-conf
   - [x] skeleton, not-found document, and error-with-retry states; each document status shows what **Data** says
   - [x] `document-viewer.tsx` is back under ~150 lines
 
-### [ ] 2. Editable form + draft
+### [x] 2. Editable form + draft
 - **Files:** `src/features/documents/review/`, `src/features/documents/fields/`
 - **Accept:**
-  - [ ] low-confidence fields (`< LOW_CONFIDENCE`) are highlighted with a token color and an icon (not color alone)
-  - [ ] editing a value sets its confidence to 1 (verified); "Confirm" on a low-confidence field sets it to 1 without changing the value
-  - [ ] money is edited in major units and stored in minor units, with the currency always shown
-  - [ ] save draft goes through `useUpdateDocumentValues()` with pending, success and error states; leaving with unsaved changes asks for confirmation (`useBlocker`)
+  - [x] low-confidence fields (`< LOW_CONFIDENCE`) are highlighted with a token color and an icon (not color alone)
+  - [x] editing a value sets its confidence to 1 (verified); "Confirm" on a low-confidence field sets it to 1 without changing the value
+  - [x] money is edited in major units and stored in minor units, with the currency always shown
+  - [x] save draft goes through `useUpdateDocumentValues()` with pending, success and error states; leaving with unsaved changes asks for confirmation (`useBlocker`)
 
 ### [ ] 3. Fix by pointing
 - **Files:** `src/features/documents/review/`, `src/lib/fields/parse-field-value.ts`
@@ -72,7 +72,10 @@ Field-level confidence and source boxes; the type version a document was extract
 - Exact key bindings? **Decided:** `J`/`K` next/previous field, `P` point on document, `Ctrl+Enter` approve, `N` next document, `?` help. Letter keys fire only outside text inputs; `Esc` leaves an input.
 - Not-found and failed look the same: the mock `getDocument` throws a plain `Error`, so both show the error state with Retry and a link to the Inbox. Backend: a 404 the client can tell apart.
 - Table cells are reachable from a box click, but not by Tab (`tabIndex=-1`, to avoid one tab stop per cell). Keyboard movement inside a table comes with slice 4.
-- `MoneyInput` keeps its own text while typing; when slice 3 sets a value by pointing, it must re-sync (e.g. a `key` on the value).
+- `MoneyInput` keeps the typed text only while it still parses to the current value, so a value set from outside (slice 3) replaces it. **Done in slice 2.**
+- A field flagged below `LOW_CONFIDENCE` can carry a "Medium" badge (0.7–0.9), so the flag says "Check this value — the AI isn't sure", not "Low confidence". Empty values (confidence 0) are flagged too, and Confirm marks them as verified empty.
+- Dirty compares values including confidence: editing a value back to the original still counts as a change (it is now verified), and Save sends it.
+- `LeaveGuard` lives in `features/document-types/`; Review imports it from there. Move it to `components/` once 014, 008 and 015 are all merged.
 - The viewer's `scrollToHighlight(id, { focus })` gained an optional `focus` flag (default `true`): Review scrolls the box into view but keeps keyboard focus in the form.
 - Cross-field rules (Gross = Net + VAT, totals = sum of a column) moved to [016 Field actions](016-field-actions.md); Review shows their results there.
 
@@ -80,6 +83,7 @@ Field-level confidence and source boxes; the type version a document was extract
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | form built from the type schema; fixing by pointing; invoice totals check moved to 016 (field actions) |
+| 2026-10-23 | 2 | done | editable form for `needs_review` (registry Edit inputs), low-confidence container + icon + text, Confirm, confidence 1 on edit and confirm, viewer boxes from the draft, Save draft with pending/success/error, `LeaveGuard` with review copy (new optional `description`); header no longer says "No type yet" while the type loads. Files: `features/documents/review/` (`use-review-draft.ts`, `review-save-bar.tsx`, row, form, workspace, highlights, header), `features/documents/fields/` (`field-value-edit.tsx`, `money-input.tsx`), `features/document-types/leave-guard.tsx` |
 | 2026-10-23 | 1 | done | review page and route, fields registry (view + edit inputs, read-only table), screen per status, highlights linked to fields, `LOW_CONFIDENCE` in `lib/fields/confidence.ts` (used by `confidenceLevel`), viewer zoom/rotation moved into hooks (147 lines), shadcn select/switch/dialog, `--spacing-review-pane` token. Files: `pages/review/`, `features/documents/review/`, `features/documents/fields/`, `features/documents/viewer/`, `lib/fields/confidence.ts`, `lib/mock/format.ts`, `app/router.tsx`, `styles/index.css`, `components/ui/` |
 | 2026-10-23 | — | ready | approved; key bindings decided |
 | 2026-10-23 | — | reviewed | checked against product, conventions and process: type version, LOW_CONFIDENCE = 0.9, the fields folder, the screen for each status, a Confirm action, 375px Approve, Files for every slice |

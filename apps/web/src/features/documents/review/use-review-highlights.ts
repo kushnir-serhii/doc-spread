@@ -3,10 +3,14 @@ import { cellFocusId, fieldFocusId } from '@/features/documents/fields/field-foc
 import type { ViewerHighlight } from '@/features/documents/viewer/viewer-highlights'
 import { isLowConfidence } from '@/lib/fields/confidence'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
-import type { Document, DocumentType, ExtractedValue } from '@/lib/mock/types'
+import type { DocumentType, ExtractedValue, FieldValue } from '@/lib/mock/types'
 
-/** One viewer box per value that carries a source (table cells included). Values without a source get no box. */
-export const useReviewHighlights = (doc: Document, type: DocumentType): ViewerHighlight[] =>
+/** One viewer box per value (of the draft) that carries a source (table cells included). Values without a source get no box. */
+export const useReviewHighlights = (
+  docId: string,
+  values: Record<string, FieldValue>,
+  type: DocumentType,
+): ViewerHighlight[] =>
   useMemo(() => {
     const result: ViewerHighlight[] = []
     const add = (id: string, label: string, value: ExtractedValue) => {
@@ -20,9 +24,9 @@ export const useReviewHighlights = (doc: Document, type: DocumentType): ViewerHi
       })
     }
     for (const field of type.fields) {
-      const value = doc.values[field.id]
+      const value = values[field.id]
       if (!value) continue
-      const focusId = fieldFocusId(doc.id, field.id)
+      const focusId = fieldFocusId(docId, field.id)
       if (value.type === 'table') {
         for (const [rowIndex, row] of value.rows.entries()) {
           for (const column of field.columns ?? []) {
@@ -37,4 +41,4 @@ export const useReviewHighlights = (doc: Document, type: DocumentType): ViewerHi
       }
     }
     return result
-  }, [doc, type])
+  }, [docId, values, type])
