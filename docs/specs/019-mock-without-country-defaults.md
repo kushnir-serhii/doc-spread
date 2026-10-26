@@ -35,15 +35,15 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
   - [x] a constant `5` added to a USD amount adds $5.00, to a JPY amount ¥5
   - [x] the live preview in the builder and the checks in Review show the same results as before for the existing seed data
 
-### [ ] 3. Neutral seed company and mixed-currency seed documents
+### [x] 3. Neutral seed company and mixed-currency seed documents
 - **Build:** the seed company becomes a neutral international one (e.g. "Northwind Studio Ltd", a generic tax ID, English-named team, accountant on a non-country domain) with `defaultCurrency: 'USD'`. `app-shell.tsx` stops hard-coding "Nordwind Trading Sp. z o.o." and shows the same name (through the existing company query, or a shared constant if the shell has no query yet; say which). Seed documents: USD is the most common currency, then EUR, GBP, PLN and a few JPY; add a Japanese supplier with JPY; receipts are no longer forced to PLN; `CZ` no longer maps to EUR (use a currency in `CURRENCIES`, or EUR with a comment saying it is a sample choice); the fallback is `DEFAULT_CURRENCY`, never `'PLN'`. VAT rates follow the supplier's country as today.
 - **Decided:** "Northwind Studio Ltd", tax ID `TX-4821-0937`, team Alex Morgan (owner), Sam Rivera, Jordan Lee, Priya Shah on `northwind-studio.example`, accountant `accounting@ledgerworks.example`. The shell reads the name through `useCompany()` (it exists in `lib/api/company.ts`); the placeholder user becomes Alex Morgan. `CZ` → EUR with a "sample choice" comment (no CZK). Receipts take the supplier's country currency like invoices, and their tax uses that country's VAT rate instead of the hard-coded 23/123.
 - **Files:** `src/lib/mock/data.ts`, `src/lib/mock/documents-seed.ts`, `src/components/layout/app-shell.tsx`
 - **Accept:**
-  - [ ] no `'PLN'` literal is used as a default or fallback anywhere in `src/` (it remains only as a currency in `CURRENCIES` and on PL sample suppliers)
-  - [ ] Inbox shows documents in USD, EUR, GBP, PLN and JPY, with USD the largest group
-  - [ ] the dev seed check (`findValueMismatches`) logs nothing; failed-check seed documents (029, 030) still fail as before
-  - [ ] Export summary groups the totals per currency correctly, including JPY
+  - [x] no `'PLN'` literal is used as a default or fallback anywhere in `src/` (it remains only as a currency in `CURRENCIES` and on PL sample suppliers)
+  - [x] Inbox shows documents in USD, EUR, GBP, PLN and JPY, with USD the largest group
+  - [x] the dev seed check (`findValueMismatches`) logs nothing; failed-check seed documents (029, 030) still fail as before
+  - [x] Export summary groups the totals per currency correctly, including JPY
 
 ### [ ] 4. Showcase invoice and receipt in English and USD
 - **Build:** rewrite `generate-mock-files.py` so `sample-invoice.pdf` and `sample-receipt.jpg` are an English invoice and receipt in USD (neutral supplier and merchant, a US/EU-style tax ID, no "Faktura", "NIP", "zł"). Regenerate the files, their `*.tokens.json` and `showcase-sources.ts`, and update `showcaseInvoiceValues` / `showcaseReceiptValues` so the values match what is printed. `sample-long.pdf` follows the same rules if it is Polish.
@@ -85,6 +85,7 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
   - **Decided:** removed from the template and the seed documents (slice 5).
 - From slice 1: `fake-extract.ts` picks a currency as `CURRENCIES[hash % length]`, so uploaded mock documents can now come out in JPY, with amounts generated at cent scale (e.g. ¥123,456). Harmless for a mock; left as is.
 - From slice 2: a money constant with more decimals than its currency (`0.005` on USD) is rounded to a whole minor unit when it gets the currency; a tolerance with more decimals (`0.001` on USD) is compared as typed, so it is stricter than one cent. Both are fine as is.
+- From slice 3: invoice line descriptions, units (`szt.`, `usł.` …) and number prefixes (`FV/`, `UMO/`, `ZAM/`) are still Polish, so the new US and JP invoices carry Polish line text. The scope allows Polish line descriptions as sample content; translating or picking them per country is left for a follow-up.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -94,3 +95,4 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 | 2026-10-26 | — | questions | seed company, CZ/receipt currency, showcase tax, KSeF removal decided |
 | 2026-10-26 | 1 | done | `currency-digits.ts` (`minorDigits`, `toMajor`, `toMinor`, `majorText`), JPY in `CURRENCIES` and the parser (`¥`); format, money input (step / inputMode by currency), parse, export cells, mock text output. `evaluate.ts` constant display left for slice 2 |
 | 2026-10-26 | 2 | done | money constants and tolerances in major units; a currency-less money scalar holds major units until `shareCurrency` converts it; money results rounded to whole minor units in the evaluator once the currency is known; `round` gets the call's currency; money tolerance compared on the major-unit difference; template tolerances `0.01`. Seed check results identical before / after. Files: `evaluate.ts`, `functions.ts`, `const-input.tsx`, `action-form.ts`, `types.ts`, `templates.ts` |
+| 2026-10-26 | 3 | done | Northwind Studio Ltd (USD), English team; shell name from `useCompany()` (skeleton while loading, hidden if unknown); Japanese supplier (JPY) and Vercel (USD) added; merchants carry a country, receipts take its currency and VAT; file stems in English; receipt items in English. Typed documents: USD 9, PLN 5, EUR 3, JPY 3, GBP 2; no seed mismatches; check outcomes unchanged (029/030 still fail). Files: `data.ts`, `documents-seed.ts`, `app-shell.tsx`, `header.tsx` |

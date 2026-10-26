@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router'
+import { useCompany } from '@/lib/api/company'
 import { Header } from './header'
 import { Sidebar } from './sidebar'
 
@@ -15,11 +16,11 @@ function readCollapsed() {
 
 // TODO(backend): replace with the signed-in user + company from Supabase session.
 const SESSION_PLACEHOLDER = {
-  companyName: 'Nordwind Trading Sp. z o.o.',
-  user: { name: 'Anna Kowalska', email: 'anna@nordwind.pl' },
+  user: { name: 'Alex Morgan', email: 'alex@northwind-studio.example' },
 }
 
 export function AppShell() {
+  const company = useCompany()
   const [collapsed, setCollapsed] = useState(readCollapsed)
 
   const toggle = () => {
@@ -44,7 +45,7 @@ export function AppShell() {
       </a>
       <Sidebar collapsed={collapsed} onToggle={toggle} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header companyName={SESSION_PLACEHOLDER.companyName} user={SESSION_PLACEHOLDER.user} />
+        <Header companyName={company.isPending ? null : (company.data?.name ?? '')} user={SESSION_PLACEHOLDER.user} />
         <main id="main" tabIndex={-1} className="flex-1 px-4 py-6 outline-none md:px-8 md:py-8">
           <Outlet />
         </main>

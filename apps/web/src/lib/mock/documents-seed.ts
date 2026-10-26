@@ -1,5 +1,6 @@
 // Seed documents for the mock API: ~27 documents over the three templates, in every status.
 // Built from data.ts (which passes the supplier list) and re-exported there. Not part of the public mock API.
+import { DEFAULT_CURRENCY } from '@/lib/fields/default-currency'
 import { seedDocumentTypeVersions } from './document-types-seed'
 import { INVOICE_SOURCES, RECEIPT_SOURCES } from './showcase-sources'
 import { BASE_NOW, DAY, isoDate, makeRng } from './seed-utils'
@@ -43,6 +44,8 @@ interface DocPlan {
   version?: number
   /** index into the supplier list */
   supplier?: number
+  /** receipts: index into MERCHANTS (default: by position) */
+  merchant?: number
   currency?: CurrencyCode
   lines?: number
   /** a low-confidence extraction with some empty values */
@@ -78,20 +81,20 @@ const PLAN: DocPlan[] = [
     fileName: 'skan_faktury_za_materialy_biurowe_i_uslugi_serwisowe_wrzesien_2026_wersja_ostateczna_podpisana.pdf',
   },
   /* 011 */ { status: 'needs_review', kind: 'invoice', supplier: 9, review: true },
-  /* 012 */ { status: 'needs_review', kind: 'receipt', review: true },
-  /* 013 */ { status: 'needs_review', kind: 'contract', supplier: 3, review: true },
+  /* 012 */ { status: 'needs_review', kind: 'receipt', merchant: 4, review: true },
+  /* 013 */ { status: 'needs_review', kind: 'contract', supplier: 13, review: true },
   /* 014 */ { status: 'needs_review', kind: 'contract', supplier: 6, review: true },
   /* 015 */ { status: 'approved', kind: 'invoice', version: 1, supplier: 0 },
   /* 016 */ { status: 'approved', kind: 'invoice', supplier: 7, lines: 6 },
-  /* 017 */ { status: 'approved', kind: 'receipt' },
-  /* 018 */ { status: 'approved', kind: 'contract', supplier: 1 },
-  /* 019 */ { status: 'approved', kind: 'invoice', supplier: 4, lines: 12 },
-  /* 020 */ { status: 'exported', kind: 'invoice', version: 1, supplier: 2 },
+  /* 017 */ { status: 'approved', kind: 'receipt', merchant: 6 },
+  /* 018 */ { status: 'approved', kind: 'contract', supplier: 13 },
+  /* 019 */ { status: 'approved', kind: 'invoice', supplier: 13, lines: 12 },
+  /* 020 */ { status: 'exported', kind: 'invoice', version: 1, supplier: 12 },
   /* 021 */ { status: 'exported', kind: 'invoice', supplier: 11 },
-  /* 022 */ { status: 'exported', kind: 'receipt' },
-  /* 023 */ { status: 'exported', kind: 'contract', supplier: 10 },
-  /* 024 */ { status: 'rejected', kind: 'invoice', supplier: 1 },
-  /* 025 */ { status: 'rejected', kind: 'receipt' },
+  /* 022 */ { status: 'exported', kind: 'receipt', merchant: 7 },
+  /* 023 */ { status: 'exported', kind: 'contract', supplier: 12 },
+  /* 024 */ { status: 'rejected', kind: 'invoice', supplier: 13 },
+  /* 025 */ { status: 'rejected', kind: 'receipt', merchant: 5 },
   /* 026 */ { status: 'error', kind: null, fileType: 'pdf' },
   /* 027 */ { status: 'error', kind: null, fileType: 'jpg' },
   /* 028 */ { status: 'needs_review', kind: 'contract', supplier: 2, long: true },
@@ -112,10 +115,11 @@ const REJECTION_REASONS = [
 const CURRENCY_BY_COUNTRY: Record<string, CurrencyCode> = {
   PL: 'PLN',
   DE: 'EUR',
-  CZ: 'EUR',
+  CZ: 'EUR', // a sample choice: the mock has no CZK
   LU: 'EUR',
   GB: 'GBP',
   US: 'USD',
+  JP: 'JPY',
 }
 const VAT_BY_COUNTRY: Record<string, number[]> = {
   PL: [23, 23, 8, 5],
@@ -124,6 +128,7 @@ const VAT_BY_COUNTRY: Record<string, number[]> = {
   GB: [0],
   LU: [0],
   US: [0],
+  JP: [10],
 }
 const PHONE_PREFIX: Record<string, string> = {
   PL: '+48 22',
@@ -132,6 +137,7 @@ const PHONE_PREFIX: Record<string, string> = {
   GB: '+44 20',
   LU: '+352 27',
   US: '+1 415',
+  JP: '+81 3',
 }
 
 const LINE_DESCRIPTIONS = [
@@ -152,23 +158,29 @@ const LINE_DESCRIPTIONS = [
 const UNITS = ['szt.', 'usł.', 'mc', 'l', 'godz.', 'kpl.']
 
 const MERCHANTS = [
-  { name: 'Piekarnia Pod Dębem s.c.', taxId: '6762451390' },
-  { name: 'Drogeria Natura Sp. z o.o.', taxId: '5272918346' },
-  { name: 'Księgarnia Literka', taxId: '9452107733' },
+  { name: 'Piekarnia Pod Dębem s.c.', taxId: '6762451390', country: 'PL' },
+  { name: 'Drogeria Natura Sp. z o.o.', taxId: '5272918346', country: 'PL' },
+  { name: 'Księgarnia Literka', taxId: '9452107733', country: 'PL' },
   {
     name: 'Papiernik – Artykuły Biurowe i Szkolne Zbigniew Wrona i Wspólnicy Spółka Jawna',
     taxId: '8943016527',
+    country: 'PL',
   },
+  { name: 'Harbor Roast Coffee Co.', taxId: 'US-EIN 47-1829364', country: 'US' },
+  { name: 'Quill & Ink Stationers Ltd', taxId: 'GB283746501', country: 'GB' },
+  { name: 'Sakura Mart Shibuya K.K.', taxId: 'T9876543210987', country: 'JP' },
+  { name: 'Maple Street Deli LLC', taxId: 'US-EIN 83-2046173', country: 'US' },
 ]
+// prices in minor units
 const RECEIPT_ITEMS: [string, number][] = [
-  ['Chleb pszenny', 450],
-  ['Bułki kajzerki 6 szt.', 720],
-  ['Kawa mielona 500g', 2499],
-  ['Papier A4 500 ark.', 2299],
-  ['Długopis żelowy niebieski', 349],
-  ['Zeszyt A5 w kratkę 60 kartek, oprawa twarda, okładka laminowana', 599],
-  ['Płyn do mycia naczyń 750ml', 1199],
-  ['Baterie AA 4 szt.', 1899],
+  ['Wheat bread', 450],
+  ['Bread rolls, 6 pcs', 720],
+  ['Ground coffee 500g', 2499],
+  ['Copy paper A4, 500 sheets', 2299],
+  ['Gel pen, blue', 349],
+  ['A5 squared notebook, 60 pages, hardcover, laminated cover', 599],
+  ['Dish soap 750ml', 1199],
+  ['AA batteries, 4 pcs', 1899],
 ]
 
 const round2 = (n: number) => Math.round(n * 100) / 100
@@ -188,6 +200,8 @@ interface Ctx {
   id: string
   index: number
   review: boolean
+  /** receipts: index into MERCHANTS */
+  merchant?: number
   supplier: SeedSupplier
   currency: CurrencyCode
   uploadedMs: number
@@ -295,7 +309,9 @@ const showcaseInvoiceValues = (id: string): Record<string, FieldValue> => {
 const receiptValues = (c: Ctx): Record<string, FieldValue> => {
   const { rng, id, index, review, currency } = c
   const conf = makeConfidence(rng, review)
-  const merchant = MERCHANTS[index % MERCHANTS.length]
+  const merchant = MERCHANTS[(c.merchant ?? index) % MERCHANTS.length]
+  // tax-inclusive, at the merchant country's VAT rate (a rate of 0 gives no tax)
+  const rate = (VAT_BY_COUNTRY[merchant.country] ?? [0])[0]
   const count = 2 + Math.floor(rng() * 4)
   let total = 0
   const rows = Array.from({ length: count }, (_, i) => {
@@ -316,7 +332,7 @@ const receiptValues = (c: Ctx): Record<string, FieldValue> => {
     merchant_tax_id: taxIdValue(merchant.taxId, conf()),
     receipt_date: dateValue(isoDate(c.uploadedMs - (Math.floor(rng() * 4) + 1) * DAY), conf()),
     total: moneyValue(total, currency, review ? 0.42 : conf()),
-    tax_total: review ? moneyValue(null, currency, 0) : moneyValue(Math.round((total * 23) / 123), currency, conf()),
+    tax_total: review ? moneyValue(null, currency, 0) : moneyValue(Math.round((total * rate) / (100 + rate)), currency, conf()),
     payment_method: selectValue(pick(rng, ['Card', 'Cash', 'Transfer']), conf()),
     items: tableValue(rows),
   }
@@ -359,7 +375,7 @@ const contractValues = (c: Ctx, company: { name: string; taxId: string }): Recor
   const conf = makeConfidence(rng, review)
   const signingMs = c.uploadedMs - (3 + Math.floor(rng() * 18)) * DAY
   const startMs = signingMs + 7 * DAY
-  const phone = `${PHONE_PREFIX[supplier.country] ?? '+48 22'} 555 01 ${String(10 + (index % 80)).padStart(2, '0')}`
+  const phone = `${PHONE_PREFIX[supplier.country] ?? '+1 555'} 555 01 ${String(10 + (index % 80)).padStart(2, '0')}`
   return {
     contract_number: textValue(`UMO/2026/${String(index + 1).padStart(3, '0')}`, conf()),
     parties: tableValue([
@@ -407,11 +423,11 @@ export const buildSeedDocuments = (
     const fileType: FileType = plan.fileType ?? (plan.kind === 'receipt' ? 'jpg' : 'pdf')
     const stem =
       plan.kind === 'invoice'
-        ? `faktura_${firstWord(supplier.name)}`
+        ? `invoice_${firstWord(supplier.name)}`
         : plan.kind === 'contract'
-          ? `umowa_${firstWord(supplier.name)}`
+          ? `contract_${firstWord(supplier.name)}`
           : plan.kind === 'receipt'
-            ? 'paragon'
+            ? 'receipt'
             : 'scan'
     const file = plan.long
       ? { name: 'sample-long.pdf', type: fileType, pageCount: 30, url: SAMPLE_LONG_PDF_URL }
@@ -442,8 +458,11 @@ export const buildSeedDocuments = (
 
     const review = plan.review ?? false
     const type = findType(TYPE_ID[plan.kind], plan.version)
-    const currency = plan.currency ?? CURRENCY_BY_COUNTRY[supplier.country] ?? 'PLN'
-    const ctx: Ctx = { rng, id, index, review, supplier, currency: plan.kind === 'receipt' ? 'PLN' : currency, uploadedMs, type }
+    // a receipt's party is its merchant, so its currency follows the merchant's country
+    const partyCountry =
+      plan.kind === 'receipt' ? MERCHANTS[(plan.merchant ?? index) % MERCHANTS.length].country : supplier.country
+    const currency = plan.currency ?? CURRENCY_BY_COUNTRY[partyCountry] ?? DEFAULT_CURRENCY
+    const ctx: Ctx = { rng, id, index, review, merchant: plan.merchant, supplier, currency, uploadedMs, type }
     const byKey = plan.showcase
       ? plan.kind === 'receipt'
         ? showcaseReceiptValues(id)

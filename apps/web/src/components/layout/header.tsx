@@ -1,11 +1,13 @@
 import { Building2, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { MobileNav } from './mobile-nav'
 import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
 
 export interface HeaderProps {
-  companyName: string
+  /** null while the company is loading; empty when it isn't known (then nothing is shown) */
+  companyName: string | null
   user: { name: string; email: string }
 }
 
@@ -33,13 +35,16 @@ export function Header({ companyName, user }: HeaderProps) {
       </form>
 
       <div className="ml-auto flex items-center gap-1 md:gap-2">
-        <div
-          className="hidden max-w-56 items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground lg:flex"
-          title={companyName}
-        >
-          <Building2 className="size-4 shrink-0" aria-hidden="true" />
-          <span className="truncate">{companyName}</span>
-        </div>
+        {companyName === null && <Skeleton className="hidden h-5 w-40 lg:block" aria-hidden="true" />}
+        {companyName && (
+          <div
+            className="hidden max-w-56 items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground lg:flex"
+            title={companyName}
+          >
+            <Building2 className="size-4 shrink-0" aria-hidden="true" />
+            <span className="truncate">{companyName}</span>
+          </div>
+        )}
         <ThemeToggle />
         <UserMenu name={user.name} email={user.email} />
       </div>

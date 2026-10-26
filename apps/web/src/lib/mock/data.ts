@@ -10,18 +10,18 @@ export { findValueMismatches } from './value-check'
 
 // ---------- company & team ----------
 export const seedCompany: Company = {
-  name: 'Kowalski Studio Sp. z o.o.',
-  taxId: '5252344078',
-  accountantEmail: 'ksiegowosc@biuro-rachunkowe.pl',
-  recipients: [{ id: 'rcp-001', name: 'Accountant', email: 'ksiegowosc@biuro-rachunkowe.pl' }],
-  defaultCurrency: 'PLN',
+  name: 'Northwind Studio Ltd',
+  taxId: 'TX-4821-0937',
+  accountantEmail: 'accounting@ledgerworks.example',
+  recipients: [{ id: 'rcp-001', name: 'Accountant', email: 'accounting@ledgerworks.example' }],
+  defaultCurrency: 'USD',
 }
 
 export const seedTeam: TeamMember[] = [
-  { id: 'u1', name: 'Anna Kowalska', email: 'anna@kowalski-studio.pl', role: 'owner' },
-  { id: 'u2', name: 'Piotr Nowak', email: 'piotr@kowalski-studio.pl', role: 'admin' },
-  { id: 'u3', name: 'Katarzyna Wiśniewska', email: 'kasia@kowalski-studio.pl', role: 'member' },
-  { id: 'u4', name: 'Michał Zieliński', email: 'michal@kowalski-studio.pl', role: 'member' },
+  { id: 'u1', name: 'Alex Morgan', email: 'alex@northwind-studio.example', role: 'owner' },
+  { id: 'u2', name: 'Sam Rivera', email: 'sam@northwind-studio.example', role: 'admin' },
+  { id: 'u3', name: 'Jordan Lee', email: 'jordan@northwind-studio.example', role: 'member' },
+  { id: 'u4', name: 'Priya Shah', email: 'priya@northwind-studio.example', role: 'member' },
 ]
 
 // private: the seed suppliers of the invoice, receipt and contract documents
@@ -38,6 +38,8 @@ const SEED_SUPPLIERS: SeedSupplier[] = [
   { name: 'Notion Labs UK Ltd', taxId: 'GB354944102', country: 'GB', email: 'billing@notion.so' },
   { name: 'Amazon Web Services EMEA SARL', taxId: 'LU26888617', country: 'LU', email: 'aws-billing@amazon.com' },
   { name: 'Figma, Inc.', taxId: 'US-EIN 20-3633097', country: 'US', email: 'billing@figma.com' },
+  { name: 'Sakura Cloud Systems K.K.', taxId: 'T1234567890123', country: 'JP', email: 'billing@sakura-cloud.example' },
+  { name: 'Vercel Inc.', taxId: 'US-EIN 61-1788456', country: 'US', email: 'billing@vercel.com' },
 ]
 
 // ---------- documents (spec 012) ----------
@@ -60,7 +62,7 @@ export const seedExportJobs: ExportJob[] = [
   { id: 'exp_001', createdAt: '2026-10-19T14:05:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: seedCompany.accountantEmail, columns: invoiceColumns, status: 'completed' },
   { id: 'exp_002', createdAt: '2026-10-12T09:40:00.000Z', format: 'csv', typeId: 'type-receipt', documentIds: exportedReceipts, destination: 'download', columns: receiptColumns, status: 'completed' },
   { id: 'exp_003', createdAt: '2026-10-05T16:20:00.000Z', format: 'pdf_bundle', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 1), destination: 'email', recipient: seedCompany.accountantEmail, columns: invoiceColumns, status: 'completed' },
-  { id: 'exp_004', createdAt: '2026-09-28T11:00:00.000Z', format: 'csv', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: 'stary-ksiegowy@example.pl', columns: invoiceColumns, status: 'failed' },
+  { id: 'exp_004', createdAt: '2026-09-28T11:00:00.000Z', format: 'csv', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: 'old-accountant@ledgerworks.example', columns: invoiceColumns, status: 'failed' },
   { id: 'exp_005', createdAt: '2026-09-21T08:15:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(1, 2), destination: 'download', columns: invoiceColumns, status: 'completed' },
 ]
 
