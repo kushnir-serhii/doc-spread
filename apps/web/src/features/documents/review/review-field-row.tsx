@@ -4,6 +4,7 @@ import { ConfidenceBadge } from '@/components/domain/confidence-badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { FieldValueEdit } from '@/features/documents/fields/field-value-edit'
+import { TableFieldView } from '@/features/documents/fields/table-field-view'
 import { FieldValueView } from '@/features/documents/fields/field-value-view'
 import { isLowConfidence } from '@/lib/fields/confidence'
 import type { FieldDef, FieldValue } from '@/lib/mock/types'
@@ -16,7 +17,7 @@ interface ReviewFieldRowProps {
   field: FieldDef
   value: FieldValue
   focusId: string
-  /** set when the form is editable; tables stay read-only until slice 4 */
+  /** set when the form is editable */
   onChange?: (next: FieldValue) => void
   onConfirm?: () => void
   /** pointing at the document; set for editable scalar rows */
@@ -35,6 +36,7 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
   const inputId = useId()
   const isTable = value.type === 'table'
   const editing = onChange !== undefined && !isTable
+  const editingTable = onChange !== undefined && value.type === 'table'
   const score = confidenceOf(value)
   const low = editing && score !== null && isLowConfidence(score)
   return (
@@ -66,7 +68,15 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
         </Label>
         {score !== null && <ConfidenceBadge score={score} />}
       </div>
-      {editing ? (
+      {editingTable ? (
+        <TableFieldView
+          label={field.label}
+          columns={field.columns ?? []}
+          value={value}
+          focusId={focusId}
+          onChange={onChange}
+        />
+      ) : editing ? (
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
             <FieldValueEdit id={inputId} field={field} value={value} onChange={onChange} />
