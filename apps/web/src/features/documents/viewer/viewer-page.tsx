@@ -92,7 +92,7 @@ export const ViewerPage = ({
             <HighlightBox
               key={h.id}
               highlight={h}
-              active={h.id === activeHighlightId}
+              state={!activeHighlightId ? 'rest' : h.id === activeHighlightId ? 'active' : 'dimmed'}
               focusRequested={h.id === focusHighlightId}
               onFocused={onHighlightFocused}
               onClick={onHighlightClick}
