@@ -106,9 +106,11 @@ Store actions with the type version; evaluate the same checks on the server befo
 - **Decided (2026-10-26):** slice 3 — a check that can't be evaluated (an empty input) never blocks, even if blocking: it shows as its own state ("Can't check: VAT total is empty") and, like a warning, needs a confirmation on Approve.
 - **Decided (2026-10-26):** fields involved in a failed check are highlighted in the form, with "go to field"; no highlight in the viewer.
 - **Decided (2026-10-26):** a computed value is written into the review draft with confidence 1, so it is saved with the document and exported (009).
-- Open: per-row computed columns and per-row checks in tables.
-- Open: the "Train with samples" workspace has no Actions section (it only shows "Computed by …" on a computed field). Add it there too?
-- Open: function arguments have no ids, so the expression editor keys argument slots by position (commented). Giving `Expr` arguments ids would change the model.
+- Later (spec 017): per-row computed columns and per-row checks in tables.
+- **Decided (2026-10-26):** no Actions section in "Train with samples": that workspace creates fields from a sample; actions are set up in the builder.
+- **Decided (2026-10-26):** function arguments have no ids; an argument is a position in the call, so the editor keys its slots by position. `Expr` stays as it is.
+- **Decided (2026-10-26):** a stored value of a computed field that can no longer be computed stays as it is on the frontend (shown as empty); the server clears it (Backend needs).
+- Later (spec 019): money assumes 2 minor digits (`MINOR_DECIMALS` in `functions.ts`, money constants and tolerance in the builder); minor digits per currency go into one helper there.
 
 ## Log
 | Date | Slice | Result | Notes / files |
