@@ -41,6 +41,7 @@ import {
 } from './data'
 import { DOCUMENT_TEMPLATES } from './templates'
 import type { DocumentTemplate } from './templates'
+import { parseFieldValue } from '@/lib/fields/parse-field-value'
 import { fakeExtractFields } from './fake-extract'
 import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
@@ -488,7 +489,7 @@ const isTextLike = (type: FieldDef['type']): type is TextLikeType =>
   type === 'text' || type === 'email' || type === 'phone' || type === 'tax_id' || type === 'select'
 
 /**
- * Saves nothing. A text-like field with an example on this document reads the example's text;
+ * Saves nothing. A field with an example on this document reads the example's text, parsed into the field's type;
  * otherwise reuses the document's own value for a field when its type matches.
  */
 export async function testExtract(input: TestExtractInput): Promise<Record<string, FieldValue>> {
@@ -498,14 +499,18 @@ export async function testExtract(input: TestExtractInput): Promise<Record<strin
   const out: Record<string, FieldValue> = {}
   for (const field of input.fields) {
     const example = field.examples.find((e) => e.documentId === doc.id)
-    if (example && isTextLike(field.type)) {
-      out[field.id] = {
-        type: field.type,
-        value: example.text,
-        confidence: 0.95,
-        source: { page: example.page, bbox: example.bbox },
+    if (example && field.type !== 'table') {
+      const parsed = parseFieldValue({ type: field.type, options: field.options }, example.text)
+      const source = { page: example.page, bbox: example.bbox }
+      if (parsed.ok) {
+        // an assumed part (a currency) keeps the value below the low-confidence threshold
+        out[field.id] = { ...parsed.value, confidence: parsed.warning ? 0.5 : 0.95, source }
+        continue
       }
-      continue
+      if (isTextLike(field.type)) {
+        out[field.id] = { type: field.type, value: example.text, confidence: 0.95, source }
+        continue
+      }
     }
     const existing = doc.values[field.id]
     out[field.id] = copy(existing && existing.type === field.type ? existing : fake[field.id])

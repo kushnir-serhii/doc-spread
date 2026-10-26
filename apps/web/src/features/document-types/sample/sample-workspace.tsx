@@ -15,6 +15,7 @@ import { PointButton } from './point-button'
 import { ProposalList } from './proposal-list'
 import { SampleSaveSection } from './sample-save-section'
 import { SuggestionPanel } from './suggestion-panel'
+import { usePointAgain } from './use-point-again'
 import { usePointToAdd } from './use-point-to-add'
 import { useProposalActivation } from './use-proposal-activation'
 import { useProposalReview } from './use-proposal-review'
@@ -39,9 +40,21 @@ export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspace
 
   const live = review.items.filter((item) => item.status !== 'rejected').map((item) => item.field)
   const preview = useTestExtractPreview(documentId, live)
+  const again = usePointAgain(documentId, review.items, preview.data, dispatch)
   const highlights = buildProposalHighlights(review.items, preview.data)
   const selectedId = selection?.fieldId ?? null
   const target = resolveSelection(selection, draft.fields)
+
+  // One kind of pointing at a time: starting either ends the other.
+  const pointingAny = point.pointing || again.pointing
+  const togglePoint = () => {
+    again.cancel()
+    point.toggle()
+  }
+  const startAgain = (fieldId: string) => {
+    if (point.pointing || point.selection) point.cancel()
+    again.start(fieldId)
+  }
 
   const selectField = (id: string) => {
     setSelection({ kind: 'field', fieldId: id })
@@ -61,9 +74,9 @@ export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspace
             highlights={highlights}
             activeHighlightId={activeId ?? selectedId}
             onHighlightClick={selectField}
-            mode={point.pointing ? 'select-words' : 'view'}
-            onSelect={point.select}
-            onCancel={point.cancel}
+            mode={pointingAny ? 'select-words' : 'view'}
+            onSelect={again.pointing ? again.select : point.select}
+            onCancel={again.pointing ? again.cancel : point.cancel}
           />
         </div>
         <div className="flex min-w-0 flex-col gap-3 lg:col-span-2">
@@ -84,13 +97,14 @@ export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspace
             />
           )}
           <ProposalList
-            pointAction={<PointButton ref={pointRef} pointing={point.pointing} onToggle={point.toggle} />}
+            pointAction={<PointButton ref={pointRef} pointing={point.pointing} onToggle={togglePoint} />}
             items={review.items}
             openCount={review.openCount}
             values={preview.data}
             valuesLoading={preview.isPending && live.length > 0}
             valuesFailed={preview.isError}
             selectedId={selectedId}
+            pointAgain={{ ...again, start: startAgain }}
             onRetryValues={() => void preview.refetch()}
             onAcceptAll={review.acceptAll}
             onActivate={activate}

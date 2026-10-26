@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import type { FieldValue } from '@/lib/mock/types'
 import { EmptyProposals } from './empty-proposals'
 import { ProposalRow } from './proposal-row'
+import type { PointAgain } from './use-point-again'
 import type { ProposalItem } from './use-proposal-review'
 
 interface ProposalListProps {
@@ -14,6 +15,7 @@ interface ProposalListProps {
   /** The values could not be read; the list still works without them. */
   valuesFailed: boolean
   selectedId: string | null
+  pointAgain: PointAgain
   onRetryValues: () => void
   /** The "Point to add" button, shown in the header (or in the empty state). */
   pointAction: ReactNode

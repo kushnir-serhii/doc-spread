@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import { Check, Pencil, RotateCcw, X } from 'lucide-react'
+import { Check, Crosshair, Pencil, RotateCcw, X } from 'lucide-react'
 import { ConfidenceBadge } from '@/components/domain/confidence-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import type { FieldValue } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
+import { PointAgainButton } from './point-again-button'
+import { PointAgainFeedback } from './point-again-feedback'
 import { confidenceOf } from './proposal-highlights'
+import type { PointAgain } from './use-point-again'
 import type { ProposalItem } from './use-proposal-review'
 
 interface ProposalRowProps {
@@ -17,6 +20,7 @@ interface ProposalRowProps {
   value: FieldValue | undefined
   valueLoading: boolean
   selected: boolean
+  pointAgain: PointAgain
   onActivate: (id: string | null) => void
   onSelect: (id: string) => void
   onAccept: (id: string) => void
@@ -27,6 +31,10 @@ interface ProposalRowProps {
   position: number
 }
 
+/** The test extraction ran but read nothing for this field. */
+const isNotFound = (value: FieldValue | undefined) =>
+  value !== undefined && value.type !== 'table' && (value.value === null || value.value === '')
+
 const BUTTON = 'min-h-touch md:min-h-9'
 
 export const ProposalRow = ({
@@ -34,6 +42,7 @@ export const ProposalRow = ({
   value,
   valueLoading,
   selected,
+  pointAgain,
   onActivate,
   onSelect,
   onAccept,
@@ -47,6 +56,7 @@ export const ProposalRow = ({
   const confidence = confidenceOf(value)
   const text = formatFieldValue(value)
   const name = field.label.trim() || 'this field'
+  const notFound = !valueLoading && isNotFound(value)
 
   return (
     <li
@@ -70,6 +80,16 @@ export const ProposalRow = ({
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           {valueLoading ? (
             <Skeleton className="h-5 w-28" />
+          ) : notFound ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className={BUTTON}
+              aria-label={`Not found: point to it for ${name}`}
+              onClick={() => pointAgain.start(field.id)}
+            >
+              <Crosshair aria-hidden /> Not found: point to it
+            </Button>
           ) : (
             <span className="amount min-w-0 truncate text-sm" title={text}>
               {text}
@@ -79,7 +99,11 @@ export const ProposalRow = ({
           {field.examples.length === 0 && <span className="text-xs text-muted-foreground">No box on the document</span>}
         </div>
       )}
+      {status !== 'rejected' && <PointAgainFeedback fieldId={field.id} pointAgain={pointAgain} />}
       <div className="flex flex-wrap items-center gap-2">
+        {status !== 'rejected' && field.type !== 'table' && (
+          <PointAgainButton fieldId={field.id} name={name} pointAgain={pointAgain} />
+        )}
         {status === 'proposed' && (
           <>
             <Button size="sm" className={BUTTON} aria-label={`Accept ${name}`} onClick={() => onAccept(field.id)}>
