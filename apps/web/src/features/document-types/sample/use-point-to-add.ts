@@ -4,6 +4,7 @@ import { useSuggestField } from '@/lib/api'
 import type { FieldDef, FieldExample, ScalarFieldType } from '@/lib/mock/types'
 import { slugifyKey } from '../field-key'
 import type { BuilderAction } from '../type-draft-reducer'
+import { replaceExample } from './replace-example'
 import { findOverlappingItem } from './selection-overlap'
 import type { ProposalItem } from './use-proposal-review'
 
@@ -81,9 +82,7 @@ export const usePointToAdd = (
         bbox: selection.bbox,
         text: selection.text,
       }
-      const examples = [...item.field.examples.filter((e) => e.documentId !== documentId), example]
-      if (item.status === 'accepted') dispatch({ type: 'updateField', id: item.field.id, patch: { examples } })
-      else dispatch({ type: 'addFields', fields: [{ ...item.field, examples }] })
+      replaceExample(dispatch, item, example)
       finish(`Fixed "${item.field.label}".`)
     },
   }

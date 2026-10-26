@@ -20,7 +20,7 @@ const FALLBACK_FIELDS: { key: string; label: string; type: FieldDef['type']; hin
 
 const newId = () => `field-${crypto.randomUUID().slice(0, 8)}`
 
-const toKey = (label: string): string =>
+export const toKey = (label: string): string =>
   label
     .toLowerCase()
     .replace(/ł/g, 'l')

@@ -1,6 +1,6 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addFieldExample, proposeFields, suggestField, testExtract } from '@/lib/mock'
-import type { FieldDef, FieldExample, SuggestFieldInput, TestExtractInput } from '@/lib/mock/types'
+import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
+import { addFieldExample, proposeFields, suggestField, suggestTable, testExtract } from '@/lib/mock'
+import type { FieldDef, FieldExample, SuggestFieldInput, SuggestTableInput, TestExtractInput } from '@/lib/mock/types'
 import { documentTypeKeys } from './document-types'
 
 export const builderKeys = {
@@ -37,6 +37,12 @@ export const useSuggestField = () =>
     mutationFn: (input: SuggestFieldInput) => suggestField(input),
   })
 
+/** one call per drawn rectangle; saves nothing, so there is nothing to invalidate */
+export const useSuggestTable = () =>
+  useMutation({
+    mutationFn: (input: SuggestTableInput) => suggestTable(input),
+  })
+
 /** saves nothing, so there is nothing to invalidate */
 export const useTestExtract = () =>
   useMutation({
@@ -53,6 +59,17 @@ export const useTestExtractPreview = (documentId: string, fields: FieldDef[]) =>
     queryFn: () => testExtract({ documentId, fields }),
     enabled: fields.length > 0,
     placeholderData: keepPreviousData,
+  })
+
+/** The same query as `useTestExtractPreview` for several documents (shared cache), in the order of `documentIds`. */
+export const useTestExtractPreviews = (documentIds: string[], fields: FieldDef[]) =>
+  useQueries({
+    queries: documentIds.map((documentId) => ({
+      queryKey: builderKeys.preview(documentId, fields),
+      queryFn: () => testExtract({ documentId, fields }),
+      enabled: fields.length > 0,
+      placeholderData: keepPreviousData,
+    })),
   })
 
 export const useAddFieldExample = () => {

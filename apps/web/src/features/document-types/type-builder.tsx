@@ -1,5 +1,5 @@
 import { useReducer, useRef, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ScanSearch } from 'lucide-react'
 import { Link } from 'react-router'
 import { resolveSelection, type Selection } from './editor-target'
 import { ErrorSummary } from './error-summary'
@@ -66,13 +66,24 @@ export const TypeBuilder = ({ initialDraft, savedType, notice = null, onSaved }:
           onCancel={save.cancelConfirm}
         />
       )}
-      <Link
-        to="/types"
-        className="mb-4 -ml-2 inline-flex min-h-touch items-center gap-1 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring md:min-h-9"
-      >
-        <ArrowLeft className="size-4" aria-hidden />
-        Back to types
-      </Link>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <Link
+          to="/types"
+          className="-ml-2 inline-flex min-h-touch items-center gap-1 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring md:min-h-9"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          Back to types
+        </Link>
+        {savedType && (
+          <Link
+            to={`/types/${savedType.id}/train`}
+            className="inline-flex min-h-touch items-center gap-1 rounded-md px-2 text-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring md:min-h-9"
+          >
+            <ScanSearch className="size-4" aria-hidden />
+            Train with samples
+          </Link>
+        )}
+      </div>
       <SaveBar
         version={savedType?.version ?? null}
         dirty={dirty}

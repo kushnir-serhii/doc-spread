@@ -8,13 +8,14 @@ import type { ProposalItem } from './use-proposal-review'
 export const confidenceOf = (value: FieldValue | undefined) =>
   value && value.type !== 'table' ? value.confidence : undefined
 
-/** One box per non-rejected proposal that points at a place on the document (its first example). */
+/** One box per non-rejected proposal that has an example on this sample's document. */
 export const buildProposalHighlights = (
   items: readonly ProposalItem[],
+  documentId: string,
   values: Record<string, FieldValue> | undefined,
 ): ViewerHighlight[] =>
   items.flatMap(({ field, status }): ViewerHighlight[] => {
-    const example = field.examples[0]
+    const example = field.examples.find((e) => e.documentId === documentId)
     if (status === 'rejected' || !example) return []
     const value = values?.[field.id]
     const confidence = confidenceOf(value)

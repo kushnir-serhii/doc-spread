@@ -22,5 +22,5 @@ export const SampleLoader = ({ documentId }: SampleLoaderProps) => {
   }
   if (proposals.isPending) return <ProcessingState message="Proposing fields…" />
 
-  return <SampleWorkspace documentId={documentId} file={docQuery.data.file} proposals={proposals.data} />
+  return <SampleWorkspace initialSamples={[documentId]} proposals={proposals.data} />
 }

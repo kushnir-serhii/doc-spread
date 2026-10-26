@@ -4,16 +4,22 @@ import { Button } from '@/components/ui/button'
 import type { FieldValue } from '@/lib/mock/types'
 import { EmptyProposals } from './empty-proposals'
 import { ProposalRow } from './proposal-row'
+import type { PointAgain } from './use-point-again'
 import type { ProposalItem } from './use-proposal-review'
 
 interface ProposalListProps {
+  /** "Proposed fields" for a new type, "Fields" for a saved one. */
+  heading: string
   items: ProposalItem[]
   openCount: number
   values: Record<string, FieldValue> | undefined
+  /** The active sample. */
+  documentId: string
   valuesLoading: boolean
   /** The values could not be read; the list still works without them. */
   valuesFailed: boolean
   selectedId: string | null
+  pointAgain: PointAgain
   onRetryValues: () => void
   /** The "Point to add" button, shown in the header (or in the empty state). */
   pointAction: ReactNode
@@ -27,9 +33,11 @@ interface ProposalListProps {
 }
 
 export const ProposalList = ({
+  heading,
   items,
   openCount,
   values,
+  documentId,
   valuesLoading,
   valuesFailed,
   selectedId,
@@ -40,9 +48,9 @@ export const ProposalList = ({
 }: ProposalListProps) => {
   if (items.length === 0) return <EmptyProposals pointAction={pointAction} />
   return (
-    <section aria-label="Proposed fields" className="flex min-w-0 flex-col gap-3">
+    <section aria-label={heading} className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-medium">Proposed fields ({items.length})</h2>
+        <h2 className="text-sm font-medium">{heading} ({items.length})</h2>
         <div className="flex flex-wrap gap-2">
           {pointAction}
           <Button size="sm" onClick={onAcceptAll} disabled={openCount === 0} className="min-h-touch md:min-h-9">
@@ -65,6 +73,7 @@ export const ProposalList = ({
             item={item}
             position={index + 1}
             value={values?.[item.field.id]}
+            documentId={documentId}
             valueLoading={valuesLoading}
             selected={selectedId === item.field.id}
             {...rowActions}

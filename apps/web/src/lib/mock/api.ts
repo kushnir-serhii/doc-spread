@@ -25,7 +25,8 @@
  *  - Type-from-sample: an endpoint that proposes fields (with examples) from one document, and a
  *    test-extract endpoint that runs extraction of a draft field list on one document, saving nothing.
  *    Also an endpoint that infers label, type and hint from a selection (page, bbox, text) plus its
- *    nearest anchor (the label to the left or above); test-extract must use a field's examples
+ *    nearest anchor (the label to the left or above); and one that reads a drawn rectangle as a table
+ *    (header line = columns, types guessed from the values, a preview of the first rows); test-extract must use a field's examples
  *    (their text and bbox) as hints for the document they were taken on.
  *  - Field examples are guidance for the AI, not schema: adding one does not raise the type version.
  *  - Export generation per document type (csv/xlsx/pdf bundle) with a download URL or email
@@ -41,10 +42,12 @@ import {
 } from './data'
 import { DOCUMENT_TEMPLATES } from './templates'
 import type { DocumentTemplate } from './templates'
+import { parseFieldValue } from '@/lib/fields/parse-field-value'
 import { fakeExtractFields } from './fake-extract'
 import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
 import { guessFromSelection, proposeFieldsFromPages } from './propose-fields'
+import { buildTableSuggestion } from './suggest-table'
 import { overallConfidence } from './value-builders'
 import type {
   BBox,
@@ -63,6 +66,8 @@ import type {
   GroupValue,
   ListDocumentsParams,
   SuggestFieldInput,
+  SuggestTableInput,
+  TableSuggestion,
   TeamMember,
   TestExtractInput,
   Token,
@@ -482,13 +487,21 @@ export async function suggestField(input: SuggestFieldInput): Promise<FieldSugge
   return { ...guess, example }
 }
 
+/** Saves nothing. Reads the OCR tokens inside the rectangle as a table: the first line is the header. */
+export async function suggestTable(input: SuggestTableInput): Promise<TableSuggestion> {
+  await delay()
+  findDocument(input.documentId)
+  const page = (await loadPages(input.documentId)).find((p) => p.index === input.page)
+  return buildTableSuggestion(input.documentId, input.page, input.bbox, page?.tokens ?? [])
+}
+
 type TextLikeType = 'text' | 'email' | 'phone' | 'tax_id' | 'select'
 
 const isTextLike = (type: FieldDef['type']): type is TextLikeType =>
   type === 'text' || type === 'email' || type === 'phone' || type === 'tax_id' || type === 'select'
 
 /**
- * Saves nothing. A text-like field with an example on this document reads the example's text;
+ * Saves nothing. A field with an example on this document reads the example's text, parsed into the field's type;
  * otherwise reuses the document's own value for a field when its type matches.
  */
 export async function testExtract(input: TestExtractInput): Promise<Record<string, FieldValue>> {
@@ -498,14 +511,18 @@ export async function testExtract(input: TestExtractInput): Promise<Record<strin
   const out: Record<string, FieldValue> = {}
   for (const field of input.fields) {
     const example = field.examples.find((e) => e.documentId === doc.id)
-    if (example && isTextLike(field.type)) {
-      out[field.id] = {
-        type: field.type,
-        value: example.text,
-        confidence: 0.95,
-        source: { page: example.page, bbox: example.bbox },
+    if (example && field.type !== 'table') {
+      const parsed = parseFieldValue({ type: field.type, options: field.options }, example.text)
+      const source = { page: example.page, bbox: example.bbox }
+      if (parsed.ok) {
+        // an assumed part (a currency) keeps the value below the low-confidence threshold
+        out[field.id] = { ...parsed.value, confidence: parsed.warning ? 0.5 : 0.95, source }
+        continue
       }
-      continue
+      if (isTextLike(field.type)) {
+        out[field.id] = { type: field.type, value: example.text, confidence: 0.95, source }
+        continue
+      }
     }
     const existing = doc.values[field.id]
     out[field.id] = copy(existing && existing.type === field.type ? existing : fake[field.id])
