@@ -42,6 +42,7 @@ import {
 } from './data'
 import { DOCUMENT_TEMPLATES } from './templates'
 import type { DocumentTemplate } from './templates'
+import { majorText } from '@/lib/fields/currency-digits'
 import { parseFieldValue } from '@/lib/fields/parse-field-value'
 import { getComputedFieldIds } from '@/lib/fields/computed-fields'
 import { fakeExtractFields } from './fake-extract'
@@ -158,7 +159,7 @@ function scalarText(value: FieldValue): string | null {
     case 'boolean':
       return value.value === null ? null : String(value.value)
     case 'money':
-      return value.value === null ? null : `${(value.value.amount / 100).toFixed(2)} ${value.value.currency}`
+      return value.value === null ? null : `${majorText(value.value.amount, value.value.currency)} ${value.value.currency}`
     default: {
       const unreachable: never = value
       throw new Error(`Unknown value: ${String(unreachable)}`)

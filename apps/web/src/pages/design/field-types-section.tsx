@@ -4,7 +4,7 @@ import type { FieldValue } from '@/lib/mock/types'
 
 const SAMPLES: { label: string; value: FieldValue | null }[] = [
   { label: 'Empty', value: null },
-  { label: 'Money', value: { type: 'money', value: { amount: 1535040, currency: 'PLN' }, confidence: 0.98 } },
+  { label: 'Money', value: { type: 'money', value: { amount: 1535040, currency: 'USD' }, confidence: 0.98 } },
   { label: 'Date', value: { type: 'date', value: '2026-10-22', confidence: 0.95 } },
   {
     label: 'Table',

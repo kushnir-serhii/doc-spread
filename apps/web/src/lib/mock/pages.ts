@@ -1,6 +1,7 @@
 // Page sources for the mock documents, for getDocumentPages (slice 3).
 // Three documents are backed by the sample files and have hand-made OCR tokens to fetch.
 // Every other document gets deterministic synthetic pages: no image, a few tokens laid out from its values.
+import { majorText } from '@/lib/fields/currency-digits'
 import { seedDocuments } from './data'
 import { seedDocumentTypeVersions } from './document-types-seed'
 import { SAMPLE_JPG_TOKENS_URL, SAMPLE_LONG_TOKENS_URL, SAMPLE_PDF_TOKENS_URL } from './documents-seed'
@@ -29,7 +30,7 @@ const MAX_TABLE_ROWS = 5
 
 const valueText = (value: AnyExtractedValue): string | null => {
   if (value.value === null) return null
-  if (value.type === 'money') return `${(value.value.amount / 100).toFixed(2)} ${value.value.currency}`
+  if (value.type === 'money') return `${majorText(value.value.amount, value.value.currency)} ${value.value.currency}`
   if (value.type === 'boolean') return value.value ? 'yes' : 'no'
   return String(value.value)
 }

@@ -38,16 +38,15 @@ export type ActionEditorTarget = { mode: 'new'; kind: FieldAction['kind'] } | { 
 export const generatedLabel = (form: Pick<CheckForm, 'left' | 'op' | 'right'>, fields: readonly FieldDef[]) =>
   `${describeNode(form.left, fields)} ${OP_SYMBOL[form.op]} ${describeNode(form.right, fields)}`
 
-/** Minor units for money (typed in major units), as is for numbers. `'invalid'` when it isn't a number ≥ 0. */
-export const parseTolerance = (text: string, type: ExprType | null): number | undefined | 'invalid' => {
+/** The typed number as is (money is in major units of the document's currency). `'invalid'` when it isn't a number ≥ 0. */
+export const parseTolerance = (text: string): number | undefined | 'invalid' => {
   if (text.trim() === '') return undefined
   const value = Number(text.trim().replace(',', '.'))
   if (!Number.isFinite(value) || value < 0) return 'invalid'
-  return type === 'money' ? Math.round(value * 100) : value
+  return value
 }
 
-const toleranceText = (tolerance: number | undefined, type: ExprType | null) =>
-  tolerance === undefined ? '' : String(type === 'money' ? tolerance / 100 : tolerance)
+const toleranceText = (tolerance: number | undefined) => (tolerance === undefined ? '' : String(tolerance))
 
 export const newForm = (kind: FieldAction['kind']): ActionForm =>
   kind === 'check'
@@ -66,7 +65,6 @@ export const newForm = (kind: FieldAction['kind']): ActionForm =>
 
 export const formFromAction = (action: FieldAction, fields: readonly FieldDef[]): ActionForm => {
   if (action.kind === 'compute') return { kind: 'compute', id: action.id, fieldId: action.fieldId, expr: action.expr }
-  const type = scalarTypeOf(action.left, fields)
   return {
     kind: 'check',
     id: action.id,
@@ -75,7 +73,7 @@ export const formFromAction = (action: FieldAction, fields: readonly FieldDef[])
     left: action.left,
     op: action.op,
     right: action.right,
-    tolerance: toleranceText(action.tolerance, type),
+    tolerance: toleranceText(action.tolerance),
     severity: action.severity,
   }
 }
@@ -94,7 +92,7 @@ export const formProblems = (form: ActionForm, fields: readonly FieldDef[], acti
   return [
     ...checkProblems({ ...form, op: effectiveOp(form.op, leftType) }, fields),
     ...(shownLabel(form, fields).trim() === '' ? ['Give the check a label.'] : []),
-    ...(supportsTolerance(leftType ?? 'text') && parseTolerance(form.tolerance, leftType) === 'invalid'
+    ...(supportsTolerance(leftType ?? 'text') && parseTolerance(form.tolerance) === 'invalid'
       ? ['The tolerance must be a number, 0 or more.']
       : []),
   ]
@@ -114,7 +112,7 @@ export const formToAction = (
   const [left, right] = [toExpr(form.left), toExpr(form.right)]
   if (!left || !right) return null
   const leftType = scalarTypeOf(form.left, fields)
-  const tolerance = leftType && supportsTolerance(leftType) ? parseTolerance(form.tolerance, leftType) : undefined
+  const tolerance = leftType && supportsTolerance(leftType) ? parseTolerance(form.tolerance) : undefined
   return {
     kind: 'check',
     id: form.id,

@@ -17,8 +17,8 @@ import {
 } from './value-builders'
 
 const WORDS = [
-  'Alfa', 'Beta', 'Projekt', 'Usługa', 'Warszawa', 'Serwis', 'Dostawa', 'Umowa',
-  'Zakup', 'Biuro', 'Rozliczenie', 'Licencja', 'Transport', 'Konsulting',
+  'Alpha', 'Beta', 'Project', 'Service', 'Berlin', 'Support', 'Delivery', 'Agreement',
+  'Purchase', 'Office', 'Settlement', 'License', 'Transport', 'Consulting', 'Usługa', 'Tokyo',
 ]
 const MAX_TABLE_ROWS = 4
 const NULL_CHANCE = 0.12

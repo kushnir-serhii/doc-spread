@@ -22,8 +22,8 @@ const parseRaw = (type: ExprType, raw: string): unknown => {
     case 'money': {
       const value = Number(text.replace(',', '.'))
       if (text === '' || !Number.isFinite(value)) return null
-      // money is typed in major units (12.50) and stored in minor units
-      return type === 'money' ? Math.round(value * 100) : value
+      // money is typed in major units (12.50) and stored as typed; the evaluator converts it once the currency is known
+      return value
     }
     case 'date':
       return parseIsoDate(text) === null ? null : text
@@ -36,9 +36,8 @@ const parseRaw = (type: ExprType, raw: string): unknown => {
   }
 }
 
-const formatValue = (type: ExprType, value: unknown): string => {
+const formatValue = (value: unknown): string => {
   if (value === null || value === undefined) return ''
-  if (type === 'money' && typeof value === 'number') return String(value / 100)
   return String(value)
 }
 
@@ -55,8 +54,8 @@ export const ConstInput = ({ label, node, types, onChange }: ConstInputProps) =>
   const id = useId()
   const type = exprTypeOf(node)
   // What the user typed; shown as long as it still means the node's value (a removed sibling re-uses this component).
-  const [raw, setRaw] = useState(() => formatValue(type, node.value))
-  const shown = parseRaw(type, raw) === node.value ? raw : formatValue(type, node.value)
+  const [raw, setRaw] = useState(() => formatValue(node.value))
+  const shown = parseRaw(type, raw) === node.value ? raw : formatValue(node.value)
   const set = (next: string) => {
     setRaw(next)
     onChange({ ...node, value: parseRaw(type, next) })

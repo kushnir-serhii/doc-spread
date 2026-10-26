@@ -1,11 +1,16 @@
+import { minorDigits } from '@/lib/fields/currency-digits'
 import type { FieldValue, Money, ScalarFieldType } from '@/lib/mock/types'
 
-/** Major units with the currency's decimals (2 for every supported currency), dot separator: 123000 -> "1230.00". */
+/** Major units with the currency's decimals (2 for USD, 0 for JPY), dot separator: 123000 USD -> "1230.00". */
 export const moneyAmount = (money: Money): string => {
+  const digits = minorDigits(money.currency)
   const abs = Math.abs(money.amount)
-  const major = Math.trunc(abs / 100)
-  const minor = String(abs % 100).padStart(2, '0')
-  return `${money.amount < 0 ? '-' : ''}${major}.${minor}`
+  const sign = money.amount < 0 ? '-' : ''
+  if (digits === 0) return `${sign}${abs}`
+  const base = 10 ** digits
+  const major = Math.trunc(abs / base)
+  const minor = String(abs % base).padStart(digits, '0')
+  return `${sign}${major}.${minor}`
 }
 
 /**

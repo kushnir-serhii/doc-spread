@@ -10,7 +10,7 @@ const foldToAscii = (value: string) =>
     .replace(/[̀-ͯ]/g, '')
     .replace(/[łđøßæœ]/g, (char) => EXTRA_FOLDS[char] ?? char)
 
-/** A label as an export key: "Data wystawienia" -> "data_wystawienia". */
+/** A label as an export key: "Issue date" -> "issue_date", "Größe Nr." -> "grosse_nr". */
 export const slugifyKey = (label: string) =>
   foldToAscii(label)
     .replace(/[^a-z0-9]+/g, '_')
