@@ -1,12 +1,26 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addFieldExample, proposeFields, testExtract } from '@/lib/mock'
-import type { FieldExample, TestExtractInput } from '@/lib/mock/types'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { addFieldExample, proposeFields, suggestField, testExtract } from '@/lib/mock'
+import type { FieldDef, FieldExample, SuggestFieldInput, TestExtractInput } from '@/lib/mock/types'
 import { documentTypeKeys } from './document-types'
 
 export const builderKeys = {
   all: ['builder'] as const,
   proposals: (documentId: string) =>
     [...builderKeys.all, 'proposals', documentId] as const,
+  /** what the AI reads of a field: renaming a label doesn't change the extraction */
+  preview: (documentId: string, fields: FieldDef[]) =>
+    [
+      ...builderKeys.all,
+      'preview',
+      documentId,
+      fields.map(({ id, type, hint, options, examples }) => [
+        id,
+        type,
+        hint,
+        options,
+        examples.map((e) => [e.documentId, e.page, e.bbox, e.text]),
+      ]),
+    ] as const,
 }
 
 /** proposals for one document never change, so they are fetched once */
@@ -17,10 +31,28 @@ export const useProposeFields = (documentId: string) =>
     staleTime: Infinity,
   })
 
+/** one call per pointed-at selection; saves nothing, so there is nothing to invalidate */
+export const useSuggestField = () =>
+  useMutation({
+    mutationFn: (input: SuggestFieldInput) => suggestField(input),
+  })
+
 /** saves nothing, so there is nothing to invalidate */
 export const useTestExtract = () =>
   useMutation({
     mutationFn: (input: TestExtractInput) => testExtract(input),
+  })
+
+/**
+ * Values and confidence of an unsaved schema on one document (the same call as `useTestExtract`,
+ * read as a query so it reruns when a field's type or hint changes). Saves nothing.
+ */
+export const useTestExtractPreview = (documentId: string, fields: FieldDef[]) =>
+  useQuery({
+    queryKey: builderKeys.preview(documentId, fields),
+    queryFn: () => testExtract({ documentId, fields }),
+    enabled: fields.length > 0,
+    placeholderData: keepPreviousData,
   })
 
 export const useAddFieldExample = () => {

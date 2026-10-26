@@ -50,7 +50,7 @@ export interface BuilderState {
   keyTouched: string[]
 }
 
-export type FieldPatch = Partial<Pick<FieldDef, 'required' | 'hint' | 'options'>>
+export type FieldPatch = Partial<Pick<FieldDef, 'required' | 'hint' | 'options' | 'examples'>>
 
 /** Swaps an item with its neighbour; returns the same array at either end. */
 export const moveItem = <T extends { id: string }>(items: T[], id: string, direction: 'up' | 'down') => {
