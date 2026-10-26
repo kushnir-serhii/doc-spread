@@ -37,6 +37,7 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 
 ### [ ] 3. Neutral seed company and mixed-currency seed documents
 - **Build:** the seed company becomes a neutral international one (e.g. "Northwind Studio Ltd", a generic tax ID, English-named team, accountant on a non-country domain) with `defaultCurrency: 'USD'`. `app-shell.tsx` stops hard-coding "Nordwind Trading Sp. z o.o." and shows the same name (through the existing company query, or a shared constant if the shell has no query yet; say which). Seed documents: USD is the most common currency, then EUR, GBP, PLN and a few JPY; add a Japanese supplier with JPY; receipts are no longer forced to PLN; `CZ` no longer maps to EUR (use a currency in `CURRENCIES`, or EUR with a comment saying it is a sample choice); the fallback is `DEFAULT_CURRENCY`, never `'PLN'`. VAT rates follow the supplier's country as today.
+- **Decided:** "Northwind Studio Ltd", tax ID `TX-4821-0937`, team Alex Morgan (owner), Sam Rivera, Jordan Lee, Priya Shah on `northwind-studio.example`, accountant `accounting@ledgerworks.example`. The shell reads the name through `useCompany()` (it exists in `lib/api/company.ts`); the placeholder user becomes Alex Morgan. `CZ` → EUR with a "sample choice" comment (no CZK). Receipts take the supplier's country currency like invoices, and their tax uses that country's VAT rate instead of the hard-coded 23/123.
 - **Files:** `src/lib/mock/data.ts`, `src/lib/mock/documents-seed.ts`, `src/components/layout/app-shell.tsx`
 - **Accept:**
   - [ ] no `'PLN'` literal is used as a default or fallback anywhere in `src/` (it remains only as a currency in `CURRENCIES` and on PL sample suppliers)
@@ -46,6 +47,7 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
 
 ### [ ] 4. Showcase invoice and receipt in English and USD
 - **Build:** rewrite `generate-mock-files.py` so `sample-invoice.pdf` and `sample-receipt.jpg` are an English invoice and receipt in USD (neutral supplier and merchant, a US/EU-style tax ID, no "Faktura", "NIP", "zł"). Regenerate the files, their `*.tokens.json` and `showcase-sources.ts`, and update `showcaseInvoiceValues` / `showcaseReceiptValues` so the values match what is printed. `sample-long.pdf` follows the same rules if it is Polish.
+- **Decided:** a US supplier (e.g. "Brightline Software Inc.", EIN `84-1234567`) with an 8% sales tax printed per line ("Tax 8%"), which maps to the VAT fields; the receipt is a neutral café in USD with 8% tax. The KSeF line is not printed (the field goes in slice 5).
 - **Files:** `apps/web/scripts/generate-mock-files.py`, `apps/web/public/mock/*`, `src/lib/mock/showcase-sources.ts`, `src/lib/mock/documents-seed.ts`
 - **Model:** sonnet
 - **Accept:**
@@ -54,11 +56,12 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
   - [ ] the script runs from a clean checkout with the steps written at its top, and its output is committed
 
 ### [ ] 5. Country-neutral hints and leftovers
-- **Build:** template hints stop naming one country: tax ID hints say "Tax ID of the seller (VAT ID, EIN, NIP …, as printed)", the issue date hint has no "Data wystawienia". Fix the remaining Polish defaults in app code: the parse error hint "try 1 234,56 zł" becomes a currency-neutral example, design page samples use USD, comments in `types.ts` and `field-key.ts` use English examples. `fake-extract.ts` word list may mix languages but not only Polish.
+- **Build:** the Polish-only "In KSeF" field is removed from the Invoice template and the seed documents; template hints stop naming one country: tax ID hints say "Tax ID of the seller (VAT ID, EIN, NIP …, as printed)", the issue date hint has no "Data wystawienia". Fix the remaining Polish defaults in app code: the parse error hint "try 1 234,56 zł" becomes a currency-neutral example, design page samples use USD, comments in `types.ts` and `field-key.ts` use English examples. `fake-extract.ts` word list may mix languages but not only Polish.
 - **Files:** `src/lib/mock/templates.ts`, `src/lib/fields/parse-field-value.ts`, `src/pages/design/design-page.tsx`, `src/pages/design/field-types-section.tsx`, `src/lib/mock/types.ts`, `src/features/document-types/field-key.ts`, `src/lib/mock/fake-extract.ts`
 - **Model:** haiku
 - **Accept:**
   - [ ] `grep -rniE "Data wystawienia|NIP for Polish|1 234,56 zł|pl-PL"` over `apps/web/src` finds nothing
+  - [ ] no `ksef` is left in `apps/web/src` or the generator script
   - [ ] the design page shows USD samples; the parse hint names an amount with a currency code that isn't tied to a country (e.g. "1,234.56 USD")
 
 ## Backend needs
@@ -76,9 +79,14 @@ The mock data and templates stop assuming Poland: the seed company is a neutral 
   - **Decided:** regenerate them in English and USD (slice 4).
 - Polish leftovers outside the original scope (app-shell company name, parse hint, design page, `CZ → EUR`, receipts forced to PLN).
   - **Decided:** included (slices 3 and 5).
+- `evaluate.ts` shows a money constant with `toFixed(2)`, but a constant has no currency there.
+  - **Decided:** slice 1 leaves it; slice 2 stores constants in major units, so it is shown as typed.
+- The Invoice template has a Polish-only "In KSeF" field.
+  - **Decided:** removed from the template and the seed documents (slice 5).
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-26 | — | drafted | from the open questions of 009 / 016 |
 | 2026-10-26 | — | ready | questions decided, split into 5 slices |
+| 2026-10-26 | — | questions | seed company, CZ/receipt currency, showcase tax, KSeF removal decided |
