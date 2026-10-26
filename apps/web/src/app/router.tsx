@@ -61,7 +61,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/documents/:documentId',
-            lazy: placeholder('Review document', 'Check extracted fields and approve.'),
+            lazy: () => import('@/pages/review/review-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/groups',
