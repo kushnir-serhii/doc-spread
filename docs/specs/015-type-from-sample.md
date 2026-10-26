@@ -74,7 +74,7 @@ OCR tokens right after upload; an LLM call that proposes fields (label, key, typ
 - The mock `testExtract` ignored examples, so values could be unrelated to the box. **Fixed in slice 2** for text-like fields (the example's text, confidence 0.95); dates, money and numbers still come from the fake extractor until slice 3 parses them (`parse-field-value.ts`).
 - A fresh upload gets one blank synthetic page with no tokens, so it only gets the fallback Title/Date/Total proposals without boxes; real proposals come from seeded documents (`?documentId=`).
 - Values are read through `useTestExtractPreview(documentId, fields)`, a query over `testExtract` (it reruns when a field's type or hint changes, not on rename), instead of the `useTestExtract()` mutation, which would need an effect to fire.
-- A field added by pointing isn't selected, so the editor doesn't open; the "Added …" status line confirms it instead. Select it automatically?
+- Should a field added by pointing be selected (opening its editor)? **Decided:** no. Label, type and hint are set in the suggestion panel, the "Added …" status line confirms the add, and focus returns to "Point to add", so several fields can be added in a row; Edit opens the editor when needed.
 - A rejected field's box is ignored by the overlap check ("Fix … instead").
 - 014's `FieldPatch` now also allows `examples`, so fixing an accepted field goes through `updateField`.
 - How many examples per field are stored at most? **Decided:** one per sample, so at most 5 (see **Data**).
