@@ -67,11 +67,11 @@ export const router = createBrowserRouter([
           },
           {
             path: '/groups',
-            lazy: placeholder('Groups', 'Documents grouped by a field, like company or counterparty.'),
+            lazy: () => import('@/pages/groups/groups-page').then((m) => ({ Component: m.default })),
           },
           {
             path: '/groups/:typeId/:fieldId',
-            lazy: placeholder('Group', 'Every value of this field and its documents.'),
+            lazy: () => import('@/pages/groups/group-page').then((m) => ({ Component: m.default })),
           },
           { path: '/export', lazy: () => import('@/pages/export/export-page').then((m) => ({ Component: m.default })) },
           { path: '/settings', lazy: placeholder('Settings', 'Company, accountant, team and plan.') },

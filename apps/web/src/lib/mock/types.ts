@@ -304,7 +304,7 @@ export interface ListDocumentsParams {
   status?: DocumentStatus
   /** file name and any text-like value, case-insensitive */
   search?: string
-  /** documents whose value for the field equals `value` (trimmed, case-insensitive) */
+  /** documents whose value for the field equals `value` (trimmed, case-insensitive, whitespace collapsed) */
   group?: { fieldId: string; value: string }
 }
 
@@ -317,12 +317,33 @@ export type CreateDocumentTypeInput = Pick<
 /** Changing any of these raises the type's version. */
 export type UpdateDocumentTypeInput = Partial<CreateDocumentTypeInput>
 
+/** Sum of one money field over the documents of a group. */
+export interface GroupTotal {
+  fieldId: string
+  /** one per currency, sorted by currency code; empty when no document has a value */
+  amounts: Money[]
+}
+
 export interface GroupValue {
   /** display form of the first occurrence */
   value: string
   count: number
   /** ISO datetime of the newest document in the group */
   lastDocumentAt: string
+  /** one entry per total field of the type (money list columns), in list-column order; empty for a type without any */
+  totals: GroupTotal[]
+}
+
+/** One groupable field of one type, for the groupings list. Counts exclude rejected documents. */
+export interface GroupingSummary {
+  typeId: string
+  typeName: string
+  fieldId: string
+  fieldLabel: string
+  /** distinct values after normalization */
+  valueCount: number
+  /** counted documents that have a value */
+  documentCount: number
 }
 
 export interface SuggestFieldInput {

@@ -18,7 +18,10 @@
  *    rows with stable row ids. Edits set confidence to 1 and are validated against the type version.
  *  - Server-side filtering by type and status, text search (file name + text-like values) and
  *    grouping: documents whose value for a groupable field matches after normalization (trim +
- *    lowercase), and a group listing (value, count, last document date) per type + field.
+ *    lowercase + collapsed whitespace), and a group listing (value, count, last document date) per
+ *    type + field over non-rejected documents (with, per money list column of the type, the sum per
+ *    currency in minor units, sorted by currency code), plus a summary per groupable field (value count,
+ *    document count) for the groupings list.
  *  - Transitions with validation: approve (needs_review | rejected -> approved), reject with a
  *    reason, reassign type (re-runs extraction with the current version -> needs_review).
  *    Whether approval is blocked while required fields are empty is an open question.
@@ -45,6 +48,7 @@ import type { DocumentTemplate } from './templates'
 import { majorText } from '@/lib/fields/currency-digits'
 import { parseFieldValue } from '@/lib/fields/parse-field-value'
 import { getComputedFieldIds } from '@/lib/fields/computed-fields'
+import { totalFields } from '@/lib/fields/total-fields'
 import { fakeExtractFields } from './fake-extract'
 import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
@@ -67,6 +71,7 @@ import type {
   FieldValue,
   FileType,
   GroupValue,
+  GroupingSummary,
   ListDocumentsParams,
   SuggestFieldInput,
   SuggestTableInput,
@@ -101,7 +106,7 @@ function later(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-const normalize = (text: string) => text.trim().toLowerCase()
+const normalize = (text: string) => text.trim().toLowerCase().replace(/\s+/g, ' ')
 
 // ---------- lookups ----------
 function currentVersions(): DocumentType[] {
@@ -547,27 +552,71 @@ export async function addFieldExample(typeId: string, fieldId: string, example: 
   return copy(type)
 }
 
+/** Groups of the counted documents (every status except rejected) by normalized value of a field. */
+function buildGroups(typeId: string, fieldId: string): Map<string, GroupValue> {
+  const groups = new Map<string, GroupValue>()
+  const fields = totalFields(findCurrentType(typeId))
+  for (const doc of db.documents) {
+    if (doc.typeId !== typeId || doc.status === 'rejected') continue
+    const value = doc.values[fieldId]
+    const text = value ? scalarText(value) : null
+    if (text === null || normalize(text) === '') continue
+    const key = normalize(text)
+    let group = groups.get(key)
+    if (!group) {
+      group = {
+        value: text,
+        count: 0,
+        lastDocumentAt: doc.uploadedAt,
+        totals: fields.map((field) => ({ fieldId: field.id, amounts: [] })),
+      }
+      groups.set(key, group)
+    }
+    group.count += 1
+    if (doc.uploadedAt > group.lastDocumentAt) group.lastDocumentAt = doc.uploadedAt
+    for (const total of group.totals) {
+      const money = doc.values[total.fieldId]
+      if (!money || money.type !== 'money' || money.value === null) continue
+      const { amount, currency } = money.value
+      const sum = total.amounts.find((candidate) => candidate.currency === currency)
+      if (sum) sum.amount += amount
+      else total.amounts.push({ amount, currency })
+    }
+  }
+  for (const group of groups.values()) {
+    for (const total of group.totals) total.amounts.sort((a, b) => a.currency.localeCompare(b.currency))
+  }
+  return groups
+}
+
 export async function listGroupValues(typeId: string, fieldId: string): Promise<GroupValue[]> {
   await delay()
   const field = findCurrentType(typeId).fields.find((f) => f.id === fieldId)
   if (!field) throw new Error(`Field not found: ${fieldId}`)
   if (!field.groupable) throw new Error(`Field is not groupable: ${field.key}`)
-  const groups = new Map<string, GroupValue>()
-  for (const doc of db.documents) {
-    if (doc.typeId !== typeId) continue
-    const value = doc.values[fieldId]
-    const text = value ? scalarText(value) : null
-    if (text === null) continue
-    const key = normalize(text)
-    const group = groups.get(key)
-    if (!group) {
-      groups.set(key, { value: text, count: 1, lastDocumentAt: doc.uploadedAt })
-    } else {
-      group.count += 1
-      if (doc.uploadedAt > group.lastDocumentAt) group.lastDocumentAt = doc.uploadedAt
+  return copy([...buildGroups(typeId, fieldId).values()].sort((a, b) => b.count - a.count))
+}
+
+/** One entry per groupable field of every current type, in type list order then field order. */
+export async function listGroupings(): Promise<GroupingSummary[]> {
+  await delay()
+  const types = currentVersions().sort((a, b) => a.name.localeCompare(b.name))
+  const out: GroupingSummary[] = []
+  for (const type of types) {
+    for (const field of type.fields) {
+      if (!field.groupable) continue
+      const groups = [...buildGroups(type.id, field.id).values()]
+      out.push({
+        typeId: type.id,
+        typeName: type.name,
+        fieldId: field.id,
+        fieldLabel: field.label,
+        valueCount: groups.length,
+        documentCount: groups.reduce((sum, g) => sum + g.count, 0),
+      })
     }
   }
-  return copy([...groups.values()].sort((a, b) => b.count - a.count))
+  return out
 }
 
 // ---------- export ----------

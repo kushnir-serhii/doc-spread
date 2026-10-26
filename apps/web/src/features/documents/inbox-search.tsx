@@ -10,10 +10,17 @@ interface InboxSearchProps {
   /** the committed ?q= value */
   value: string
   onCommit: (value: string) => void
+  label?: string
+  placeholder?: string
 }
 
 /** Typed text is local; it is committed to the URL after a pause. Outside URL changes flow back in. */
-export const InboxSearch = ({ value, onCommit }: InboxSearchProps) => {
+export const InboxSearch = ({
+  value,
+  onCommit,
+  label = 'Search documents',
+  placeholder = 'File name or value',
+}: InboxSearchProps) => {
   const inputId = useId()
   const [text, setText] = useState(value)
   // follow outside changes to ?q= (back button, Clear filters); compare trimmed so a pause after a space keeps it
@@ -32,7 +39,7 @@ export const InboxSearch = ({ value, onCommit }: InboxSearchProps) => {
 
   return (
     <div className="flex flex-1 flex-col gap-1.5 sm:max-w-sm">
-      <Label htmlFor={inputId}>Search documents</Label>
+      <Label htmlFor={inputId}>{label}</Label>
       <div className="relative">
         <Search
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -43,7 +50,7 @@ export const InboxSearch = ({ value, onCommit }: InboxSearchProps) => {
           type="search"
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="File name or value"
+          placeholder={placeholder}
           className="min-h-touch px-9 [&::-webkit-search-cancel-button]:hidden"
         />
         {text && (
