@@ -54,9 +54,9 @@ Export job creation with a column mapping, file generation (CSV, XLSX with sever
 - **Decided (2026-10-26):** slices 3–4 — the mock generates a real CSV for a CSV export that is one file. XLSX, zip and PDF can only be made by the backend, so the success state says so honestly (Download is unavailable, with the reason). No libraries are added.
 - **Decided (2026-10-26):** if `?ids=` is given but none of them is approved for that type, every approved document is selected, as without `?ids=`.
 - **Decided (2026-10-26):** no retry for failed jobs in History (out of scope); only the status badge.
-- Open: table columns keep their keys as headers in a separate sheet/file or a flattened table; a per-column mapping for line items may be needed (import templates often fix those headers).
-- Open: money is exported with 2 decimals (as `formatMoney`); a currency with other minor units would need `export-cells.ts` changed.
-- Open: document types have no key, so the CSV file name uses a slug of the type name.
+- Later (spec 018): table columns keep their keys as headers in a separate sheet/file or a flattened table; a per-column mapping for line items.
+- Later (spec 019): money is exported with 2 decimals (as `formatMoney`); minor digits per currency go into one helper there.
+- **Decided (2026-10-26):** the CSV file name is a slug of the type name plus the date (`invoice-2026-10-26.csv`); types get no key for this.
 
 ## Log
 | Date | Slice | Result | Notes / files |

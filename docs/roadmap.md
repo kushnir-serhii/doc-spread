@@ -22,6 +22,9 @@ The single source of truth for what is done, what is next, and in which order. `
 | 014 | [Document types (builder)](specs/014-document-types.md) | done | 002, 012 |
 | 015 | [Type from a sample](specs/015-type-from-sample.md) | done | 013, 014 |
 | 016 | [Field actions](specs/016-field-actions.md) | done | 008, 014 |
+| 017 | [Row actions (table rows)](specs/017-row-actions.md) | draft | 016 |
+| 018 | [Export: table column mapping](specs/018-export-table-columns.md) | draft | 009 |
+| 019 | [Mock data without country defaults](specs/019-mock-without-country-defaults.md) | draft | — |
 
 Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 
@@ -36,8 +39,8 @@ Read top to bottom; the next spec is the first one that isn't `done`. Specs in o
 | 3 | 013, 014 |
 | 4 | 015, 006, 007 |
 | 5 | 008 |
-| 6 | 016, 009, 010 |
-| 7 | 005, 011, 003, 004 |
+| 6 | 016, 009, 019, 010 |
+| 7 | 005, 011, 003, 004, 017, 018 |
 
 - To change the order, edit this table.
 - To make a spec buildable, review it and set it to `ready` here and in the spec.
