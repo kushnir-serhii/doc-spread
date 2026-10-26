@@ -89,11 +89,19 @@ const fakeScalar = (
   }
 }
 
-/** A plausible value for every field. Money in one currency per document; same input, same output. */
-export const fakeExtractFields = (docId: string, fields: readonly FieldDef[]): Record<string, FieldValue> => {
+/**
+ * A plausible value for every field except the computed ones (those are calculated, not extracted).
+ * Money in one currency per document; same input, same output.
+ */
+export const fakeExtractFields = (
+  docId: string,
+  fields: readonly FieldDef[],
+  computedFieldIds: ReadonlySet<string> = new Set(),
+): Record<string, FieldValue> => {
   const currency = CURRENCIES[hash(docId) % CURRENCIES.length]
   const values: Record<string, FieldValue> = {}
   for (const field of fields) {
+    if (computedFieldIds.has(field.id)) continue
     const type = field.type
     if (type !== 'table') {
       values[field.id] = fakeScalar(type, field.options, currency, makeRng(hash(`${docId}:${field.id}`)))

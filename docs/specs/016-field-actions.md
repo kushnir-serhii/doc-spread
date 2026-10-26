@@ -1,6 +1,6 @@
 # 016 — Field actions (checks and computed fields)
 
-**Status:** ready · **Depends on:** 008, 014 · **Route(s):** `/types/:typeId` (an "Actions" section of the builder)
+**Status:** in-progress · **Depends on:** 008, 014 · **Route(s):** `/types/:typeId` (an "Actions" section of the builder)
 
 ## Goal
 The user adds actions to a type that work across fields: **checks** ("Gross = Net + VAT", "Total = sum of the Amount column") that warn or block approval in Review, and **computed fields** ("Due in days = Due date − Issue date") that are calculated instead of extracted. Functions live in a registry, so a new function is added in one place without touching the builder or Review.
@@ -59,13 +59,13 @@ Money follows the existing rules: arithmetic on money stays in minor units, and 
 
 ## Slices
 
-### [ ] 1. Types + registry + evaluation
+### [x] 1. Types + registry + evaluation
 - **Build:** the types above, the registry with the starting set, `evaluateExpr(expr, document)` and `runChecks(type, document)`.
 - **Files:** `src/lib/mock/types.ts`, `src/lib/fields/functions.ts`, `src/lib/fields/evaluate.ts`
 - **Accept:**
-  - [ ] the result is a discriminated union `{ ok: true; value } | { ok: false; reason: 'missing_value' | 'type_mismatch' | 'currency_mismatch' | 'division_by_zero' }`
-  - [ ] the registry type checks argument and result types, so adding an entry with a wrong `evaluate` fails typecheck
-  - [ ] the Invoice template gets "Gross = Net + VAT" and "Net = sum of line nets" checks (tolerance 1, warning)
+  - [x] the result is a discriminated union `{ ok: true; value } | { ok: false; reason: 'missing_value' | 'type_mismatch' | 'currency_mismatch' | 'division_by_zero' }`
+  - [x] the registry type checks argument and result types, so adding an entry with a wrong `evaluate` fails typecheck
+  - [x] the Invoice template gets "Gross = Net + VAT" and "Net = sum of line nets" checks (tolerance 1, warning)
 
 ### [ ] 2. Action editor in the builder
 - **Build:** an "Actions" section in 014: Add action → Check or Computed field. The expression is built by picking: a field / a column / a constant / a function, then its arguments, the same way at every level of nesting.
@@ -86,7 +86,7 @@ Money follows the existing rules: arithmetic on money stays in minor units, and 
 Store actions with the type version; evaluate the same checks on the server before approval and before export (the frontend registry is the reference); computed values included in exports.
 
 ## Open questions
-- **Decided (2026-10-26):** the first release ships the full starting set, all 25 functions in the table. The builder has to look like the real product: every group and function shown with its label and description, so the design can be judged on the complete set.
+- **Decided (2026-10-26):** the first release ships the full starting set, all 24 functions in the table. The builder has to look like the real product: every group and function shown with its label and description, so the design can be judged on the complete set.
 - **Decided (2026-10-26):** no Inbox badge for now. Checks run only in Review and in the builder preview. A "check failed" badge on Inbox rows may come later as its own spec.
 - **Decided (2026-10-26):** slice 3 fits into the Approve flow from 008 slice 5 and doesn't duplicate it. A blocking check that fails joins the existing list of Approve problems (`review-issues.tsx` / `use-review-actions.ts`) next to the field-validation issues and uses the same "go to field" behaviour. Warnings use the same component in a non-blocking variant, then a confirmation on Approve. There is no second list and no second Approve path.
 - **Decided (2026-10-26):** the examples and the mock use USD, and the tolerance is in minor units of the document's own currency. No PLN or other country defaults.
@@ -111,3 +111,4 @@ Store actions with the type version; evaluate the same checks on the server befo
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-26 | 1 | done | registry of 24 functions with typed signatures, `evaluateExpr` / `runChecks` / `computeValues` / `describeExpr`; `actions` on `DocumentType`; Invoice gets 2 checks + computed "Payment term (days)"; seed doc-029/030 (USD, Gross off). `lib/fields/{functions,evaluate,action-ids,computed-fields}.ts`, `lib/mock/{types,templates,document-types-seed,documents-seed,fake-extract,api}.ts`, `type-draft.ts` |

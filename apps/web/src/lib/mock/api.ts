@@ -43,6 +43,7 @@ import {
 import { DOCUMENT_TEMPLATES } from './templates'
 import type { DocumentTemplate } from './templates'
 import { parseFieldValue } from '@/lib/fields/parse-field-value'
+import { getComputedFieldIds } from '@/lib/fields/computed-fields'
 import { fakeExtractFields } from './fake-extract'
 import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
@@ -337,7 +338,7 @@ export async function rejectDocument(id: string, reason: string): Promise<Docume
 }
 
 function applyExtraction(doc: Document, type: DocumentType, classificationConfidence: number): void {
-  const values = fakeExtractFields(doc.id, type.fields)
+  const values = fakeExtractFields(doc.id, type.fields, getComputedFieldIds(type))
   doc.typeId = type.id
   doc.typeVersion = type.version
   doc.classification = { confidence: classificationConfidence }
@@ -507,9 +508,11 @@ const isTextLike = (type: FieldDef['type']): type is TextLikeType =>
 export async function testExtract(input: TestExtractInput): Promise<Record<string, FieldValue>> {
   await delay()
   const doc = findDocument(input.documentId)
-  const fake = fakeExtractFields(doc.id, input.fields)
+  const computed = getComputedFieldIds(input)
+  const fake = fakeExtractFields(doc.id, input.fields, computed)
   const out: Record<string, FieldValue> = {}
   for (const field of input.fields) {
+    if (computed.has(field.id)) continue
     const example = field.examples.find((e) => e.documentId === doc.id)
     if (example && field.type !== 'table') {
       const parsed = parseFieldValue({ type: field.type, options: field.options }, example.text)

@@ -1,4 +1,5 @@
 // Seed document types, built from the server-provided templates. Not part of the public mock API.
+import { mapActionIds } from '@/lib/fields/action-ids'
 import { DOCUMENT_TEMPLATES } from './templates'
 import type { DocumentType, FieldDef } from './types'
 
@@ -27,6 +28,7 @@ const fromTemplate = (
     version,
     updatedAt,
     fields,
+    actions: template.actions.map((action) => mapActionIds(action, typeScoped)),
     titleFieldId: template.titleFieldId && typeScoped(template.titleFieldId),
     listColumnIds: template.listColumnIds.map(typeScoped),
   }

@@ -1,4 +1,4 @@
-import type { ColumnDef, DocumentType, FieldDef, ScalarFieldType } from './types'
+import type { ColumnDef, DocumentType, FieldAction, FieldDef, ScalarFieldType } from './types'
 
 export type DocumentTemplate = Omit<DocumentType, 'version' | 'updatedAt'>
 
@@ -63,6 +63,53 @@ const makeColumn = (
   examples: [],
 })
 
+const invoiceActions: FieldAction[] = [
+  {
+    kind: 'check',
+    id: 'tpl-invoice-a-gross-check',
+    label: 'Gross = Net + VAT',
+    left: { kind: 'field', fieldId: 'tpl-invoice-f-gross-total' },
+    op: 'eq',
+    right: {
+      kind: 'call',
+      fn: 'add',
+      args: [
+        { kind: 'field', fieldId: 'tpl-invoice-f-net-total' },
+        { kind: 'field', fieldId: 'tpl-invoice-f-vat-total' },
+      ],
+    },
+    tolerance: 1,
+    severity: 'warning',
+  },
+  {
+    kind: 'check',
+    id: 'tpl-invoice-a-net-check',
+    label: 'Net = sum of line nets',
+    left: { kind: 'field', fieldId: 'tpl-invoice-f-net-total' },
+    op: 'eq',
+    right: {
+      kind: 'call',
+      fn: 'sum',
+      args: [{ kind: 'column', fieldId: 'tpl-invoice-f-line-items', columnId: 'tpl-invoice-f-line-items-c-net' }],
+    },
+    tolerance: 1,
+    severity: 'warning',
+  },
+  {
+    kind: 'compute',
+    id: 'tpl-invoice-a-payment-term',
+    fieldId: 'tpl-invoice-f-payment-term-days',
+    expr: {
+      kind: 'call',
+      fn: 'days_between',
+      args: [
+        { kind: 'field', fieldId: 'tpl-invoice-f-issue-date' },
+        { kind: 'field', fieldId: 'tpl-invoice-f-due-date' },
+      ],
+    },
+  },
+]
+
 const invoice = ((): DocumentTemplate => {
   const t = 'invoice'
   const f = (
@@ -94,6 +141,7 @@ const invoice = ((): DocumentTemplate => {
       }),
       f('sale_date', 'Sale date', 'date', 'Date of sale or delivery, usually labelled "Data sprzedaży". Leave empty if absent.'),
       f('due_date', 'Due date', 'date', 'Payment deadline, usually labelled "Termin płatności".'),
+      f('payment_term_days', 'Payment term (days)', 'number', 'Calculated from the issue and due dates.'),
       f('net_total', 'Net total', 'money', 'Total net amount (netto) of the whole invoice.', { required: true }),
       f('vat_total', 'VAT total', 'money', 'Total VAT amount of the whole invoice.'),
       f('gross_total', 'Gross total', 'money', 'Total gross amount (brutto) to be paid.', { required: true }),
@@ -109,6 +157,7 @@ const invoice = ((): DocumentTemplate => {
         c('gross', 'Gross', 'money', 'Gross value of the row.'),
       ]),
     ],
+    actions: invoiceActions,
     titleFieldId: 'tpl-invoice-f-invoice-number',
     listColumnIds: [
       'tpl-invoice-f-supplier-name',
@@ -152,6 +201,7 @@ const receipt = ((): DocumentTemplate => {
         c('price', 'Price', 'money', 'Price of the row, including tax.'),
       ]),
     ],
+    actions: [],
     titleFieldId: 'tpl-receipt-f-merchant',
     listColumnIds: [
       'tpl-receipt-f-receipt-date',
@@ -194,6 +244,7 @@ const contract = ((): DocumentTemplate => {
       f('value', 'Contract value', 'money', 'Total or periodic value of the contract, with its currency.'),
       f('auto_renewal', 'Auto-renewal', 'boolean', 'True if the contract renews automatically when it expires.'),
     ],
+    actions: [],
     titleFieldId: 'tpl-contract-f-contract-number',
     listColumnIds: [
       'tpl-contract-f-counterparty',

@@ -106,6 +106,72 @@ export type ColumnDef = Omit<FieldDef, 'type' | 'columns'> & {
   type: ScalarFieldType
 }
 
+export const FUNCTION_IDS = [
+  'add',
+  'subtract',
+  'multiply',
+  'divide',
+  'percent',
+  'round',
+  'abs',
+  'min',
+  'max',
+  'sum',
+  'count',
+  'average',
+  'min_of',
+  'max_of',
+  'days_between',
+  'add_days',
+  'add_months',
+  'end_of_month',
+  'concat',
+  'upper',
+  'lower',
+  'trim',
+  'coalesce',
+  'if_empty',
+] as const
+export type FunctionId = (typeof FUNCTION_IDS)[number]
+
+/**
+ * An expression is a tree: a field, a table column, a constant, or a function call.
+ * Document-level only: `field` is a top-level scalar field, `column` a column of a top-level table field.
+ */
+export type Expr =
+  | { kind: 'field'; fieldId: string }
+  /** all values of a table column, as a list */
+  | { kind: 'column'; fieldId: string; columnId: string }
+  /** money: `value` is the amount in minor units; the currency comes from the other money in the same call or comparison */
+  | { kind: 'const'; type: ScalarFieldType; value: unknown }
+  | { kind: 'call'; fn: FunctionId; args: Expr[] }
+
+export const COMPARE_OPS = ['eq', 'neq', 'lt', 'lte', 'gt', 'gte'] as const
+export type CompareOp = (typeof COMPARE_OPS)[number]
+
+export interface CheckAction {
+  kind: 'check'
+  id: string
+  /** "Gross = Net + VAT" */
+  label: string
+  left: Expr
+  op: CompareOp
+  right: Expr
+  /** allowed difference: minor units of the document's currency for money, absolute for numbers */
+  tolerance?: number
+  severity: 'warning' | 'blocking'
+}
+
+export interface ComputeAction {
+  kind: 'compute'
+  id: string
+  /** the target field; it is computed, never extracted */
+  fieldId: string
+  expr: Expr
+}
+
+export type FieldAction = CheckAction | ComputeAction
+
 export interface DocumentType {
   id: string
   name: string
@@ -113,6 +179,8 @@ export interface DocumentType {
   description: string
   version: number
   fields: FieldDef[]
+  /** checks and computed fields (spec 016) */
+  actions: FieldAction[]
   titleFieldId: string | null
   listColumnIds: string[]
   updatedAt: string
@@ -202,7 +270,7 @@ export interface ListDocumentsParams {
 /** To start from a template, copy its fields from listTemplates into `fields`. */
 export type CreateDocumentTypeInput = Pick<
   DocumentType,
-  'name' | 'description' | 'fields' | 'titleFieldId' | 'listColumnIds'
+  'name' | 'description' | 'fields' | 'actions' | 'titleFieldId' | 'listColumnIds'
 >
 
 /** Changing any of these raises the type's version. */
@@ -251,5 +319,7 @@ export interface TableSuggestion {
 
 export interface TestExtractInput {
   fields: FieldDef[]
+  /** computed fields (those targeted by a compute action) are left out of the result */
+  actions?: FieldAction[]
   documentId: string
 }
