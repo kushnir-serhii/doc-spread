@@ -11,14 +11,17 @@ import { blankDraft } from '../type-draft'
 import { builderReducer, createBuilderState } from '../type-draft-reducer'
 import { useDraftActions } from '../use-draft-actions'
 import { buildProposalHighlights } from './proposal-highlights'
+import { AddTableButton } from './add-table-button'
+import { PointingPanels } from './pointing-panels'
 import { PointButton } from './point-button'
 import { ProposalList } from './proposal-list'
 import { SampleSaveSection } from './sample-save-section'
-import { SuggestionPanel } from './suggestion-panel'
+import { useAddTable } from './use-add-table'
 import { usePointAgain } from './use-point-again'
 import { usePointToAdd } from './use-point-to-add'
 import { useProposalActivation } from './use-proposal-activation'
 import { useProposalReview } from './use-proposal-review'
+import { useSamplePointing } from './use-sample-pointing'
 
 interface SampleWorkspaceProps {
   documentId: string
@@ -33,10 +36,12 @@ export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspace
   const [selection, setSelection] = useState<Selection>(null)
   const viewerRef = useRef<DocumentViewerHandle>(null)
   const pointRef = useRef<HTMLButtonElement>(null)
+  const tableRef = useRef<HTMLButtonElement>(null)
   const { activeId, activate } = useProposalActivation(viewerRef)
   const review = useProposalReview(proposals, draft, dispatch)
   const actions = useDraftActions(dispatch, setSelection)
   const point = usePointToAdd(documentId, review.items, dispatch, pointRef)
+  const table = useAddTable(documentId, dispatch, tableRef)
 
   const live = review.items.filter((item) => item.status !== 'rejected').map((item) => item.field)
   const preview = useTestExtractPreview(documentId, live)
@@ -45,16 +50,7 @@ export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspace
   const selectedId = selection?.fieldId ?? null
   const target = resolveSelection(selection, draft.fields)
 
-  // One kind of pointing at a time: starting either ends the other.
-  const pointingAny = point.pointing || again.pointing
-  const togglePoint = () => {
-    again.cancel()
-    point.toggle()
-  }
-  const startAgain = (fieldId: string) => {
-    if (point.pointing || point.selection) point.cancel()
-    again.start(fieldId)
-  }
+  const pointing = useSamplePointing(point, again, table)
 
   const selectField = (id: string) => {
     setSelection({ kind: 'field', fieldId: id })
@@ -74,37 +70,27 @@ export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspace
             highlights={highlights}
             activeHighlightId={activeId ?? selectedId}
             onHighlightClick={selectField}
-            mode={pointingAny ? 'select-words' : 'view'}
-            onSelect={again.pointing ? again.select : point.select}
-            onCancel={again.pointing ? again.cancel : point.cancel}
+            mode={pointing.mode}
+            onSelect={pointing.select}
+            onCancel={pointing.cancel}
           />
         </div>
         <div className="flex min-w-0 flex-col gap-3 lg:col-span-2">
-          <p role="status" className="text-sm text-muted-foreground empty:hidden">
-            {point.notice}
-          </p>
-          {point.selection && (
-            <SuggestionPanel
-              selection={point.selection}
-              suggestion={point.suggest.data}
-              loading={point.suggest.isPending}
-              failed={point.suggest.isError}
-              overlap={point.overlap}
-              onRetry={point.retry}
-              onAdd={point.add}
-              onFix={point.fix}
-              onCancel={point.cancel}
-            />
-          )}
+          <PointingPanels point={point} table={table} />
           <ProposalList
-            pointAction={<PointButton ref={pointRef} pointing={point.pointing} onToggle={togglePoint} />}
+            pointAction={
+              <div className="flex flex-wrap justify-center gap-2">
+                <PointButton ref={pointRef} pointing={point.pointing} onToggle={pointing.togglePoint} />
+                <AddTableButton ref={tableRef} pointing={table.pointing} onToggle={pointing.toggleTable} />
+              </div>
+            }
             items={review.items}
             openCount={review.openCount}
             values={preview.data}
             valuesLoading={preview.isPending && live.length > 0}
             valuesFailed={preview.isError}
             selectedId={selectedId}
-            pointAgain={{ ...again, start: startAgain }}
+            pointAgain={{ ...again, start: pointing.startAgain }}
             onRetryValues={() => void preview.refetch()}
             onAcceptAll={review.acceptAll}
             onActivate={activate}

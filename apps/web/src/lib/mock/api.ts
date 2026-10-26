@@ -25,7 +25,8 @@
  *  - Type-from-sample: an endpoint that proposes fields (with examples) from one document, and a
  *    test-extract endpoint that runs extraction of a draft field list on one document, saving nothing.
  *    Also an endpoint that infers label, type and hint from a selection (page, bbox, text) plus its
- *    nearest anchor (the label to the left or above); test-extract must use a field's examples
+ *    nearest anchor (the label to the left or above); and one that reads a drawn rectangle as a table
+ *    (header line = columns, types guessed from the values, a preview of the first rows); test-extract must use a field's examples
  *    (their text and bbox) as hints for the document they were taken on.
  *  - Field examples are guidance for the AI, not schema: adding one does not raise the type version.
  *  - Export generation per document type (csv/xlsx/pdf bundle) with a download URL or email
@@ -46,6 +47,7 @@ import { fakeExtractFields } from './fake-extract'
 import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
 import { guessFromSelection, proposeFieldsFromPages } from './propose-fields'
+import { buildTableSuggestion } from './suggest-table'
 import { overallConfidence } from './value-builders'
 import type {
   BBox,
@@ -64,6 +66,8 @@ import type {
   GroupValue,
   ListDocumentsParams,
   SuggestFieldInput,
+  SuggestTableInput,
+  TableSuggestion,
   TeamMember,
   TestExtractInput,
   Token,
@@ -481,6 +485,14 @@ export async function suggestField(input: SuggestFieldInput): Promise<FieldSugge
     ...(anchorText ? { anchorText } : {}),
   }
   return { ...guess, example }
+}
+
+/** Saves nothing. Reads the OCR tokens inside the rectangle as a table: the first line is the header. */
+export async function suggestTable(input: SuggestTableInput): Promise<TableSuggestion> {
+  await delay()
+  findDocument(input.documentId)
+  const page = (await loadPages(input.documentId)).find((p) => p.index === input.page)
+  return buildTableSuggestion(input.documentId, input.page, input.bbox, page?.tokens ?? [])
 }
 
 type TextLikeType = 'text' | 'email' | 'phone' | 'tax_id' | 'select'

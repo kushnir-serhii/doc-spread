@@ -232,6 +232,23 @@ export interface FieldSuggestion {
   example: FieldExample
 }
 
+export interface SuggestTableInput {
+  documentId: string
+  page: number
+  /** the rectangle drawn over the table */
+  bbox: BBox
+}
+
+/** A guess for a table field from a rectangle: columns from the header line, a preview of the first rows. */
+export interface TableSuggestion {
+  label: string
+  columns: ColumnDef[]
+  preview: TableValue
+  /** set when a part was assumed (a currency); the user must check it */
+  warning?: string
+  example: FieldExample
+}
+
 export interface TestExtractInput {
   fields: FieldDef[]
   documentId: string

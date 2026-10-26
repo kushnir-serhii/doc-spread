@@ -52,13 +52,13 @@ The user builds a type by showing a real document instead of typing a schema: th
   - [x] an amount without a currency follows conventions.md (Money): the current currency or USD, a visible warning, and the value stays unverified
   - [x] the viewer toolbar fits on one line in a narrow column, without losing any action or its accessible name
 
-### [ ] 4. Table from a region
+### [x] 4. Table from a region
 - **Build:** an "Add a table" button next to "Point to add" switches the viewer to `select-region`; the `useSuggestTable()` hook and the `suggestTable` mock: the first line in the region is the header, column types are guessed from the values (date, money, number, else text), the first 5 rows are the preview. The keyboard alternative is adding a table field by hand in 014's editor.
 - **Files:** `src/lib/mock/api.ts`, `src/lib/api/builder.ts`, `src/features/document-types/sample/`
 - **Accept:**
-  - [ ] in `select-region`, a rectangle over a table creates a `table` field with columns guessed from the header row and a preview of the first rows
-  - [ ] the columns can be renamed, retyped or removed in the editor from 014
-  - [ ] the preview uses the shared table-field view (Table / List, see Open questions)
+  - [x] in `select-region`, a rectangle over a table creates a `table` field with columns guessed from the header row and a preview of the first rows
+  - [x] the columns can be renamed, retyped or removed in the editor from 014
+  - [x] the preview uses the shared table-field view (Table / List, see Open questions)
 
 ### [ ] 5. Test run on more samples
 - **Build:** tabs for samples 1–5. A sample is added by uploading a file or by picking a document without a type (Inbox) or a demo document; adding one runs `testExtract` with the current draft (not saved yet). The `/types/:typeId/train` route loads the saved type into the draft, and the documents its examples come from (up to 5) as the samples.
@@ -88,12 +88,14 @@ OCR tokens right after upload; an LLM call that proposes fields (label, key, typ
 - Is a grid the friendliest way to show a table field? **Decided:** one shared table-field view with two modes, "Table" (a grid) and "List" (a card per row with label: value pairs). Table by default from `md` up, List below it; a "Table | List" toggle next to the field switches it, and the browser remembers the choice (localStorage, a per-viewer convenience). Used for the preview here (015 slice 4) and for viewing and editing in Review (008 slice 4).
 - "Point again" offers a type change only when the text parses as another type without assuming anything: "12" reads as a number, not money (`guessFieldType` in `lib/fields/guess-field-type.ts`).
 - The assumed-currency warning stays in the row until the next pointing action; the builder has no Confirm (the value stays below `LOW_CONFIDENCE`). Backend: lower a value's confidence when part of it was assumed.
+- `suggestTable` reads the page's OCR tokens inside the rectangle itself (like `suggestField`); a money column without a currency gets USD at 0.5 confidence and the panel shows a warning naming the columns. Column types come from the values; an amount without a currency reads as a number, so the mock also looks at money-like header words (price, total, netto…) — a heuristic the backend replaces. Test document: `doc-001`.
 - How many examples per field are stored at most? **Decided:** one per sample, so at most 5 (see **Data**).
 - Should corrections made in Review (008) add examples automatically or ask first? **Decided in 008 slice 3:** ask with a non-blocking prompt.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-26 | 4 | done | "Add a table" → `select-region` → `useSuggestTable()` (mock `suggest-table.ts`: header from the first line, columns by x, types from values, 5-row preview, assumed-currency warning) → panel with name, columns and the shared read-only `TableFieldView` → Add table; one pointing flow at a time (`use-sample-pointing.ts`). Files: `features/document-types/sample/` (`add-table-button.tsx`, `use-add-table.ts`, `table-suggestion-panel.tsx`, `table-suggestion-form.tsx`, `use-sample-pointing.ts`, `pointing-panels.tsx`, workspace), `lib/mock/suggest-table.ts`, `lib/mock/api.ts`, `lib/mock/types.ts`, `lib/mock/propose-fields.ts`, `lib/api/builder.ts` |
 | 2026-10-26 | 3 | done | "Point again" per row (icon button) and "Not found: point to it"; parse with `parseFieldValue`, else offer a type change (`guessFieldType`), else the reason; assumed currency warns and stays flagged; mock `testExtract` parses examples for every scalar type; viewer toolbar is a size container (icon-only Fit width / Rotate all when narrow, one line). Files: `features/document-types/sample/` (`use-point-again.ts`, `point-again-button.tsx`, `point-again-feedback.tsx`, `replace-example.ts`, row, list, workspace, `use-point-to-add.ts`), `lib/fields/guess-field-type.ts`, `lib/mock/api.ts`, `features/documents/viewer/viewer-toolbar.tsx` |
 | 2026-10-23 | 2 | done | "Point to add" (header and empty state) → `select-words` → `useSuggestField()` (new mock `suggestField`: anchor label left or above, type from patterns incl. email/tax ID/number/phone) → an editable panel (label, type, hint; loading, error with retry) → Add; overlap offers "Fix <label> instead"; `testExtract` uses examples for text-like fields; preview key includes examples. Files: `features/document-types/sample/` (`use-point-to-add.ts`, `selection-overlap.ts`, `point-button.tsx`, `suggestion-panel.tsx`, `suggestion-form.tsx`, workspace, list, empty state), `lib/mock/api.ts`, `lib/mock/propose-fields.ts`, `lib/mock/types.ts`, `lib/api/builder.ts`, `features/document-types/type-draft.ts` |
 | 2026-10-23 | 1 | done | upload or `?documentId=`, reading/proposing states, proposals with values and confidence, accept all / accept / reject / restore / inline rename, boxes linked to rows, 014 editor and save reused; `addFields` reducer action, `useTestExtractPreview`, viewer `scrollToHighlight(id, { focus })` (same change as 008), `--spacing-sample-pane` token; an "Add a field manually" button beyond the spec. Files: `pages/types/new-type-page.tsx`, `features/document-types/sample/`, `features/document-types/type-draft-reducer.ts`, `lib/api/builder.ts`, `features/documents/viewer/`, `styles/index.css` |

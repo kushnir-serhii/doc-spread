@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addFieldExample, proposeFields, suggestField, testExtract } from '@/lib/mock'
-import type { FieldDef, FieldExample, SuggestFieldInput, TestExtractInput } from '@/lib/mock/types'
+import { addFieldExample, proposeFields, suggestField, suggestTable, testExtract } from '@/lib/mock'
+import type { FieldDef, FieldExample, SuggestFieldInput, SuggestTableInput, TestExtractInput } from '@/lib/mock/types'
 import { documentTypeKeys } from './document-types'
 
 export const builderKeys = {
@@ -35,6 +35,12 @@ export const useProposeFields = (documentId: string) =>
 export const useSuggestField = () =>
   useMutation({
     mutationFn: (input: SuggestFieldInput) => suggestField(input),
+  })
+
+/** one call per drawn rectangle; saves nothing, so there is nothing to invalidate */
+export const useSuggestTable = () =>
+  useMutation({
+    mutationFn: (input: SuggestTableInput) => suggestTable(input),
   })
 
 /** saves nothing, so there is nothing to invalidate */
