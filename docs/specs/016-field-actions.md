@@ -90,6 +90,23 @@ Store actions with the type version; evaluate the same checks on the server befo
 - **Decided (2026-10-26):** no Inbox badge for now. Checks run only in Review and in the builder preview. A "check failed" badge on Inbox rows may come later as its own spec.
 - **Decided (2026-10-26):** slice 3 fits into the Approve flow from 008 slice 5 and doesn't duplicate it. A blocking check that fails joins the existing list of Approve problems (`review-issues.tsx` / `use-review-actions.ts`) next to the field-validation issues and uses the same "go to field" behaviour. Warnings use the same component in a non-blocking variant, then a confirmation on Approve. There is no second list and no second Approve path.
 - **Decided (2026-10-26):** the examples and the mock use USD, and the tolerance is in minor units of the document's own currency. No PLN or other country defaults.
+- **Decided (2026-10-26):** actions are part of `CreateDocumentTypeInput` / `UpdateDocumentTypeInput`; changing them raises the type's version, like fields.
+- **Decided (2026-10-26):** "computed" is not a flag on `FieldDef`; it is derived from the `ComputeAction` that targets the field (one source of truth). Mock extraction and `testExtract` skip computed fields.
+- **Decided (2026-10-26):** computed fields and checks are document-level only (top-level fields). Table columns are used only as lists (`sum`, `count`, …). Per-row computed columns (row Net = Qty × Unit) and per-row checks are later (open question below).
+- **Decided (2026-10-26):** list functions skip empty cells; a column with no values gives `missing_value`, except `count`, which gives 0.
+- **Decided (2026-10-26):** a money constant stores only the amount and takes "the document's currency": the currency of the other money argument. If none can determine it, that is an evaluation error, never a silent USD.
+- **Decided (2026-10-26):** tolerance is in minor units for money and an absolute difference for numbers. Dates allow every operator; text, boolean and select allow only `eq` / `neq`.
+- **Decided (2026-10-26):** `add`, `min`, `max`, `concat`, `coalesce` take 2 or more arguments ("+ argument"); the rest have a fixed count. A function may have several signatures (`multiply(money, number) → money`, `divide(money, money) → number`); the builder offers it when any signature fits.
+- **Decided (2026-10-26):** the Invoice template and the seed Invoice type (v1 and v2, built from it) get both checks and a computed field "Payment term (days)" = `days_between(issue_date, due_date)`. One or two USD `needs_review` seed invoices have Gross ≠ Net + VAT so failed checks show in Review.
+- **Decided (2026-10-26):** slice 2 — an "Actions (n)" section below the fields; a row shows the label, the readable expression and a severity badge; adding and editing happen in a dialog with the expression tree and the preview.
+- **Decided (2026-10-26):** a check's label is generated from its expression until the user edits it (like a key follows its label).
+- **Decided (2026-10-26):** an action that refers to a deleted field, or to a field whose type no longer fits, is a draft validation error: Save is blocked and `ErrorSummary` links to the action. It is not removed automatically.
+- **Decided (2026-10-26):** the field editor shows a computed field as "Computed by …" and hides hint, examples and required. The field's type must equal the expression's result type.
+- **Decided (2026-10-26):** the preview has a select of the type's documents (newest by default); an unsaved type has none and shows an empty state that explains why.
+- **Decided (2026-10-26):** slice 3 — a check that can't be evaluated (an empty input) never blocks, even if blocking: it shows as its own state ("Can't check: VAT total is empty") and, like a warning, needs a confirmation on Approve.
+- **Decided (2026-10-26):** fields involved in a failed check are highlighted in the form, with "go to field"; no highlight in the viewer.
+- **Decided (2026-10-26):** a computed value is written into the review draft with confidence 1, so it is saved with the document and exported (009).
+- Open: per-row computed columns and per-row checks in tables.
 
 ## Log
 | Date | Slice | Result | Notes / files |
