@@ -352,6 +352,7 @@
   --spacing-sidebar: 15rem;
   --spacing-sidebar-collapsed: 4rem;
   --spacing-touch: 2.75rem; /* 44px minimum touch target */
+  --spacing-review-pane: calc(100dvh - 7rem); /* Review: sticky viewer pane = viewport minus the sticky header and gaps */
 
   /* Motion — indeterminate route progress bar (animate-route-progress) */
   --animate-route-progress: route-progress 1.2s ease-in-out infinite;

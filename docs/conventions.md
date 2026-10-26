@@ -38,6 +38,8 @@ React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 
 - Domain types come from `@/lib/mock/types`. Don't redeclare them. Derive with `Pick`, `Omit` or `Partial`.
 - Model state as discriminated unions, not boolean flags (`{ step: 'idle' } | { step: 'uploading'; progress: number }`).
 - Money is in integer minor units (`Money.amount`). Format only through `formatMoney` and always show the currency.
+- No country defaults. The fallback currency is `DEFAULT_CURRENCY` (USD, `src/lib/fields/default-currency.ts`), or the company's default once a caller has it. A currency that was assumed instead of read must be flagged to the user (a visible warning, and the value stays unverified) — never silently.
+- Dates, numbers and amounts are formatted in the user's locale: the browser's by default (`Intl` with no locale), the company's once it sets one (spec 011). Never hard-code a locale such as `pl-PL`.
 - Exhaustive `switch` statements on unions end with a `never` check.
 - Props types are named `<Component>Props` and declared next to the component.
 

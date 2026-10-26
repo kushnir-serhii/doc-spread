@@ -3,13 +3,15 @@ import { Button } from '@/components/ui/button'
 import { useDocumentPages } from '@/lib/api'
 import { useElementWidth } from './use-element-width'
 import { useVisiblePages } from './use-visible-pages'
-import { bboxToView, nextRotation, rotatedSize, type ViewRotation } from './rotation'
+import { bboxToView, rotatedSize } from './rotation'
 import { PointingHintBar } from './pointing-hint-bar'
+import { usePageRotations } from './use-page-rotations'
 import { usePointing } from './use-pointing'
+import { useViewerZoom } from './use-viewer-zoom'
 import { ViewerPage } from './viewer-page'
 import { ViewerToolbar } from './viewer-toolbar'
 import type { DocumentViewerHandle, ViewerHighlight } from './viewer-highlights'
-import type { ViewerFile, ViewerMode, ViewerSelection, ViewerZoom } from './viewer-types'
+import type { ViewerFile, ViewerMode, ViewerSelection } from './viewer-types'
 
 interface DocumentViewerProps {
   documentId: string
@@ -27,9 +29,6 @@ interface DocumentViewerProps {
 }
 
 const NO_HIGHLIGHTS: ViewerHighlight[] = []
-
-const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3]
-const PAGE_PADDING = 32 // px: page-list padding (p-4 on both sides), subtracted for fit width
 
 const Message = ({ children }: { children: ReactNode }) => (
   <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center text-sm">{children}</div>
@@ -49,19 +48,7 @@ export const DocumentViewer = ({
 }: DocumentViewerProps) => {
   const pagesQuery = useDocumentPages(documentId)
   const pages = pagesQuery.data
-  const [zoom, setZoom] = useState<ViewerZoom>({ mode: 'fit' })
-  // view-only rotation per page, kept above virtualization; tied to the document so it resets when that changes
-  const [rotationState, setRotationState] = useState<{ documentId: string; byPage: Record<number, ViewRotation> }>({
-    documentId,
-    byPage: {},
-  })
-  const rotations = rotationState.documentId === documentId ? rotationState.byPage : {}
-  const rotationOf = (index: number): ViewRotation => rotations[index] ?? 0
-  const rotatePages = (indexes: number[]) => {
-    const byPage = { ...rotations }
-    for (const i of indexes) byPage[i] = nextRotation(rotationOf(i))
-    setRotationState({ documentId, byPage })
-  }
+  const { rotationOf, rotatePages } = usePageRotations(documentId)
   const pointing = usePointing({ mode, pages: pages ?? [], rotationOf, onSelect, onCancel })
   const { containerRef, visible } = useVisiblePages(pages?.length ?? 0)
   const containerWidth = useElementWidth(containerRef)
@@ -86,29 +73,21 @@ export const DocumentViewer = ({
     },
   }))
 
-  // the widest page after rotation sets fit width, so nothing overflows sideways
   const widest = Math.max(1, ...(pages ?? []).map((p) => rotatedSize(p.width, p.height, rotationOf(p.index)).width))
-  const fitScale = Math.max(containerWidth - PAGE_PADDING, 0) / widest
-  const scale = zoom.mode === 'fit' ? fitScale : zoom.value
-  const percent = Math.round(scale * 100)
-
-  const stepZoom = (direction: 1 | -1) => {
-    const next =
-      direction === 1 ? ZOOM_STEPS.find((s) => s > scale + 0.001) : [...ZOOM_STEPS].reverse().find((s) => s < scale - 0.001)
-    if (next) setZoom({ mode: 'scale', value: next })
-  }
+  const zoom = useViewerZoom(containerWidth, widest)
+  const { scale } = zoom
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border bg-muted">
       <ViewerToolbar
-        percent={percent}
-        fit={zoom.mode === 'fit'}
-        canZoomOut={scale > ZOOM_STEPS[0] + 0.001}
-        canZoomIn={scale < ZOOM_STEPS[ZOOM_STEPS.length - 1] - 0.001}
-        onFit={() => setZoom({ mode: 'fit' })}
-        onActualSize={() => setZoom({ mode: 'scale', value: 1 })}
-        onZoomOut={() => stepZoom(-1)}
-        onZoomIn={() => stepZoom(1)}
+        percent={zoom.percent}
+        fit={zoom.fit}
+        canZoomOut={zoom.canZoomOut}
+        canZoomIn={zoom.canZoomIn}
+        onFit={zoom.onFit}
+        onActualSize={zoom.onActualSize}
+        onZoomOut={zoom.onZoomOut}
+        onZoomIn={zoom.onZoomIn}
         onRotateAll={() => rotatePages((pages ?? []).map((p) => p.index))}
       />
       <PointingHintBar
