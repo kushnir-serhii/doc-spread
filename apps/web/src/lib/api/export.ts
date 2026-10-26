@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createExportJob, listExportJobs } from '@/lib/mock'
+import { createExportJob, getExportMapping, listExportJobs } from '@/lib/mock'
 import type { CreateExportJobInput } from '@/lib/mock/types'
 import { documentKeys } from './documents'
 import { groupKeys } from './groups'
@@ -8,7 +8,15 @@ export const exportKeys = {
   all: ['export'] as const,
   lists: () => [...exportKeys.all, 'list'] as const,
   list: () => [...exportKeys.lists()] as const,
+  mappings: () => [...exportKeys.all, 'mapping'] as const,
+  mapping: (typeId: string) => [...exportKeys.mappings(), typeId] as const,
 }
+
+export const useExportMapping = (typeId: string) =>
+  useQuery({
+    queryKey: exportKeys.mapping(typeId),
+    queryFn: () => getExportMapping(typeId),
+  })
 
 export const useExportJobs = () =>
   useQuery({
@@ -24,6 +32,7 @@ export const useCreateExportJob = () => {
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: exportKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: exportKeys.mappings() }),
         queryClient.invalidateQueries({ queryKey: documentKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: documentKeys.details() }),
         queryClient.invalidateQueries({ queryKey: groupKeys.all }),

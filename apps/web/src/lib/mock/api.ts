@@ -59,6 +59,7 @@ import type {
   DocumentPage,
   DocumentType,
   ExportJob,
+  ExportMapping,
   FieldDef,
   FieldExample,
   FieldSuggestion,
@@ -85,6 +86,8 @@ const db = {
   documents: copy(seedDocuments),
   pages: copy(seedDocumentPages),
   exportJobs: copy(seedExportJobs),
+  /** saved column mapping per type id */
+  exportMappings: {} as Record<string, ExportMapping>,
   company: copy(seedCompany),
   team: copy(seedTeam),
 }
@@ -572,6 +575,12 @@ export async function listExportJobs(): Promise<ExportJob[]> {
   return copy([...db.exportJobs].sort((a, b) => b.createdAt.localeCompare(a.createdAt)))
 }
 
+export async function getExportMapping(typeId: string): Promise<ExportMapping | null> {
+  await delay()
+  const saved = db.exportMappings[typeId]
+  return saved ? copy(saved) : null
+}
+
 export async function createExportJob(input: CreateExportJobInput): Promise<ExportJob> {
   await delay()
   findCurrentType(input.typeId)
@@ -586,9 +595,11 @@ export async function createExportJob(input: CreateExportJobInput): Promise<Expo
     documentIds: [...input.documentIds],
     destination: input.destination,
     recipient: input.recipient,
+    columns: copy(input.columns),
     status: 'completed',
   }
   db.exportJobs.push(job)
+  db.exportMappings[input.typeId] = { ...copy(input.columns), typeId: input.typeId, updatedAt: job.createdAt }
   for (const doc of docs) {
     if (doc.status === 'approved') doc.status = 'exported'
   }
