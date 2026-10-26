@@ -11,10 +11,18 @@ export interface Money {
 
 export type FileType = 'pdf' | 'jpg' | 'png'
 
+/** A saved export recipient (edited in Settings, spec 011). */
+export interface Recipient {
+  id: string
+  name: string
+  email: string
+}
+
 export interface Company {
   name: string
   taxId: string
   accountantEmail: string
+  recipients: Recipient[]
   defaultCurrency: CurrencyCode
 }
 

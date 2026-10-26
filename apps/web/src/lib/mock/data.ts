@@ -12,6 +12,7 @@ export const seedCompany: Company = {
   name: 'Kowalski Studio Sp. z o.o.',
   taxId: '5252344078',
   accountantEmail: 'ksiegowosc@biuro-rachunkowe.pl',
+  recipients: [{ id: 'rcp-001', name: 'Accountant', email: 'ksiegowosc@biuro-rachunkowe.pl' }],
   defaultCurrency: 'PLN',
 }
 

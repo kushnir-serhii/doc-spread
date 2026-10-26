@@ -13,8 +13,8 @@ export interface Selection {
 }
 
 /** Selection is kept as raw ids; rows that left the list (filter, approve) are ignored while computing. */
-export const useSelection = (documents: Document[]): Selection => {
-  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
+export const useSelection = (documents: Document[], initialIds: readonly string[] = []): Selection => {
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set(initialIds))
   const ids = documents.filter((doc) => selected.has(doc.id)).map((doc) => doc.id)
   const state = ids.length === 0 ? 'none' : ids.length === documents.length ? 'all' : 'some'
 

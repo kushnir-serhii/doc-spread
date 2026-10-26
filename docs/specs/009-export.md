@@ -1,6 +1,6 @@
 # 009 — Export
 
-**Status:** ready · **Depends on:** 002, 006 · **Route(s):** `/export`
+**Status:** in-progress · **Depends on:** 002, 006 · **Route(s):** `/export`
 
 ## Goal
 The user turns approved documents of one type into a spreadsheet (or a PDF bundle), with the columns they need, and downloads it or emails it. They can see past exports.
@@ -14,12 +14,12 @@ The user turns approved documents of one type into a spreadsheet (or a PDF bundl
 
 ## Slices
 
-### [ ] 1. Type + selection + options
+### [x] 1. Type + selection + options
 - **Files:** `src/pages/export/`, `src/features/export/`
 - **Accept:**
-  - [ ] a type select; the approved documents of that type listed with selection; `?ids=` preselects them
-  - [ ] the format and destination are radio groups with labels; email offers the saved recipients from Settings
-  - [ ] an empty state when nothing of that type is approved
+  - [x] a type select; the approved documents of that type listed with selection; `?ids=` preselects them
+  - [x] the format and destination are radio groups with labels; email offers the saved recipients from Settings
+  - [x] an empty state when nothing of that type is approved
 
 ### [ ] 2. Column mapping
 - **Accept:**
@@ -37,7 +37,7 @@ The user turns approved documents of one type into a spreadsheet (or a PDF bundl
   - [ ] a table of jobs with date, type, format, count, destination and status badge; empty state
 
 ## Backend needs
-Export job creation with a column mapping, file generation (CSV, XLSX with several sheets, a PDF bundle), email delivery, job status, download URL; storing the mapping per type.
+Export job creation with a column mapping, file generation (CSV, XLSX with several sheets, a PDF bundle), email delivery, job status, download URL; storing the mapping per type; the company's saved export recipients (`recipients`).
 
 ## Open questions
 - **Decided (2026-10-26):** a saved column mapping belongs to the type and is shared by the team, not kept per user.
@@ -52,9 +52,11 @@ Export job creation with a column mapping, file generation (CSV, XLSX with sever
 - **Decided (2026-10-26):** for the PDF bundle the mapping is hidden, with a note that the file holds the original documents, not columns.
 - **Decided (2026-10-26):** the mapping is saved for the type when an export is created and restored next time; "Reset to default"; no separate "Save mapping" button. New fields of the type are added at the end, included; deleted fields drop out.
 - **Decided (2026-10-26):** slices 3–4 — the mock generates a real CSV for a CSV export that is one file. XLSX, zip and PDF can only be made by the backend, so the success state says so honestly (Download is unavailable, with the reason). No libraries are added.
+- **Decided (2026-10-26):** if `?ids=` is given but none of them is approved for that type, every approved document is selected, as without `?ids=`.
 - **Decided (2026-10-26):** no retry for failed jobs in History (out of scope); only the status badge.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | export per type, column mapping, table fields |
+| 2026-10-26 | 1 | done | `/export` page: type select with approved counts (`?type=`), approved documents with selection (`?ids=` preselects, otherwise all), format and destination radio groups, saved recipients or another address; empty, not-found, loading and error states. `pages/export/export-page.tsx`, `features/export/*`, `router.tsx`, `Company.recipients` in `lib/mock/{types,data}.ts`, `use-selection.ts` takes initial ids |
