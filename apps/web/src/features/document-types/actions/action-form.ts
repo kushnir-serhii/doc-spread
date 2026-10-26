@@ -2,7 +2,7 @@ import { allowedOps, supportsTolerance } from '@/lib/fields/evaluate'
 import type { ExprType } from '@/lib/fields/functions'
 import type { CheckAction, CompareOp, FieldAction, FieldDef } from '@/lib/mock/types'
 import { checkProblems, computeProblems } from './action-problems'
-import { OP_SYMBOL } from './check-ops'
+import { OP_SYMBOL } from '@/lib/fields/check-ops'
 import { describeNode, EMPTY_NODE, toExpr, type ExprNode } from './expr-node'
 import { scalarTypeOf } from './expr-typing'
 

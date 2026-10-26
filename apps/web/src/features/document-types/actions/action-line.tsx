@@ -1,6 +1,6 @@
 import type { FieldDef } from '@/lib/mock/types'
 import { effectiveOp, shownLabel, type ActionForm } from './action-form'
-import { OP_SYMBOL } from './check-ops'
+import { OP_SYMBOL } from '@/lib/fields/check-ops'
 import { describeNode } from './expr-node'
 import { scalarTypeOf } from './expr-typing'
 

@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import { AlertTriangle, Check } from 'lucide-react'
+import { AlertTriangle, Check, Calculator } from 'lucide-react'
 import { ConfidenceBadge } from '@/components/domain/confidence-badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -7,6 +7,8 @@ import { FieldValueEdit } from '@/features/documents/fields/field-value-edit'
 import { TableFieldView } from '@/features/documents/fields/table-field-view'
 import { FieldValueView } from '@/features/documents/fields/field-value-view'
 import { isLowConfidence } from '@/lib/fields/confidence'
+import { describeFailure } from '@/lib/fields/describe-failure'
+import type { ComputeOutcome } from '@/lib/fields/evaluate'
 import type { FieldDef, FieldValue } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
 import { ReviewPointButton } from './review-point-button'
@@ -22,6 +24,12 @@ interface ReviewFieldRowProps {
   onConfirm?: () => void
   /** pointing at the document; set for editable scalar rows */
   pointing?: ReviewPointing
+  /** set for a computed field: its value is calculated, so the row is read-only */
+  computed?: ComputeOutcome
+  /** the field is read by a failed check */
+  involved?: boolean
+  /** the type's fields, to name what a computed field is missing */
+  fields: FieldDef[]
 }
 
 /** A table has no confidence of its own: show its weakest cell, or nothing for an empty table. */
@@ -31,13 +39,13 @@ const confidenceOf = (value: FieldValue): number | null => {
   return scores.length === 0 ? null : Math.min(...scores)
 }
 
-export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, pointing }: ReviewFieldRowProps) => {
+export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, pointing, computed, involved, fields }: ReviewFieldRowProps) => {
   const labelId = useId()
   const inputId = useId()
   const isTable = value.type === 'table'
-  const editing = onChange !== undefined && !isTable
-  const editingTable = onChange !== undefined && value.type === 'table'
-  const score = confidenceOf(value)
+  const editing = onChange !== undefined && !isTable && !computed
+  const editingTable = onChange !== undefined && value.type === 'table' && !computed
+  const score = computed ? null : confidenceOf(value)
   const low = editing && score !== null && isLowConfidence(score)
   return (
     <div
@@ -50,6 +58,7 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
       className={cn(
         'flex flex-col gap-1.5 rounded-md border bg-card p-3 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         low && 'rounded-lg border-transparent bg-confidence-low-bg ring-1 ring-confidence-low-dot/50 ring-inset [&_input]:bg-card',
+        involved && 'border-warning ring-2 ring-warning/50 ring-inset',
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
@@ -66,6 +75,12 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
             </>
           )}
         </Label>
+        {computed && (
+          <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <Calculator className="size-3" aria-hidden="true" />
+            computed
+          </span>
+        )}
         {score !== null && <ConfidenceBadge score={score} />}
       </div>
       {editingTable ? (
@@ -83,8 +98,18 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
           </div>
           {pointing && <ReviewPointButton fieldId={field.id} label={field.label} pointing={pointing} />}
         </div>
+      ) : computed && !computed.ok ? (
+        <p className="text-sm text-warning-soft-foreground">
+          Can’t compute: {describeFailure(computed.reason, computed.fieldIds, fields)}
+        </p>
       ) : (
         <FieldValueView field={field} value={value} focusId={focusId} />
+      )}
+      {involved && (
+        <p className="flex items-center gap-1.5 text-sm text-warning-soft-foreground">
+          <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
+          Involved in a failed check
+        </p>
       )}
       {editing && pointing && <ReviewPointFeedback fieldId={field.id} pointing={pointing} />}
       {low && (

@@ -1,6 +1,6 @@
 import { describeExpr } from '@/lib/fields/evaluate'
 import type { FieldAction, FieldDef } from '@/lib/mock/types'
-import { OP_SYMBOL } from './check-ops'
+import { OP_SYMBOL } from '@/lib/fields/check-ops'
 
 /** The name of an action in lists: a check's label, or "Computed → Field". */
 export const actionTitle = (action: FieldAction, fields: readonly FieldDef[]) =>

@@ -1,6 +1,6 @@
 # 016 — Field actions (checks and computed fields)
 
-**Status:** in-progress · **Depends on:** 008, 014 · **Route(s):** `/types/:typeId` (an "Actions" section of the builder)
+**Status:** done · **Depends on:** 008, 014 · **Route(s):** `/types/:typeId` (an "Actions" section of the builder)
 
 ## Goal
 The user adds actions to a type that work across fields: **checks** ("Gross = Net + VAT", "Total = sum of the Amount column") that warn or block approval in Review, and **computed fields** ("Due in days = Due date − Issue date") that are calculated instead of extracted. Functions live in a registry, so a new function is added in one place without touching the builder or Review.
@@ -75,15 +75,15 @@ Money follows the existing rules: arithmetic on money stays in minor units, and 
   - [x] a computed field can't refer to itself or form a cycle with another computed field; the error says which fields
   - [x] a live preview evaluates the action on a sample document of the type
 
-### [ ] 3. Actions in Review
+### [x] 3. Actions in Review
 - **Accept:**
-  - [ ] failed checks are listed above the form with both sides' values ("Gross $1,230.00 ≠ Net + VAT $1,229.00"), and the fields involved are highlighted
-  - [ ] a blocking check stops Approve and says why; a warning lets the user approve after confirming
-  - [ ] computed fields are read-only, show "computed" and update as soon as their inputs change
-  - [ ] an evaluation error (missing value, currency mismatch) is shown as its own state, not as a failed check
+  - [x] failed checks are listed above the form with both sides' values ("Gross $1,230.00 ≠ Net + VAT $1,229.00"), and the fields involved are highlighted
+  - [x] a blocking check stops Approve and says why; a warning lets the user approve after confirming
+  - [x] computed fields are read-only, show "computed" and update as soon as their inputs change
+  - [x] an evaluation error (missing value, currency mismatch) is shown as its own state, not as a failed check
 
 ## Backend needs
-Store actions with the type version; evaluate the same checks on the server before approval and before export (the frontend registry is the reference); computed values included in exports.
+Store actions with the type version; evaluate the same checks on the server before approval and before export (the frontend registry is the reference); computed values included in exports. The value patch can't delete a value, so when a computed field can no longer be computed the server must recompute or clear the stored one before approval and export (the frontend already treats it as empty).
 
 ## Open questions
 - **Decided (2026-10-26):** the first release ships the full starting set, all 24 functions in the table. The builder has to look like the real product: every group and function shown with its label and description, so the design can be judged on the complete set.
@@ -115,3 +115,4 @@ Store actions with the type version; evaluate the same checks on the server befo
 | --- | --- | --- | --- |
 | 2026-10-26 | 1 | done | registry of 24 functions with typed signatures, `evaluateExpr` / `runChecks` / `computeValues` / `describeExpr`; `actions` on `DocumentType`; Invoice gets 2 checks + computed "Payment term (days)"; seed doc-029/030 (USD, Gross off). `lib/fields/{functions,evaluate,action-ids,computed-fields}.ts`, `lib/mock/{types,templates,document-types-seed,documents-seed,fake-extract,api}.ts`, `type-draft.ts` |
 | 2026-10-26 | 2 | done | "Actions (n)" section, add/edit dialog with a recursive typed expression editor, readable line, check operator/tolerance/severity, generated label, cycle and broken-reference validation (blocks Save, ErrorSummary opens the action), live preview on the type's documents; computed fields marked in the field list and editor. `features/document-types/actions/*`, `type-builder.tsx`, `type-draft-reducer.ts`, `validate-draft.ts`, `issue-targets.ts`, `field-editor.tsx`, `field-extraction-settings.tsx`, `lib/fields/{describe-failure,format-eval-value}.ts`, `lib/api/builder.ts`, sample workspace passes actions |
+| 2026-10-26 | 3 | done | live check list above the form (failed with both sides, can't-check as its own state), involved fields highlighted with go-to-field; failed blocking checks join the Approve problem list; warnings and can't-check confirm via "Approve with N warnings?"; computed fields read-only with a "computed" badge, derived from the draft each render and stored with the next save (dirty counts only user edits). `features/documents/review/{use-review-draft,use-review-actions,review-workspace,review-form,review-field-row,review-issues,review-actions,review-warnings-dialog,summarize-checks}`, `lib/fields/{check-ops,describe-check-outcome,validate-field-value}.ts` |

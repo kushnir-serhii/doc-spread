@@ -1,11 +1,10 @@
 import { CircleAlert, CircleCheck, CircleX } from 'lucide-react'
-import { computeValues, describeExpr, runChecks } from '@/lib/fields/evaluate'
+import { computeValues, runChecks } from '@/lib/fields/evaluate'
+import { describeCheckError, describeCheckSides } from '@/lib/fields/describe-check-outcome'
 import { describeFailure } from '@/lib/fields/describe-failure'
-import { formatEvalValue } from '@/lib/fields/format-eval-value'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import type { Document, FieldAction, FieldDef } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
-import { NEGATED_OP_SYMBOL, OP_SYMBOL } from './check-ops'
 
 interface PreviewResultProps {
   /** the action as it is being edited */
@@ -49,18 +48,15 @@ export const PreviewResult = ({ action, document, fields, actions }: PreviewResu
     const outcome = runChecks(type, document).find((o) => o.check.id === action.id)
     if (!outcome) return null
     if (outcome.status === 'error') {
-      const ids = outcome.reason === 'missing_value' ? outcome.emptyFieldIds : outcome.fieldIds
       return (
         <Box tone="neutral" title="Can’t check">
-          {describeFailure(outcome.reason, ids, fields)}
+          {describeCheckError(outcome, fields)}
         </Box>
       )
     }
-    const [left, right] = [describeExpr(action.left, fields), describeExpr(action.right, fields)]
-    const symbols = outcome.status === 'passed' ? OP_SYMBOL : NEGATED_OP_SYMBOL
     return (
       <Box tone={outcome.status === 'passed' ? 'ok' : 'bad'} title={outcome.status === 'passed' ? 'Passes' : 'Fails'}>
-        {`${left} ${formatEvalValue(outcome.left)} ${symbols[action.op]} ${right} ${formatEvalValue(outcome.right)}`}
+        {describeCheckSides(outcome, fields)}
       </Box>
     )
   }
