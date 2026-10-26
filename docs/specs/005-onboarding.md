@@ -1,6 +1,6 @@
 # 005 — Onboarding
 
-**Status:** ready · **Depends on:** 002, 014 · **Route(s):** `/onboarding`
+**Status:** in-progress · **Depends on:** 002, 014 · **Route(s):** `/onboarding`
 
 ## Goal
 A new user sets up the company and their first document type, then lands in the Inbox ready to upload.
@@ -16,14 +16,14 @@ A new user sets up the company and their first document type, then lands in the 
 
 ## Slices
 
-### [ ] 1. Company step
+### [x] 1. Company step
 - **Files:** `src/pages/onboarding/`, `src/features/company/company-form.tsx` (reused by Settings)
 - **Accept:**
-  - [ ] fields: company name, tax ID (optional, free text), default currency (select from `CURRENCIES`)
-  - [ ] the form is prefilled from `useCompany()`: skeleton while it loads, and an error with retry
-  - [ ] an empty name blocks submit with a linked message
-  - [ ] Continue saves through `useUpdateCompany()` and shows pending; an error shows a `role="alert"` message and the form stays; on success it goes to `?step=types`
-  - [ ] works at 375px, in light and dark mode
+  - [x] fields: company name, tax ID (optional, free text), default currency (select from `CURRENCIES`)
+  - [x] the form is prefilled from `useCompany()`: skeleton while it loads, and an error with retry
+  - [x] an empty name blocks submit with a linked message
+  - [x] Continue saves through `useUpdateCompany()` and shows pending; an error shows a `role="alert"` message and the form stays; on success it goes to `?step=types`
+  - [x] works at 375px, in light and dark mode
 
 ### [ ] 2. First document types
 - **Accept:**
@@ -47,5 +47,6 @@ Company create/update; creating several types in one request (all or nothing); a
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-26 | 1 | done | company form (native currency select, prefilled, linked name error); onboarding card + step in URL; AuthLayout lets a route own its card via `handle.ownsCard` · `features/company/company-form.tsx`, `features/onboarding/{company-step,onboarding-card,types-step}.tsx`, `pages/onboarding/onboarding-page.tsx`, `components/layout/auth-layout.tsx`, `app/router.tsx` |
 | 2026-10-26 | — | ready | questions answered: stepper in the URL, prefill, returnTo for the sample, batch create |
 | 2026-10-22 | — | rescoped | accountant email moved to Settings → export recipients; added the first-types step |
