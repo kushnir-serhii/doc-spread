@@ -47,22 +47,29 @@ The user checks the AI-extracted values against the document, fixes the low-conf
 ### [ ] 4. Table fields
 - **Files:** `src/features/documents/fields/`
 - **Accept:**
-  - [ ] a table field renders as an editable table with its columns; rows can be added and removed
+  - [ ] a table field renders with the shared table-field view: "Table" (grid) or "List" (a card per row), Table by default from `md` up and List below, a "Table | List" toggle remembered by the browser; in both modes cells are editable and rows can be added and removed
   - [ ] 50+ rows stay usable (sticky header, contained scroll); amounts are right-aligned with `tabular-nums`
+  - [ ] in Table mode the grid works like a spreadsheet: arrow keys move between cells, Enter edits a cell, Esc stops editing, Tab leaves the table
+  - [ ] a row is removed at once, without a dialog (the draft and the leave guard cover mistakes)
+  - [ ] low-confidence cells are flagged like fields (token background + icon); "Confirm table" verifies every cell
+  - [ ] a box click on the document focuses its cell; pointing at the document for cells is out of scope (cells are fixed by typing)
 
 ### [ ] 5. Type + approve / reject / next
 - **Files:** `src/features/documents/review/`, `src/lib/fields/validate-field-value.ts`
 - **Accept:**
-  - [ ] the header shows the type; "Change type" re-runs extraction after a confirmation that the current values will be replaced
-  - [ ] Approve is blocked while required fields are empty or invalid for their type, and says which ones (each links to its field)
-  - [ ] Reject opens a dialog with a required reason
-  - [ ] after an action: go to the next `needs_review` document of the same type, or back to the Inbox with a message if none are left
-  - [ ] Approve and Reject work at 375px (44px targets, always reachable)
+  - [ ] the header shows the type; "Change type" (only for `needs_review`) re-runs extraction after a confirmation that says the current values and any unsaved edits will be replaced
+  - [ ] Approve is blocked while required fields are empty or invalid for their type, and says which ones (each links to its field); the client checks formats only, never country-specific checksums (those are the backend's)
+  - [ ] Approve with unsaved edits saves them first, then approves, as one action
+  - [ ] Reject opens a dialog with a required reason: free text plus quick picks "Duplicate", "Not a <type>", "Unreadable"
+  - [ ] after an action: go to the next `needs_review` document of the same type (the oldest first, like a queue), or back to the Inbox with a message if none are left
+  - [ ] Approve and Reject work at 375px: a sticky bottom bar with Approve / Reject / Save draft (44px targets)
 
 ### [ ] 6. Keyboard
 - **Files:** `src/features/documents/review/`
 - **Accept:**
   - [ ] shortcuts (bindings from **Open questions**): next/previous field, point on document, approve, next document; they don't fire while typing in a text input unless a modifier is used
+  - [ ] J/K move between field rows in a navigation mode (the row, not its input, takes focus); Enter edits the row's input, Esc returns to the row
+  - [ ] `C` confirms the current field and `Ctrl+S` saves the draft (instead of the browser's "save page")
   - [ ] a "?" help dialog lists them; all of them work with a screen reader running
 
 ## Backend needs
@@ -80,7 +87,9 @@ Field-level confidence and source boxes; the type version a document was extract
 - Money pointed at without a currency? **Decided:** keep the field's current currency, else `DEFAULT_CURRENCY` (USD), and always warn: the row shows "There is no currency in …, so USD was assumed" and the value stays unverified (flagged, with Confirm). No country defaults anywhere (conventions.md, Money).
 - `1,234` (one comma, exactly three digits after it) is read as 1234 (thousands); `12,5` and `1234,56` are decimals. Ambiguous for some locales; no country-specific rule is added.
 - The point button is an icon beside the input (tooltip + `aria-label`), not a labelled button under it: a row per field stays short.
+- Table or list for table fields? **Decided:** one shared table-field view with two modes, "Table" (a grid) and "List" (a card per row with label: value pairs). Table by default from `md` up, List below it; a "Table | List" toggle next to the field switches it, and the browser remembers the choice (localStorage, a per-viewer convenience). Used for the preview here (015 slice 4) and for viewing and editing in Review (008 slice 4).
 - Cross-field rules (Gross = Net + VAT, totals = sum of a column) moved to [016 Field actions](016-field-actions.md); Review shows their results there.
+- Asked up front for slices 4–6 (2026-10-26), all answered as recommended and written into the slices: spreadsheet-style keys in the table grid; rows removed without a dialog; flagged cells and "Confirm table"; no pointing for cells; Change type only for `needs_review`; format checks only on the client (no country checksums); Approve saves first; reject quick picks; oldest-first queue; a sticky action bar at 375px; J/K navigation mode with Enter/Esc; `C` confirms and `Ctrl+S` saves. Slice 4 builds the shared table-field view that 015 slice 4 reuses, so it goes first.
 
 ## Log
 | Date | Slice | Result | Notes / files |
