@@ -352,6 +352,7 @@
   --spacing-sidebar: 15rem;
   --spacing-sidebar-collapsed: 4rem;
   --spacing-touch: 2.75rem; /* 44px minimum touch target */
+  --spacing-highlight-pad: 0.1875rem; /* viewer: gap between a highlighted word and its box border */
   --spacing-review-pane: calc(100dvh - 7rem); /* Review: sticky viewer pane = viewport minus the sticky header and gaps */
   --spacing-table-scroll: 70dvh; /* table fields (grid and list): tall enough for many rows, still a contained scroll */
 

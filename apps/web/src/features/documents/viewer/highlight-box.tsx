@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
+import { placeBox } from './place-box'
 import type { ViewerHighlight } from './viewer-highlights'
 
 interface HighlightBoxProps {
@@ -40,8 +41,8 @@ export const HighlightBox = ({ highlight, active, focusRequested, onFocused, onC
         active && 'z-10 border-2 bg-highlight-active-bg',
         active && tone === 'normal' && 'border-highlight-active-border',
       )}
-      // dynamic position: normalized page coordinates, so zoom never shifts the box
-      style={{ left: `${bbox.x * 100}%`, top: `${bbox.y * 100}%`, width: `${bbox.w * 100}%`, height: `${bbox.h * 100}%` }}
+      // dynamic position: normalized page coordinates, padded so the border clears the text
+      style={placeBox(bbox, { padded: true })}
       onClick={() => onClick?.(id)}
     />
   )
