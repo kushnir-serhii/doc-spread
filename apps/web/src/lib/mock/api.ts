@@ -24,6 +24,9 @@
  *    Whether approval is blocked while required fields are empty is an open question.
  *  - Type-from-sample: an endpoint that proposes fields (with examples) from one document, and a
  *    test-extract endpoint that runs extraction of a draft field list on one document, saving nothing.
+ *    Also an endpoint that infers label, type and hint from a selection (page, bbox, text) plus its
+ *    nearest anchor (the label to the left or above); test-extract must use a field's examples
+ *    (their text and bbox) as hints for the document they were taken on.
  *  - Field examples are guidance for the AI, not schema: adding one does not raise the type version.
  *  - Export generation per document type (csv/xlsx/pdf bundle) with a download URL or email
  *    delivery, marking exported documents, and role checks (owner/admin/member).
@@ -41,7 +44,7 @@ import type { DocumentTemplate } from './templates'
 import { fakeExtractFields } from './fake-extract'
 import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
-import { proposeFieldsFromPages } from './propose-fields'
+import { guessFromSelection, proposeFieldsFromPages } from './propose-fields'
 import { overallConfidence } from './value-builders'
 import type {
   BBox,
@@ -54,10 +57,12 @@ import type {
   ExportJob,
   FieldDef,
   FieldExample,
+  FieldSuggestion,
   FieldValue,
   FileType,
   GroupValue,
   ListDocumentsParams,
+  SuggestFieldInput,
   TeamMember,
   TestExtractInput,
   Token,
@@ -461,13 +466,47 @@ export async function proposeFields(documentId: string): Promise<FieldDef[]> {
   return proposeFieldsFromPages(documentId, await loadPages(documentId))
 }
 
-/** Saves nothing. Reuses the document's own value for a field when its type matches. */
+/** Saves nothing. Guesses label, type and hint of a pointed-at selection from its nearest anchor. */
+export async function suggestField(input: SuggestFieldInput): Promise<FieldSuggestion> {
+  await delay()
+  findDocument(input.documentId)
+  const page = (await loadPages(input.documentId)).find((p) => p.index === input.page)
+  const { anchorText, ...guess } = guessFromSelection(page?.tokens ?? [], input.bbox, input.text)
+  const example: FieldExample = {
+    documentId: input.documentId,
+    page: input.page,
+    bbox: input.bbox,
+    text: input.text,
+    ...(anchorText ? { anchorText } : {}),
+  }
+  return { ...guess, example }
+}
+
+type TextLikeType = 'text' | 'email' | 'phone' | 'tax_id' | 'select'
+
+const isTextLike = (type: FieldDef['type']): type is TextLikeType =>
+  type === 'text' || type === 'email' || type === 'phone' || type === 'tax_id' || type === 'select'
+
+/**
+ * Saves nothing. A text-like field with an example on this document reads the example's text;
+ * otherwise reuses the document's own value for a field when its type matches.
+ */
 export async function testExtract(input: TestExtractInput): Promise<Record<string, FieldValue>> {
   await delay()
   const doc = findDocument(input.documentId)
   const fake = fakeExtractFields(doc.id, input.fields)
   const out: Record<string, FieldValue> = {}
   for (const field of input.fields) {
+    const example = field.examples.find((e) => e.documentId === doc.id)
+    if (example && isTextLike(field.type)) {
+      out[field.id] = {
+        type: field.type,
+        value: example.text,
+        confidence: 0.95,
+        source: { page: example.page, bbox: example.bbox },
+      }
+      continue
+    }
     const existing = doc.values[field.id]
     out[field.id] = copy(existing && existing.type === field.type ? existing : fake[field.id])
   }

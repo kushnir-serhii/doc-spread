@@ -33,14 +33,14 @@ The user builds a type by showing a real document instead of typing a schema: th
   - [x] "Accept all", plus Accept / Reject on each field; rejected fields can be restored; the user can rename them inline
   - [x] desktop-first: three panes (viewer, proposals, editor) from `2xl`; at `lg` two panes (viewer 3/5, proposals 2/5), with the editor in 014's sheet; below `lg` everything stacks
 
-### [ ] 2. Add a field by pointing
+### [x] 2. Add a field by pointing
 - **Build:** the `useSuggestField()` hook and the `suggestField` mock; the "Point to add" flow.
 - **Files:** `src/lib/mock/api.ts`, `src/lib/mock/propose-fields.ts`, `src/lib/api/builder.ts`, `src/features/document-types/sample/`
 - **Accept:**
-  - [ ] "Point to add" switches the viewer to `select-words`; after confirming, a popover shows the guessed label, type and hint, all editable
-  - [ ] the new field appears in the list with its box and one example
-  - [ ] if the selection overlaps an existing field's box, the popover offers to fix that field instead
-  - [ ] every action except the pointing itself works from the keyboard; a field can always be added through 014's editor instead
+  - [x] "Point to add" switches the viewer to `select-words`; after confirming, a popover shows the guessed label, type and hint, all editable
+  - [x] the new field appears in the list with its box and one example
+  - [x] if the selection overlaps an existing field's box, the popover offers to fix that field instead
+  - [x] every action except the pointing itself works from the keyboard; a field can always be added through 014's editor instead
 
 ### [ ] 3. Fix a field by pointing
 - **Files:** `src/features/document-types/sample/`, `src/lib/fields/parse-field-value.ts`
@@ -71,15 +71,19 @@ OCR tokens right after upload; an LLM call that proposes fields (label, key, typ
 ## Open questions
 - Samples are uploaded as ordinary documents. Do they show up in the Inbox? **Decided:** yes: unclassified until the type is saved, then assigned to the new type (slice 5).
 - Three panes at `lg` were tight (the viewer toolbar wrapped even at 1440px). **Decided:** three panes from `2xl` (the sidebar takes 240px, so `xl` was still tight at 1440px); at `lg` two panes, the viewer 3/5 wide, and the editor in the sheet. The viewer toolbar still wraps in a narrow column: make it compact (icon-only Rotate all) once 008 and 015 are merged, since the viewer is shared. A floating draggable panel was considered and dropped: it covers the boxes, needs a keyboard alternative and custom drag code.
-- The mock `testExtract` doesn't use a proposal's example, so values can be unrelated to the box (e.g. "NIP" → "Rozliczenie Zakup"). The mock should return the example's text for its own document; fix with slice 2 or 3.
+- The mock `testExtract` ignored examples, so values could be unrelated to the box. **Fixed in slice 2** for text-like fields (the example's text, confidence 0.95); dates, money and numbers still come from the fake extractor until slice 3 parses them (`parse-field-value.ts`).
 - A fresh upload gets one blank synthetic page with no tokens, so it only gets the fallback Title/Date/Total proposals without boxes; real proposals come from seeded documents (`?documentId=`).
 - Values are read through `useTestExtractPreview(documentId, fields)`, a query over `testExtract` (it reruns when a field's type or hint changes, not on rename), instead of the `useTestExtract()` mutation, which would need an effect to fire.
+- A field added by pointing isn't selected, so the editor doesn't open; the "Added …" status line confirms it instead. Select it automatically?
+- A rejected field's box is ignored by the overlap check ("Fix … instead").
+- 014's `FieldPatch` now also allows `examples`, so fixing an accepted field goes through `updateField`.
 - How many examples per field are stored at most? **Decided:** one per sample, so at most 5 (see **Data**).
 - Should corrections made in Review (008) add examples automatically or ask first? **Decided in 008 slice 3:** ask with a non-blocking prompt.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-23 | 2 | done | "Point to add" (header and empty state) → `select-words` → `useSuggestField()` (new mock `suggestField`: anchor label left or above, type from patterns incl. email/tax ID/number/phone) → an editable panel (label, type, hint; loading, error with retry) → Add; overlap offers "Fix <label> instead"; `testExtract` uses examples for text-like fields; preview key includes examples. Files: `features/document-types/sample/` (`use-point-to-add.ts`, `selection-overlap.ts`, `point-button.tsx`, `suggestion-panel.tsx`, `suggestion-form.tsx`, workspace, list, empty state), `lib/mock/api.ts`, `lib/mock/propose-fields.ts`, `lib/mock/types.ts`, `lib/api/builder.ts`, `features/document-types/type-draft.ts` |
 | 2026-10-23 | 1 | done | upload or `?documentId=`, reading/proposing states, proposals with values and confidence, accept all / accept / reject / restore / inline rename, boxes linked to rows, 014 editor and save reused; `addFields` reducer action, `useTestExtractPreview`, viewer `scrollToHighlight(id, { focus })` (same change as 008), `--spacing-sample-pane` token; an "Add a field manually" button beyond the spec. Files: `pages/types/new-type-page.tsx`, `features/document-types/sample/`, `features/document-types/type-draft-reducer.ts`, `lib/api/builder.ts`, `features/documents/viewer/`, `styles/index.css` |
 | 2026-10-23 | — | ready | approved; example limit decided; needs 014 merged before slice 1 |
 | 2026-10-23 | — | reviewed | checked against product, conventions and process and against 014's code: the draft holds examples until Save, new suggestField/suggestTable hooks, values from testExtract, Files for every slice, error/empty states, the train route |

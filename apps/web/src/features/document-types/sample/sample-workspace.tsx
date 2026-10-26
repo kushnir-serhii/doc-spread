@@ -11,8 +11,11 @@ import { blankDraft } from '../type-draft'
 import { builderReducer, createBuilderState } from '../type-draft-reducer'
 import { useDraftActions } from '../use-draft-actions'
 import { buildProposalHighlights } from './proposal-highlights'
+import { PointButton } from './point-button'
 import { ProposalList } from './proposal-list'
 import { SampleSaveSection } from './sample-save-section'
+import { SuggestionPanel } from './suggestion-panel'
+import { usePointToAdd } from './use-point-to-add'
 import { useProposalActivation } from './use-proposal-activation'
 import { useProposalReview } from './use-proposal-review'
 
@@ -28,9 +31,11 @@ export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspace
   const [baseline] = useState(blankDraft)
   const [selection, setSelection] = useState<Selection>(null)
   const viewerRef = useRef<DocumentViewerHandle>(null)
+  const pointRef = useRef<HTMLButtonElement>(null)
   const { activeId, activate } = useProposalActivation(viewerRef)
   const review = useProposalReview(proposals, draft, dispatch)
   const actions = useDraftActions(dispatch, setSelection)
+  const point = usePointToAdd(documentId, review.items, dispatch, pointRef)
 
   const live = review.items.filter((item) => item.status !== 'rejected').map((item) => item.field)
   const preview = useTestExtractPreview(documentId, live)
@@ -56,10 +61,30 @@ export const SampleWorkspace = ({ documentId, file, proposals }: SampleWorkspace
             highlights={highlights}
             activeHighlightId={activeId ?? selectedId}
             onHighlightClick={selectField}
+            mode={point.pointing ? 'select-words' : 'view'}
+            onSelect={point.select}
+            onCancel={point.cancel}
           />
         </div>
         <div className="flex min-w-0 flex-col gap-3 lg:col-span-2">
+          <p role="status" className="text-sm text-muted-foreground empty:hidden">
+            {point.notice}
+          </p>
+          {point.selection && (
+            <SuggestionPanel
+              selection={point.selection}
+              suggestion={point.suggest.data}
+              loading={point.suggest.isPending}
+              failed={point.suggest.isError}
+              overlap={point.overlap}
+              onRetry={point.retry}
+              onAdd={point.add}
+              onFix={point.fix}
+              onCancel={point.cancel}
+            />
+          )}
           <ProposalList
+            pointAction={<PointButton ref={pointRef} pointing={point.pointing} onToggle={point.toggle} />}
             items={review.items}
             openCount={review.openCount}
             values={preview.data}

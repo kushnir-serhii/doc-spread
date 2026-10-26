@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { CheckCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { FieldValue } from '@/lib/mock/types'
@@ -14,6 +15,8 @@ interface ProposalListProps {
   valuesFailed: boolean
   selectedId: string | null
   onRetryValues: () => void
+  /** The "Point to add" button, shown in the header (or in the empty state). */
+  pointAction: ReactNode
   onAcceptAll: () => void
   onActivate: (id: string | null) => void
   onSelect: (id: string) => void
@@ -31,17 +34,21 @@ export const ProposalList = ({
   valuesFailed,
   selectedId,
   onRetryValues,
+  pointAction,
   onAcceptAll,
   ...rowActions
 }: ProposalListProps) => {
-  if (items.length === 0) return <EmptyProposals />
+  if (items.length === 0) return <EmptyProposals pointAction={pointAction} />
   return (
     <section aria-label="Proposed fields" className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-medium">Proposed fields ({items.length})</h2>
-        <Button size="sm" onClick={onAcceptAll} disabled={openCount === 0} className="min-h-touch md:min-h-9">
-          <CheckCheck aria-hidden /> Accept all{openCount > 0 && ` (${openCount})`}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {pointAction}
+          <Button size="sm" onClick={onAcceptAll} disabled={openCount === 0} className="min-h-touch md:min-h-9">
+            <CheckCheck aria-hidden /> Accept all{openCount > 0 && ` (${openCount})`}
+          </Button>
+        </div>
       </div>
       {valuesFailed && (
         <p role="alert" className="flex flex-wrap items-center gap-2 text-sm text-destructive">

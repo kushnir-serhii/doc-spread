@@ -216,6 +216,22 @@ export interface GroupValue {
   lastDocumentAt: string
 }
 
+export interface SuggestFieldInput {
+  documentId: string
+  page: number
+  bbox: BBox
+  text: string
+}
+
+/** A guess for a field from a pointed-at selection; `example` is the selection itself. */
+export interface FieldSuggestion {
+  label: string
+  key: string
+  type: ScalarFieldType
+  hint: string
+  example: FieldExample
+}
+
 export interface TestExtractInput {
   fields: FieldDef[]
   documentId: string

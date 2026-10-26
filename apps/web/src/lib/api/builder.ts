@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { addFieldExample, proposeFields, testExtract } from '@/lib/mock'
-import type { FieldDef, FieldExample, TestExtractInput } from '@/lib/mock/types'
+import { addFieldExample, proposeFields, suggestField, testExtract } from '@/lib/mock'
+import type { FieldDef, FieldExample, SuggestFieldInput, TestExtractInput } from '@/lib/mock/types'
 import { documentTypeKeys } from './document-types'
 
 export const builderKeys = {
@@ -13,7 +13,13 @@ export const builderKeys = {
       ...builderKeys.all,
       'preview',
       documentId,
-      fields.map(({ id, type, hint, options }) => [id, type, hint, options]),
+      fields.map(({ id, type, hint, options, examples }) => [
+        id,
+        type,
+        hint,
+        options,
+        examples.map((e) => [e.documentId, e.page, e.bbox, e.text]),
+      ]),
     ] as const,
 }
 
@@ -23,6 +29,12 @@ export const useProposeFields = (documentId: string) =>
     queryKey: builderKeys.proposals(documentId),
     queryFn: () => proposeFields(documentId),
     staleTime: Infinity,
+  })
+
+/** one call per pointed-at selection; saves nothing, so there is nothing to invalidate */
+export const useSuggestField = () =>
+  useMutation({
+    mutationFn: (input: SuggestFieldInput) => suggestField(input),
   })
 
 /** saves nothing, so there is nothing to invalidate */
