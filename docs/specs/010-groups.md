@@ -31,16 +31,16 @@ Shared rules for all slices:
   - [x] loading skeleton, error with retry, long labels truncate with a title; works at 375px
   - [x] the sidebar keeps one "Groups" item
 
-### [ ] 2. Values of a grouping
+### [x] 2. Values of a grouping
 - **Build:** `GroupValue` gains `totals`; `/groups/:typeId/:fieldId` page with a values table (cards below `md`) and search.
 - **Files:** `src/lib/mock/api.ts`, `src/lib/mock/types.ts`, `src/pages/groups/group-page.tsx`, `src/features/groups/`, `src/app/router.tsx`
 - **Accept:**
-  - [ ] header "Supplier · Invoice" with a back link to `/groups`
-  - [ ] columns: Value, Documents, Last document, then one column per total field (header = field label) with one line per currency; sorted by count descending
-  - [ ] each value links to `?value=<value>` (keeping `?q=`)
-  - [ ] search in `?q=` (debounced like Inbox, case-insensitive substring, filtered in the browser); no matches shows "No values match" with a clear action
-  - [ ] loading skeleton, empty (no documents yet, with a link to Upload), error with retry, long values truncate with a title; table from `md`, stacked cards below
-  - [ ] an unknown type, an unknown field or a field that isn't groupable shows not-found (checked before the request) with a link back to `/groups`
+  - [x] header "Supplier · Invoice" with a back link to `/groups`
+  - [x] columns: Value, Documents, Last document, then one column per total field (header = field label) with one line per currency; sorted by count descending
+  - [x] each value links to `?value=<value>` (keeping `?q=`)
+  - [x] search in `?q=` (debounced like Inbox, case-insensitive substring, filtered in the browser); no matches shows "No values match" with a clear action
+  - [x] loading skeleton, empty (no documents yet, with a link to Upload), error with retry, long values truncate with a title; table from `md`, stacked cards below
+  - [x] an unknown type, an unknown field or a field that isn't groupable shows not-found (checked before the request) with a link back to `/groups`
 
 ### [ ] 3. Documents of a value
 - **Build:** `?value=` on the grouping page switches to the value's documents.
@@ -68,3 +68,4 @@ Shared rules for all slices:
 | 2026-10-22 | — | rescoped | Suppliers → generic groups by any groupable field |
 | 2026-10-26 | — | ready | questions answered (all recommended); decisions written into the criteria |
 | 2026-10-26 | 1 | done | listGroupings + useGroupings, non-rejected counting, whitespace normalize, /groups page; features/groups/{grouping-card,groupings-skeleton,groupings-error,groupings-empty-state}.tsx, pages/groups/groups-page.tsx, lib/mock/{api,types}.ts, lib/api/{groups,document-types}.ts, app/router.tsx |
+| 2026-10-26 | 2 | done | GroupValue.totals (money list columns, per currency), lib/fields/total-fields.ts, useGroupValues enabled guard, InboxSearch label/placeholder props, /groups/:typeId/:fieldId page; features/groups/group-values-{view,table,skeleton,error,empty,no-results}.tsx, group-value-cards.tsx, group-amounts.tsx, group-back-link.tsx |

@@ -19,7 +19,8 @@
  *  - Server-side filtering by type and status, text search (file name + text-like values) and
  *    grouping: documents whose value for a groupable field matches after normalization (trim +
  *    lowercase + collapsed whitespace), and a group listing (value, count, last document date) per
- *    type + field over non-rejected documents, plus a summary per groupable field (value count,
+ *    type + field over non-rejected documents (with, per money list column of the type, the sum per
+ *    currency in minor units, sorted by currency code), plus a summary per groupable field (value count,
  *    document count) for the groupings list.
  *  - Transitions with validation: approve (needs_review | rejected -> approved), reject with a
  *    reason, reassign type (re-runs extraction with the current version -> needs_review).
@@ -47,6 +48,7 @@ import type { DocumentTemplate } from './templates'
 import { majorText } from '@/lib/fields/currency-digits'
 import { parseFieldValue } from '@/lib/fields/parse-field-value'
 import { getComputedFieldIds } from '@/lib/fields/computed-fields'
+import { totalFields } from '@/lib/fields/total-fields'
 import { fakeExtractFields } from './fake-extract'
 import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
@@ -553,19 +555,36 @@ export async function addFieldExample(typeId: string, fieldId: string, example: 
 /** Groups of the counted documents (every status except rejected) by normalized value of a field. */
 function buildGroups(typeId: string, fieldId: string): Map<string, GroupValue> {
   const groups = new Map<string, GroupValue>()
+  const fields = totalFields(findCurrentType(typeId))
   for (const doc of db.documents) {
     if (doc.typeId !== typeId || doc.status === 'rejected') continue
     const value = doc.values[fieldId]
     const text = value ? scalarText(value) : null
     if (text === null || normalize(text) === '') continue
     const key = normalize(text)
-    const group = groups.get(key)
+    let group = groups.get(key)
     if (!group) {
-      groups.set(key, { value: text, count: 1, lastDocumentAt: doc.uploadedAt })
-    } else {
-      group.count += 1
-      if (doc.uploadedAt > group.lastDocumentAt) group.lastDocumentAt = doc.uploadedAt
+      group = {
+        value: text,
+        count: 0,
+        lastDocumentAt: doc.uploadedAt,
+        totals: fields.map((field) => ({ fieldId: field.id, amounts: [] })),
+      }
+      groups.set(key, group)
     }
+    group.count += 1
+    if (doc.uploadedAt > group.lastDocumentAt) group.lastDocumentAt = doc.uploadedAt
+    for (const total of group.totals) {
+      const money = doc.values[total.fieldId]
+      if (!money || money.type !== 'money' || money.value === null) continue
+      const { amount, currency } = money.value
+      const sum = total.amounts.find((candidate) => candidate.currency === currency)
+      if (sum) sum.amount += amount
+      else total.amounts.push({ amount, currency })
+    }
+  }
+  for (const group of groups.values()) {
+    for (const total of group.totals) total.amounts.sort((a, b) => a.currency.localeCompare(b.currency))
   }
   return groups
 }

@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/groups/:typeId/:fieldId',
-            lazy: placeholder('Group', 'Every value of this field and its documents.'),
+            lazy: () => import('@/pages/groups/group-page').then((m) => ({ Component: m.default })),
           },
           { path: '/export', lazy: () => import('@/pages/export/export-page').then((m) => ({ Component: m.default })) },
           { path: '/settings', lazy: placeholder('Settings', 'Company, accountant, team and plan.') },
