@@ -1,5 +1,5 @@
 ---
-description: Implement the next slice from docs/roadmap.md, then stop for review
+description: Implement the next spec from docs/roadmap.md — questions up front, then every slice without stopping
 argument-hint: "[spec #] [slice n] [parallel]"
 ---
 

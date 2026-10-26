@@ -1,5 +1,5 @@
 ---
-description: Short for /run-implement — the next slice from docs/roadmap.md
+description: Short for /run-implement — the next spec from docs/roadmap.md
 argument-hint: "[spec #] [slice n] [parallel]"
 ---
 
