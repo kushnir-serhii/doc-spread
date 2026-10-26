@@ -28,15 +28,19 @@ export const useReviewDraft = (doc: Document) => {
     const current = draft[fieldId]
     if (current) setValue(fieldId, current)
   }
-  const save = () => {
+  /** Resolves once the changed fields are stored; rejects with the mutation's error. */
+  const saveNow = async () => {
     const patch: Values = {}
     for (const id of changedIds) {
       const value = draft[id]
       if (value) patch[id] = value
     }
     const snapshot = draft
-    mutation.mutate({ id: doc.id, patch }, { onSuccess: () => setSaved(snapshot) })
+    await mutation.mutateAsync({ id: doc.id, patch })
+    setSaved(snapshot)
   }
+  // the error is shown from `mutation`, so the button handler has nothing to do with it
+  const save = () => void saveNow().catch(() => undefined)
 
-  return { draft, setValue, confirm, save, dirty: changedIds.length > 0, mutation }
+  return { draft, setValue, confirm, save, saveNow, dirty: changedIds.length > 0, mutation }
 }

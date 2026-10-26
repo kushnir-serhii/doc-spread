@@ -1,5 +1,6 @@
 import { CURRENCIES, type CurrencyCode, type FieldDef, type FieldValue, type FieldValueMap, type ScalarFieldType } from '@/lib/mock/types'
 import { DEFAULT_CURRENCY } from './default-currency'
+import { isEmail, isPhone, isTaxId, normalizeTaxId } from './field-formats'
 
 /** A parsed value without confidence or source: the caller adds those. */
 export type ParsedValue = {
@@ -79,19 +80,17 @@ export const parseFieldValue = (field: ParseTarget, rawText: string, current?: F
     case 'text':
       return { ok: true, value: { type: 'text', value: text } }
     case 'email':
-      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(text)
+      return isEmail(text)
         ? { ok: true, value: { type: 'email', value: text } }
         : fail(`${quote(text)} doesn't look like an email address.`)
     case 'phone': {
-      const digits = text.replace(/\D/g, '')
-      return /^[\d\s+\-()]+$/.test(text) && digits.length >= 6
+      return isPhone(text)
         ? { ok: true, value: { type: 'phone', value: text } }
         : fail(`${quote(text)} doesn't look like a phone number.`)
     }
     case 'tax_id': {
-      const id = text.replace(/[\s-]/g, '')
-      return /^[A-Za-z0-9]{8,}$/.test(id)
-        ? { ok: true, value: { type: 'tax_id', value: id } }
+      return isTaxId(text)
+        ? { ok: true, value: { type: 'tax_id', value: normalizeTaxId(text) } }
         : fail(`${quote(text)} isn't a tax ID (at least 8 letters or digits).`)
     }
     case 'number': {

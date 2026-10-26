@@ -1,10 +1,13 @@
 import { useRef, useState } from 'react'
 import { LeaveGuard } from '@/features/document-types/leave-guard'
+import { cellFocusId, fieldFocusId } from '@/features/documents/fields/field-focus-ids'
+import type { ValidationIssue } from '@/lib/fields/validate-field-value'
 import type { DocumentViewerHandle } from '@/features/documents/viewer/viewer-highlights'
 import type { Document, DocumentType } from '@/lib/mock/types'
 import { ReviewForm } from './review-form'
 import { ReviewViewerPane } from './review-viewer-pane'
-import { ReviewSaveBar } from './review-save-bar'
+import { ReviewActions } from './review-actions'
+import { isReviewDone } from './review-done'
 import { useReviewDraft } from './use-review-draft'
 import { useReviewPointing } from './use-review-pointing'
 import { useReviewHighlights } from './use-review-highlights'
@@ -21,7 +24,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const editable = doc.status === 'needs_review'
-  const { draft, setValue, confirm, save, dirty, mutation } = useReviewDraft(doc)
+  const { draft, setValue, confirm, save, saveNow, dirty, mutation } = useReviewDraft(doc)
   const pointing = useReviewPointing({ doc, type, draft, setValue, formRef })
   const highlights = useReviewHighlights(doc.id, draft, type)
 
@@ -33,11 +36,21 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const focusFromBox = (id: string) => {
     setFocusedId(id)
     const target = formRef.current?.querySelector<HTMLElement>(`[data-focus-id="${id}"]`)
+    focusControl(target)
+  }
+  const focusControl = (target: HTMLElement | null | undefined) => {
     // an editable row is not focusable itself: its first control is
     const control = target?.matches('input, button, [tabindex]')
       ? target
       : target?.querySelector<HTMLElement>('input, [role="combobox"], [role="switch"], button')
     control?.focus()
+  }
+  const focusIssue = (issue: ValidationIssue) => {
+    const base = fieldFocusId(doc.id, issue.fieldId)
+    const id = issue.cell ? cellFocusId(base, issue.cell.rowId, issue.cell.columnId) : base
+    if (formRef.current?.querySelector(`[data-focus-id="${id}"]`)) focusFromBox(id)
+    // a table without rows (or a cell not on screen) has no target: the field's own row is
+    else focusControl(formRef.current?.querySelector<HTMLElement>(`[data-field-id="${issue.fieldId}"]`))
   }
 
   return (
@@ -65,12 +78,19 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
           onFieldHover={setHoveredId}
         />
         {editable && (
-          <ReviewSaveBar
+          <ReviewActions
+            doc={doc}
+            type={type}
+            draft={draft}
             dirty={dirty}
-            isPending={mutation.isPending}
-            isSuccess={mutation.isSuccess}
-            errorMessage={mutation.isError ? mutation.error.message : null}
-            onSave={save}
+            saveNow={saveNow}
+            save={{
+              isPending: mutation.isPending,
+              isSuccess: mutation.isSuccess,
+              errorMessage: mutation.isError ? mutation.error.message : null,
+              onSave: save,
+            }}
+            onIssueSelect={focusIssue}
           />
         )}
       </div>
@@ -80,6 +100,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
       {editable && (
         <LeaveGuard
           dirty={dirty}
+          isExempt={isReviewDone}
           description="You changed values in this document and haven’t saved them. If you leave now, the changes are lost."
         />
       )}

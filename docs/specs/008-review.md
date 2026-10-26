@@ -54,15 +54,15 @@ The user checks the AI-extracted values against the document, fixes the low-conf
   - [x] low-confidence cells are flagged like fields (token background + icon); "Confirm table" verifies every cell
   - [x] a box click on the document focuses its cell; pointing at the document for cells is out of scope (cells are fixed by typing)
 
-### [ ] 5. Type + approve / reject / next
+### [x] 5. Type + approve / reject / next
 - **Files:** `src/features/documents/review/`, `src/lib/fields/validate-field-value.ts`
 - **Accept:**
-  - [ ] the header shows the type; "Change type" (only for `needs_review`) re-runs extraction after a confirmation that says the current values and any unsaved edits will be replaced
-  - [ ] Approve is blocked while required fields are empty or invalid for their type, and says which ones (each links to its field); the client checks formats only, never country-specific checksums (those are the backend's)
-  - [ ] Approve with unsaved edits saves them first, then approves, as one action
-  - [ ] Reject opens a dialog with a required reason: free text plus quick picks "Duplicate", "Not a <type>", "Unreadable"
-  - [ ] after an action: go to the next `needs_review` document of the same type (the oldest first, like a queue), or back to the Inbox with a message if none are left
-  - [ ] Approve and Reject work at 375px: a sticky bottom bar with Approve / Reject / Save draft (44px targets)
+  - [x] the header shows the type; "Change type" (only for `needs_review`) re-runs extraction after a confirmation that says the current values and any unsaved edits will be replaced
+  - [x] Approve is blocked while required fields are empty or invalid for their type, and says which ones (each links to its field); the client checks formats only, never country-specific checksums (those are the backend's)
+  - [x] Approve with unsaved edits saves them first, then approves, as one action
+  - [x] Reject opens a dialog with a required reason: free text plus quick picks "Duplicate", "Not a <type>", "Unreadable"
+  - [x] after an action: go to the next `needs_review` document of the same type (the oldest first, like a queue), or back to the Inbox with a message if none are left
+  - [x] Approve and Reject work at 375px: a sticky bottom bar with Approve / Reject / Save draft (44px targets)
 
 ### [ ] 6. Keyboard
 - **Files:** `src/features/documents/review/`
@@ -93,12 +93,15 @@ Field-level confidence and source boxes; the type version a document was extract
 - A table's row-level flag and Confirm in Review are off; "Confirm table" inside the view does it. Two table fields on one screen don't share a Table/List switch until reload.
 - A grid cell stays in edit mode after a click outside until Esc, Enter or focus moves to another cell (ending on blur would close an open select).
 - Both table views scroll inside `max-h-table-scroll` (70dvh): `max-h-96` showed less than one card in List mode.
+- The next document is chosen from the loaded queue before Approve/Reject runs: once the action succeeds the document refetches and the actions may unmount, so nothing is awaited afterwards. A queue that changed meanwhile (someone else approved the next one) is not handled; the backend could return the next id with the action.
+- Approve stays clickable while problems exist (it shows them instead of calling the API). The mock `approveDocuments` ignores required fields: the backend must validate again, incl. its own country-specific checksums.
 - Asked up front for slices 4–6 (2026-10-26), all answered as recommended and written into the slices: spreadsheet-style keys in the table grid; rows removed without a dialog; flagged cells and "Confirm table"; no pointing for cells; Change type only for `needs_review`; format checks only on the client (no country checksums); Approve saves first; reject quick picks; oldest-first queue; a sticky action bar at 375px; J/K navigation mode with Enter/Esc; `C` confirms and `Ctrl+S` saves. Slice 4 builds the shared table-field view that 015 slice 4 reuses, so it goes first.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | form built from the type schema; fixing by pointing; invoice totals check moved to 016 (field actions) |
+| 2026-10-26 | 5 | done | Change type (`needs_review` only, confirm dialog, re-extraction), `validateDocument` (required + formats, no checksums; shared checks in `lib/fields/field-formats.ts`), issues list linking to fields/cells, Approve saves first, Reject dialog with quick picks, oldest-first queue or Inbox with a notice (`inbox-notice.tsx`), sticky Approve/Reject/Save draft bar; `LeaveGuard` gained `isExempt`. Files: `features/documents/review/` (`change-type-control.tsx`, `reject-dialog.tsx`, `review-action-bar.tsx`, `review-actions.tsx`, `review-issues.tsx`, `review-done.ts`, `use-next-document.ts`, `use-review-actions.ts`, header, workspace, row, draft), `lib/fields/` (`validate-field-value.ts`, `field-formats.ts`, `parse-field-value.ts`), `features/documents/inbox-notice.tsx`, `pages/inbox/inbox-page.tsx`, `features/document-types/leave-guard.tsx` |
 | 2026-10-26 | 4 | done | shared `TableFieldView` (Table grid with spreadsheet keys, roving tabindex, Enter/F2/typing edits, Esc/Enter ends; List cards), Table/List toggle (md default, remembered), add/remove row (focus to a neighbour, or to Add row after the last), flagged cells + Confirm table, box click focuses the cell; `--spacing-table-scroll` token. Files: `features/documents/fields/` (`table-field-view.tsx`, `table-grid*.tsx`, `use-grid-navigation.ts`, `table-list*.tsx`, `table-view-toggle.tsx`, `use-table-view-mode.ts`, `table-*-row-button.tsx`, `table-value-ops.ts`, `field-table*.tsx`), `features/documents/review/review-field-row.tsx`, `styles/index.css` |
 | 2026-10-26 | 3 | done | "Point on document" per editable scalar field (icon button beside the input; "Cancel pointing" while active), viewer in `select-words` (opens on mobile), `parseFieldValue` for every scalar type in `lib/fields/parse-field-value.ts` (shared with 015), value + new source on success, reason in `role="alert"` with Try again on failure, inline "Use this as an example for <type>?" → `useAddFieldExample()`; an amount without a currency gets the current currency or USD (`lib/fields/default-currency.ts`), a warning, and stays unverified. `MoneyInput` defaults to USD. Files: `lib/fields/parse-field-value.ts`, `features/documents/review/` (`use-review-pointing.ts`, `review-point-button.tsx`, `review-point-feedback.tsx`, row, form, workspace, viewer pane, `use-review-draft.ts`), `lib/fields/default-currency.ts`, `features/documents/fields/money-input.tsx`, `docs/conventions.md` |
 | 2026-10-23 | 2 | done | editable form for `needs_review` (registry Edit inputs), low-confidence container + icon + text, Confirm, confidence 1 on edit and confirm, viewer boxes from the draft, Save draft with pending/success/error, `LeaveGuard` with review copy (new optional `description`); header no longer says "No type yet" while the type loads. Files: `features/documents/review/` (`use-review-draft.ts`, `review-save-bar.tsx`, row, form, workspace, highlights, header), `features/documents/fields/` (`field-value-edit.tsx`, `money-input.tsx`), `features/document-types/leave-guard.tsx` |

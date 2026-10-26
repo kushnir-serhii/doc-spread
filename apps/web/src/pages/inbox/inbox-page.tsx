@@ -9,6 +9,7 @@ import { DocumentTableEmpty } from '@/features/documents/document-table-empty'
 import { DocumentTableNoResults } from '@/features/documents/document-table-no-results'
 import { DocumentTableError } from '@/features/documents/document-table-error'
 import { DocumentTableSkeleton } from '@/features/documents/document-table-skeleton'
+import { InboxNotice } from '@/features/documents/inbox-notice'
 import { InboxFilters } from '@/features/documents/inbox-filters'
 import { TypeSwitcher } from '@/features/documents/type-switcher'
 import { buildListParams, effectiveFilters, parseStatus, resolveView } from '@/features/documents/inbox-view'
@@ -92,6 +93,7 @@ const InboxPage = () => {
   return (
     <>
       <PageHeader title="Inbox" description="All documents, their status and AI confidence." />
+      <InboxNotice />
       {!isError && (
         <TypeSwitcher
           types={types}

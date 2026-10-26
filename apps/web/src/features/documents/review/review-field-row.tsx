@@ -47,6 +47,7 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
       // a read-only scalar row is the target itself
       tabIndex={isTable || editing ? undefined : 0}
       data-focus-id={isTable ? undefined : focusId}
+      data-field-id={field.id}
       className={cn(
         'flex flex-col gap-1.5 rounded-md border bg-card p-3 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         low && 'rounded-lg border-transparent bg-confidence-low-bg ring-1 ring-confidence-low-dot/50 ring-inset [&_input]:bg-card',
