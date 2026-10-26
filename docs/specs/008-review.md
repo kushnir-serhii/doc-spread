@@ -37,12 +37,12 @@ The user checks the AI-extracted values against the document, fixes the low-conf
   - [x] money is edited in major units and stored in minor units, with the currency always shown
   - [x] save draft goes through `useUpdateDocumentValues()` with pending, success and error states; leaving with unsaved changes asks for confirmation (`useBlocker`)
 
-### [ ] 3. Fix by pointing
+### [x] 3. Fix by pointing
 - **Files:** `src/features/documents/review/`, `src/lib/fields/parse-field-value.ts`
 - **Accept:**
-  - [ ] "Point on document" next to a field switches the viewer to `select-words`; the selected text is parsed into the field's type and becomes the value, with the selection's bbox as its new source
-  - [ ] after a fix, a non-blocking prompt: "Use this as an example for <type>?" → `useAddFieldExample()` (the example's `anchorText` is left empty; the backend works it out)
-  - [ ] a parse failure (e.g. text pointed at for a date field) explains itself in a `role="alert"` and keeps the old value
+  - [x] "Point on document" next to a field switches the viewer to `select-words`; the selected text is parsed into the field's type and becomes the value, with the selection's bbox as its new source
+  - [x] after a fix, a non-blocking prompt: "Use this as an example for <type>?" → `useAddFieldExample()` (the example's `anchorText` is left empty; the backend works it out)
+  - [x] a parse failure (e.g. text pointed at for a date field) explains itself in a `role="alert"` and keeps the old value
 
 ### [ ] 4. Table fields
 - **Files:** `src/features/documents/fields/`
@@ -77,12 +77,16 @@ Field-level confidence and source boxes; the type version a document was extract
 - Dirty compares values including confidence: editing a value back to the original still counts as a change (it is now verified), and Save sends it.
 - `LeaveGuard` lives in `features/document-types/`; Review imports it from there. Move it to `components/` once 014, 008 and 015 are all merged.
 - The viewer's `scrollToHighlight(id, { focus })` gained an optional `focus` flag (default `true`): Review scrolls the box into view but keeps keyboard focus in the form.
+- Money pointed at without a currency? **Decided:** keep the field's current currency, else `DEFAULT_CURRENCY` (USD), and always warn: the row shows "There is no currency in …, so USD was assumed" and the value stays unverified (flagged, with Confirm). No country defaults anywhere (conventions.md, Money).
+- `1,234` (one comma, exactly three digits after it) is read as 1234 (thousands); `12,5` and `1234,56` are decimals. Ambiguous for some locales; no country-specific rule is added.
+- The point button is an icon beside the input (tooltip + `aria-label`), not a labelled button under it: a row per field stays short.
 - Cross-field rules (Gross = Net + VAT, totals = sum of a column) moved to [016 Field actions](016-field-actions.md); Review shows their results there.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-22 | — | rescoped | form built from the type schema; fixing by pointing; invoice totals check moved to 016 (field actions) |
+| 2026-10-26 | 3 | done | "Point on document" per editable scalar field (icon button beside the input; "Cancel pointing" while active), viewer in `select-words` (opens on mobile), `parseFieldValue` for every scalar type in `lib/fields/parse-field-value.ts` (shared with 015), value + new source on success, reason in `role="alert"` with Try again on failure, inline "Use this as an example for <type>?" → `useAddFieldExample()`; an amount without a currency gets the current currency or USD (`lib/fields/default-currency.ts`), a warning, and stays unverified. `MoneyInput` defaults to USD. Files: `lib/fields/parse-field-value.ts`, `features/documents/review/` (`use-review-pointing.ts`, `review-point-button.tsx`, `review-point-feedback.tsx`, row, form, workspace, viewer pane, `use-review-draft.ts`), `lib/fields/default-currency.ts`, `features/documents/fields/money-input.tsx`, `docs/conventions.md` |
 | 2026-10-23 | 2 | done | editable form for `needs_review` (registry Edit inputs), low-confidence container + icon + text, Confirm, confidence 1 on edit and confirm, viewer boxes from the draft, Save draft with pending/success/error, `LeaveGuard` with review copy (new optional `description`); header no longer says "No type yet" while the type loads. Files: `features/documents/review/` (`use-review-draft.ts`, `review-save-bar.tsx`, row, form, workspace, highlights, header), `features/documents/fields/` (`field-value-edit.tsx`, `money-input.tsx`), `features/document-types/leave-guard.tsx` |
 | 2026-10-23 | 1 | done | review page and route, fields registry (view + edit inputs, read-only table), screen per status, highlights linked to fields, `LOW_CONFIDENCE` in `lib/fields/confidence.ts` (used by `confidenceLevel`), viewer zoom/rotation moved into hooks (147 lines), shadcn select/switch/dialog, `--spacing-review-pane` token. Files: `pages/review/`, `features/documents/review/`, `features/documents/fields/`, `features/documents/viewer/`, `lib/fields/confidence.ts`, `lib/mock/format.ts`, `app/router.tsx`, `styles/index.css`, `components/ui/` |
 | 2026-10-23 | — | ready | approved; key bindings decided |

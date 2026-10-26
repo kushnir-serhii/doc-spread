@@ -3,6 +3,7 @@ import { fieldFocusId } from '@/features/documents/fields/field-focus-ids'
 import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
 import type { DocumentType, FieldValue } from '@/lib/mock/types'
 import { ReviewFieldRow } from './review-field-row'
+import type { ReviewPointing } from './use-review-pointing'
 
 interface ReviewFormProps {
   docId: string
@@ -12,6 +13,7 @@ interface ReviewFormProps {
   /** omitted when the document is read-only */
   onValueChange?: (fieldId: string, next: FieldValue) => void
   onConfirm?: (fieldId: string) => void
+  pointing?: ReviewPointing
   /** a field (or table cell) took focus; id as in field-focus-ids.ts */
   onFieldFocus: (id: string) => void
   onFieldHover: (id: string | null) => void
@@ -28,6 +30,7 @@ export const ReviewForm = ({
   values,
   onValueChange,
   onConfirm,
+  pointing,
   onFieldFocus,
   onFieldHover,
   ref,
@@ -53,6 +56,7 @@ export const ReviewForm = ({
         focusId={fieldFocusId(docId, field.id)}
         onChange={onValueChange && ((next) => onValueChange(field.id, next))}
         onConfirm={onConfirm && (() => onConfirm(field.id))}
+        pointing={pointing}
       />
     ))}
   </div>

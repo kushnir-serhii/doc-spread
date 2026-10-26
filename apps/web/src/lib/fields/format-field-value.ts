@@ -5,9 +5,10 @@ const EMPTY = '—'
 
 const formatText = (value: string | null): string => value?.trim() || EMPTY
 
+/** No `locale`: the browser's; a company locale (spec 011) is passed in once it exists. */
 export const formatFieldValue = (
   value: FieldValue | null | undefined,
-  locale = 'pl-PL',
+  locale?: string,
 ): string => {
   if (!value) return EMPTY
 

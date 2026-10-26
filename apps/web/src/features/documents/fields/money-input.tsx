@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { DEFAULT_CURRENCY } from '@/lib/fields/default-currency'
 import { CURRENCIES, type CurrencyCode, type ExtractedValue, type Money } from '@/lib/mock/types'
 import type { FieldEditProps } from './field-types'
-
-const DEFAULT_CURRENCY: CurrencyCode = 'PLN'
 
 const toMajor = (money: Money | null) => (money ? (money.amount / 100).toFixed(2) : '')
 
