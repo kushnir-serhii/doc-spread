@@ -16,7 +16,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 008 | [Review](specs/008-review.md) | done | 002, 006, 013 |
 | 009 | [Export](specs/009-export.md) | done | 002, 006 |
 | 010 | [Groups](specs/010-groups.md) | done | 002, 014 |
-| 011 | [Settings](specs/011-settings.md) | ready | 002 |
+| 011 | [Settings](specs/011-settings.md) | in-progress | 002 |
 | 012 | [Document model](specs/012-document-model.md) | done | — |
 | 013 | [Document viewer](specs/013-document-viewer.md) | done | 002, 012 |
 | 014 | [Document types (builder)](specs/014-document-types.md) | done | 002, 012 |

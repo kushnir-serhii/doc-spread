@@ -21,7 +21,6 @@ export interface Recipient {
 export interface Company {
   name: string
   taxId: string
-  accountantEmail: string
   recipients: Recipient[]
   defaultCurrency: CurrencyCode
 }

@@ -1,6 +1,6 @@
 # 011 — Settings
 
-**Status:** ready · **Depends on:** 002 · **Route(s):** `/settings`
+**Status:** in-progress · **Depends on:** 002 · **Route(s):** `/settings`
 
 ## Goal
 The user maintains company data, how dates, numbers and amounts are formatted, the saved export recipients, the team and sees the plan.
@@ -23,15 +23,15 @@ The user maintains company data, how dates, numbers and amounts are formatted, t
 
 ## Slices
 
-### [ ] 1. Settings page, tabs, company + export recipients
+### [x] 1. Settings page, tabs, company + export recipients
 - **Build:** replace the `/settings` placeholder (delete `placeholder-page.tsx` and the router's `placeholder` helper). Tabs in `?tab=`. Company tab: reuse `features/company/company-form.tsx` from 005 unchanged, own Save. Recipients tab: list of saved recipients; add, edit inline, remove with a confirm dialog; each change saves at once through `useUpdateCompany({ recipients })`. Remove `Company.accountantEmail`.
 - **Files:** `src/pages/settings/`, `src/features/settings/`, `src/app/router.tsx`, `src/lib/mock/types.ts`, `src/lib/mock/data.ts`
 - **Accept:**
-  - [ ] the tab is in the URL (`?tab=`); an unknown value falls back to Company; tabs work from the keyboard
-  - [ ] company save shows pending and announces success or error
-  - [ ] recipients: name and email required, email validated, no duplicate email; add, edit and remove each show pending and announce the result; remove asks first; empty list explains and offers Add
-  - [ ] loading skeleton and error with retry for the company query; long names and emails wrap or truncate with a title; works at 375px
-  - [ ] the Export recipient picker shows the edited list
+  - [x] the tab is in the URL (`?tab=`); an unknown value falls back to Company; tabs work from the keyboard
+  - [x] company save shows pending and announces success or error
+  - [x] recipients: name and email required, email validated, no duplicate email; add, edit and remove each show pending and announce the result; remove asks first; empty list explains and offers Add
+  - [x] loading skeleton and error with retry for the company query; long names and emails wrap or truncate with a title; works at 375px
+  - [x] the Export recipient picker shows the edited list
 
 ### [ ] 2. Language and formats
 - **Build:** a "Language and formats" card on the Company tab with its own Save: a locale select ("Browser default (<detected locale>)" or one of the listed locales) and a live preview of a date, a number and an amount (in the company's default currency). `Company.locale: string | null`. A `FormatLocaleProvider` in `AppShell` and `useFormatLocale()`; thread the locale into every formatter call site.
@@ -68,6 +68,7 @@ Team invites and roles (`TeamMember.status`), plan and usage endpoints; `Company
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-27 | 1 | done | settings page + URL tabs, company tab (CompanyForm reused), recipients add/edit/remove; accountantEmail removed; placeholder page deleted · pages/settings/, features/settings/, router.tsx, mock/types.ts, mock/data.ts |
 | 2026-10-27 | — | ready | questions settled: 4 slices (locale threading split out), URL tabs, accountantEmail removed, locale via context, plans mocked |
 | 2026-10-26 | — | rescoped | Language and formats: browser locale by default, a company can choose one (decided in 008 review) |
 | 2026-10-22 | — | rescoped | accountant → export recipients; usage counts documents |

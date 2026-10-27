@@ -12,7 +12,6 @@ export { findValueMismatches } from './value-check'
 export const seedCompany: Company = {
   name: 'Northwind Studio Ltd',
   taxId: 'TX-4821-0937',
-  accountantEmail: 'accounting@ledgerworks.example',
   recipients: [{ id: 'rcp-001', name: 'Accountant', email: 'accounting@ledgerworks.example' }],
   defaultCurrency: 'USD',
 }
@@ -59,9 +58,9 @@ const invoiceColumns = seedMapping('type-invoice')
 const receiptColumns = seedMapping('type-receipt')
 
 export const seedExportJobs: ExportJob[] = [
-  { id: 'exp_001', createdAt: '2026-10-19T14:05:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: seedCompany.accountantEmail, columns: invoiceColumns, status: 'completed' },
+  { id: 'exp_001', createdAt: '2026-10-19T14:05:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: seedCompany.recipients[0].email, columns: invoiceColumns, status: 'completed' },
   { id: 'exp_002', createdAt: '2026-10-12T09:40:00.000Z', format: 'csv', typeId: 'type-receipt', documentIds: exportedReceipts, destination: 'download', columns: receiptColumns, status: 'completed' },
-  { id: 'exp_003', createdAt: '2026-10-05T16:20:00.000Z', format: 'pdf_bundle', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 1), destination: 'email', recipient: seedCompany.accountantEmail, columns: invoiceColumns, status: 'completed' },
+  { id: 'exp_003', createdAt: '2026-10-05T16:20:00.000Z', format: 'pdf_bundle', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 1), destination: 'email', recipient: seedCompany.recipients[0].email, columns: invoiceColumns, status: 'completed' },
   { id: 'exp_004', createdAt: '2026-09-28T11:00:00.000Z', format: 'csv', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: 'old-accountant@ledgerworks.example', columns: invoiceColumns, status: 'failed' },
   { id: 'exp_005', createdAt: '2026-09-21T08:15:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(1, 2), destination: 'download', columns: invoiceColumns, status: 'completed' },
 ]
