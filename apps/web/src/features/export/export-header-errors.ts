@@ -40,5 +40,14 @@ export const headerErrors = (
     plan.separate.map((table) => ({ columnKey: table.columnKey, header: table.name })),
     'sheet or file',
   )
+  // within a separate sheet/file: a column header may not repeat Document ID's or another column's
+  for (const table of plan.separate) {
+    const counts = new Map<string, number>()
+    for (const { header } of table.owners) counts.set(header, (counts.get(header) ?? 0) + 1)
+    for (const { columnKey: key, header } of table.owners) {
+      if (key === table.documentIdKey || header === '' || errors.has(key)) continue
+      if ((counts.get(header) ?? 0) > 1) errors.set(key, `"${header}" is already used in this ${format === 'xlsx' ? 'sheet' : 'file'}.`)
+    }
+  }
   return errors
 }

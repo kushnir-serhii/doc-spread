@@ -25,6 +25,15 @@ export interface SeparateTable {
   field: FieldDef
   /** sheet or file name */
   name: string
+  /** the sheet's/file's header row: Document ID first */
+  headers: string[]
+  numeric: boolean[]
+  /** every header with its owner; the Document ID owner has `columnKey` = `documentIdKey` */
+  owners: PlanHeader[]
+  /** the Document ID header's mapping row */
+  documentIdKey: string
+  /** one row per table row (none for a document without rows) */
+  rowsFor: (doc: Document) => string[][]
 }
 
 export interface ExportPlan {
@@ -78,6 +87,36 @@ export const includedTableColumns = (
     return def && col.include ? [{ key: tableColumnKey(field.id, col.columnId), header: col.header.trim(), def }] : []
   })
 
+const separateTable = (
+  type: DocumentType,
+  mapping: ExportColumnMapping,
+  key: string,
+  field: FieldDef,
+  name: string,
+): SeparateTable => {
+  const idColumn = mapping.columns.find((c) => c.source.kind === 'builtin' && c.source.id === 'document_id')
+  const documentIdKey = idColumn ? columnKey(idColumn) : 'document_id'
+  const headers = [idColumn?.header.trim() ?? '']
+  const numeric = [false]
+  const owners: PlanHeader[] = [{ columnKey: documentIdKey, header: headers[0] }]
+  const columns = includedTableColumns(field, mapping)
+  for (const { key: colKey, header: colName, def } of columns) {
+    const flags = scalarNumeric(def.type)
+    scalarHeaders(colName, def.type).forEach((header, i) => {
+      headers.push(header)
+      numeric.push(flags[i] ?? false)
+      owners.push({ columnKey: colKey, header })
+    })
+  }
+  const rowsFor = (doc: Document): string[][] => {
+    // computed cells are not stored for documents approved earlier: compute them now
+    const table = applyComputedCells(type, doc.values)[field.id]
+    const rows = table?.type === 'table' ? table.rows : []
+    return rows.map((row) => [doc.id, ...columns.flatMap(({ def }) => scalarCells(row.cells[def.id], def.type))])
+  }
+  return { columnKey: key, field, name, headers, numeric, owners, documentIdKey, rowsFor }
+}
+
 export const buildExportPlan = (type: DocumentType, mapping: ExportColumnMapping, format: ExportFormat): ExportPlan => {
   const modes = resolveTableModes(type, mapping, format)
   const forced = isDocumentIdForced(type, mapping, format)
@@ -112,7 +151,7 @@ export const buildExportPlan = (type: DocumentType, mapping: ExportColumnMapping
     if (!field || !column.include) continue
     if (field.type === 'table') {
       if (modes.get(field.id) === 'flatten') flat = { field }
-      else separate.push({ columnKey: key, field, name: header })
+      else separate.push(separateTable(type, mapping, key, field, header))
       continue
     }
     const fieldType = field.type
