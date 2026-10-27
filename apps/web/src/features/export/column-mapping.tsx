@@ -8,6 +8,7 @@ import { ColumnRow } from './column-row'
 import { headerErrors } from './export-header-errors'
 import { buildExportPlan, isDocumentIdForced, resolveTableModes } from './export-plan'
 import { MappingPreview } from './mapping-preview'
+import { TableColumnList } from './table-column-list'
 import { TableModeControl } from './table-mode-control'
 
 interface ColumnMappingProps {
@@ -94,14 +95,19 @@ export const ColumnMapping = ({ type, format, mapping, onChange, documents }: Co
               onMove={(delta) => move(index, delta, label)}
             >
               {field?.type === 'table' && column.include && (
-                <TableModeControl
-                  format={format}
-                  mode={modes.get(field.id) ?? mapping.tables[field.id] ?? 'separate'}
-                  flattenDisabledReason={
-                    otherFlattened ? 'Only one table can have a row per table row; the others go to separate files.' : undefined
-                  }
-                  onChange={(mode) => setTableMode(field.id, mode)}
-                />
+                <>
+                  <TableModeControl
+                    format={format}
+                    mode={modes.get(field.id) ?? mapping.tables[field.id] ?? 'separate'}
+                    flattenDisabledReason={
+                      otherFlattened
+                        ? 'Only one table can have a row per table row; the others go to separate files.'
+                        : undefined
+                    }
+                    onChange={(mode) => setTableMode(field.id, mode)}
+                  />
+                  <TableColumnList type={type} field={field} mapping={mapping} errors={errors} onChange={onChange} />
+                </>
               )}
             </ColumnRow>
           )

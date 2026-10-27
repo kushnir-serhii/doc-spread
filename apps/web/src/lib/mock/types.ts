@@ -82,10 +82,20 @@ export interface ExportColumn {
 /** separate = own sheet/file linked by Document ID; flatten = CSV, one row per table row */
 export type TableExportMode = 'separate' | 'flatten'
 
+/** One column of a table field in the export, in output order. */
+export interface ExportTableColumn {
+  columnId: string
+  include: boolean
+  /** used as typed, in a separate sheet/file and in the flattened file alike */
+  header: string
+}
+
 export interface ExportColumnMapping {
   columns: ExportColumn[]
   /** table field id -> mode */
   tables: Record<string, TableExportMode>
+  /** table field id -> its columns in output order; missing for mappings saved before 018 */
+  tableColumns?: Record<string, ExportTableColumn[]>
 }
 
 /** The saved mapping of a type; shared by the team and stored apart from the type (it does not change its version). */

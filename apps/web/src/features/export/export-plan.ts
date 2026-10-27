@@ -1,7 +1,9 @@
 import { getComputedFieldIds } from '@/lib/fields/computed-fields'
 import { computeValues } from '@/lib/fields/run-checks'
-import { columnKey } from '@/lib/fields/export-mapping'
+import { applyComputedCells } from '@/lib/fields/evaluate-rows'
+import { columnKey, resolveTableColumns, tableColumnKey } from '@/lib/fields/export-mapping'
 import type {
+  ColumnDef,
   Document,
   DocumentType,
   ExportColumn,
@@ -66,6 +68,16 @@ export const resolveTableModes = (
 export const isDocumentIdForced = (type: DocumentType, mapping: ExportColumnMapping, format: ExportFormat): boolean =>
   [...resolveTableModes(type, mapping, format).values()].includes('separate')
 
+/** A table's included columns in the mapped order, with their error key and trimmed header. */
+export const includedTableColumns = (
+  field: FieldDef,
+  mapping: ExportColumnMapping,
+): { key: string; header: string; def: ColumnDef }[] =>
+  resolveTableColumns(mapping, field).flatMap((col) => {
+    const def = field.columns?.find((c) => c.id === col.columnId)
+    return def && col.include ? [{ key: tableColumnKey(field.id, col.columnId), header: col.header.trim(), def }] : []
+  })
+
 export const buildExportPlan = (type: DocumentType, mapping: ExportColumnMapping, format: ExportFormat): ExportPlan => {
   const modes = resolveTableModes(type, mapping, format)
   const forced = isDocumentIdForced(type, mapping, format)
@@ -74,7 +86,7 @@ export const buildExportPlan = (type: DocumentType, mapping: ExportColumnMapping
   const owners: PlanHeader[] = []
   const readers: ((doc: Document) => string[])[] = []
   const separate: SeparateTable[] = []
-  let flat: { field: FieldDef; prefix: string } | undefined
+  let flat: { field: FieldDef } | undefined
   const computedIds = getComputedFieldIds(type)
 
   const push = (key: string, names: string[], flags: boolean[], read: (doc: Document) => string[]) => {
@@ -99,7 +111,7 @@ export const buildExportPlan = (type: DocumentType, mapping: ExportColumnMapping
     const field = fieldOf(type, column)
     if (!field || !column.include) continue
     if (field.type === 'table') {
-      if (modes.get(field.id) === 'flatten') flat = { field, prefix: header }
+      if (modes.get(field.id) === 'flatten') flat = { field }
       else separate.push({ columnKey: key, field, name: header })
       continue
     }
@@ -114,26 +126,27 @@ export const buildExportPlan = (type: DocumentType, mapping: ExportColumnMapping
     push(key, scalarHeaders(header, fieldType), scalarNumeric(fieldType), read)
   }
 
-  const tableColumns = flat?.field.columns ?? []
-  if (flat) {
-    const key = `field:${flat.field.id}`
-    for (const col of tableColumns) {
-      const flags = scalarNumeric(col.type)
-      scalarHeaders(`${flat.prefix}.${col.key}`, col.type).forEach((header, i) => {
-        headers.push(header)
-        numeric.push(flags[i] ?? false)
-        owners.push({ columnKey: key, header })
-      })
-    }
+  const tableColumns = flat ? includedTableColumns(flat.field, mapping) : []
+  for (const { key, header: name, def } of tableColumns) {
+    const flags = scalarNumeric(def.type)
+    scalarHeaders(name, def.type).forEach((header, i) => {
+      headers.push(header)
+      numeric.push(flags[i] ?? false)
+      owners.push({ columnKey: key, header })
+    })
   }
 
   const rowsFor = (doc: Document): string[][] => {
     const base = readers.flatMap((read) => read(doc))
     if (!flat) return [base]
-    const table = doc.values[flat.field.id]
+    // computed cells are not stored for documents approved earlier: compute them now
+    const table = applyComputedCells(type, doc.values)[flat.field.id]
     const rows = table?.type === 'table' ? table.rows : []
-    if (rows.length === 0) return [[...base, ...tableColumns.flatMap((col) => scalarCells(undefined, col.type))]]
-    return rows.map((row) => [...base, ...tableColumns.flatMap((col) => scalarCells(row.cells[col.id], col.type))])
+    if (rows.length === 0) return [[...base, ...tableColumns.flatMap(({ def }) => scalarCells(undefined, def.type))]]
+    return rows.map((row) => [
+      ...base,
+      ...tableColumns.flatMap(({ def }) => scalarCells(row.cells[def.id], def.type)),
+    ])
   }
 
   return { headers, numeric, rowsFor, owners, separate }
