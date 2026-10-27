@@ -45,7 +45,7 @@ const withoutKeys = <T>(record: Record<string, T>, keys: ReadonlySet<string>): R
   Object.fromEntries(Object.entries(record).filter(([key]) => !keys.has(key)))
 
 /** The values with the stored cells of computed columns removed (they are ignored, like stored computed fields). */
-const stripComputedCells = (type: RowType, values: Record<string, FieldValue>): Record<string, FieldValue> => {
+export const stripComputedCells = (type: RowType, values: Record<string, FieldValue>): Record<string, FieldValue> => {
   const byTable = getRowComputeActions(type)
   if (byTable.size === 0) return values
   const stripped: Record<string, FieldValue> = { ...values }

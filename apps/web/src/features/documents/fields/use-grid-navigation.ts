@@ -12,6 +12,8 @@ interface GridNavigationOptions {
   /** a last column holds row actions: reachable by arrows, never edited */
   hasActionCol: boolean
   editable: boolean
+  /** data columns (by index) that are focusable but never edited, e.g. computed columns */
+  readOnlyCols?: ReadonlySet<number>
 }
 
 const samePos = (a: GridPos | null, b: GridPos) => a !== null && a.row === b.row && a.col === b.col
@@ -20,7 +22,7 @@ const samePos = (a: GridPos | null, b: GridPos) => a !== null && a.row === b.row
  * Spreadsheet keys for a grid (WAI-ARIA grid pattern): one cell is tabbable (roving tabindex), so Tab leaves the grid;
  * arrows, Home and End move; Enter, F2 or typing edit; Enter or Esc stop editing. While editing, arrows belong to the input.
  */
-export const useGridNavigation = ({ rowCount, dataColCount, hasActionCol, editable }: GridNavigationOptions) => {
+export const useGridNavigation = ({ rowCount, dataColCount, hasActionCol, editable, readOnlyCols }: GridNavigationOptions) => {
   const gridRef = useRef<HTMLTableElement>(null)
   const [current, setCurrent] = useState<GridPos>({ row: 0, col: 0 })
   const [editing, setEditing] = useState<GridPos | null>(null)
@@ -59,7 +61,7 @@ export const useGridNavigation = ({ rowCount, dataColCount, hasActionCol, editab
       event.preventDefault()
       focusCell(next)
     }
-    const canEdit = editable && pos.col < dataColCount
+    const canEdit = editable && pos.col < dataColCount && !readOnlyCols?.has(pos.col)
     switch (event.key) {
       case 'ArrowUp':
         return move({ row: Math.max(0, pos.row - 1), col: pos.col })

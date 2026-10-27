@@ -14,18 +14,22 @@ interface TableGridCellProps {
   pos: GridPos
   focusId: string
   nav: GridNavigation
+  /** a calculated cell: focusable, never edited */
+  computed?: boolean
+  /** why a computed cell has no value; shown as "—" */
+  failure?: string | null
   /** set when cells can be edited */
   onChange?: (next: AnyExtractedValue) => void
 }
 
 /** Shows the formatted value; switches to the field's own input on Enter, F2, double-click or typing. */
-export const TableGridCell = ({ column, cell, pos, focusId, nav, onChange }: TableGridCellProps) => {
+export const TableGridCell = ({ column, cell, pos, focusId, nav, computed = false, failure = null, onChange }: TableGridCellProps) => {
   const inputId = useId()
   const ref = useRef<HTMLTableCellElement>(null)
   const isActive = nav.active.row === pos.row && nav.active.col === pos.col
   const isEditing = nav.editing?.row === pos.row && nav.editing.col === pos.col
   const empty = cell.value === null
-  const text = empty ? 'Not found' : formatFieldValue(cell)
+  const text = failure ? '—' : empty ? 'Not found' : formatFieldValue(cell)
   const low = onChange !== undefined && isLowConfidence(cell.confidence)
 
   // DOM focus: the input that replaces the text takes focus (and selects, so typing replaces)
@@ -43,7 +47,8 @@ export const TableGridCell = ({ column, cell, pos, focusId, nav, onChange }: Tab
       tabIndex={isActive ? 0 : -1}
       data-pos={`${pos.row}:${pos.col}`}
       data-focus-id={focusId}
-      title={isEditing ? undefined : text}
+      title={isEditing ? undefined : (failure ?? text)}
+      aria-readonly={computed || undefined}
       onFocus={() => nav.onCellFocus(pos)}
       onKeyDown={(event) => nav.onCellKeyDown(event, pos)}
       onDoubleClick={onChange && (() => nav.setEditing(pos))}
@@ -70,7 +75,10 @@ export const TableGridCell = ({ column, cell, pos, focusId, nav, onChange }: Tab
               <span className="sr-only">Check this value: </span>
             </>
           )}
-          <span className={cn('min-w-0 truncate', empty && 'text-muted-foreground italic')}>{text}</span>
+          <span className={cn('min-w-0 truncate', (empty || failure) && 'text-muted-foreground', empty && !failure && 'italic')}>
+            {text}
+          </span>
+          {failure && <span className="sr-only">{failure}</span>}
         </span>
       )}
     </td>

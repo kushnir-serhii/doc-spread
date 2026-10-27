@@ -8,13 +8,25 @@ interface TableListProps {
   columns: ColumnDef[]
   value: TableValue
   focusId: string
+  computedColumnIds?: ReadonlySet<string>
+  computedFailure?: (rowId: string, columnId: string) => string | null
   onCellChange?: CellChange
   onAddRow?: () => void
   onRemoveRow?: (rowId: string) => void
 }
 
 /** The "List" view: a card per row, with a contained scroll for 50+ rows. */
-export const TableList = ({ label, columns, value, focusId, onCellChange, onAddRow, onRemoveRow }: TableListProps) => (
+export const TableList = ({
+  label,
+  columns,
+  value,
+  focusId,
+  computedColumnIds,
+  computedFailure,
+  onCellChange,
+  onAddRow,
+  onRemoveRow,
+}: TableListProps) => (
   <>
     {value.rows.length === 0 ? (
       <p className="text-sm text-muted-foreground italic">{onAddRow ? 'No rows yet' : 'Not found'}</p>
@@ -27,6 +39,8 @@ export const TableList = ({ label, columns, value, focusId, onCellChange, onAddR
             row={row}
             index={index}
             focusId={focusId}
+            computedColumnIds={computedColumnIds}
+            computedFailure={computedFailure}
             onCellChange={onCellChange}
             onRemove={onRemoveRow && (() => onRemoveRow(row.id))}
           />

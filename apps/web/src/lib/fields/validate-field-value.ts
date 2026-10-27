@@ -1,5 +1,5 @@
 import type { DocumentType, FieldDef, FieldValue } from '@/lib/mock/types'
-import { getComputedFieldIds } from './computed-fields'
+import { getComputedColumnIds, getComputedFieldIds } from './computed-fields'
 import { isEmail, isIsoDate, isPhone, isTaxId } from './field-formats'
 
 type Checked = Pick<FieldDef, 'required' | 'options' | 'type'>
@@ -53,7 +53,7 @@ export const validateFieldValue = (field: Checked, value: FieldValue): string | 
   return value.type === field.type ? formatReason(field, value) : `Expected ${field.type}.`
 }
 
-/** Every problem that blocks approval, in the type's field order. Computed fields are skipped: nobody enters them. */
+/** Every problem that blocks approval, in the type's field order. Computed fields and computed cells are skipped: nobody enters them. */
 export const validateDocument = (type: DocumentType, values: Record<string, FieldValue>): ValidationIssue[] => {
   const issues: ValidationIssue[] = []
   const computedIds = getComputedFieldIds(type)
@@ -71,8 +71,11 @@ export const validateDocument = (type: DocumentType, values: Record<string, Fiel
     }
     const tableReason = validateFieldValue(field, value)
     if (tableReason) issues.push({ fieldId: field.id, label: field.label, reason: tableReason })
+    const computedColumnIds = getComputedColumnIds(type, field.id)
     value.rows.forEach((row, index) => {
       for (const column of field.columns ?? []) {
+        // nobody enters a computed cell
+        if (computedColumnIds.has(column.id)) continue
         const cell = row.cells[column.id]
         const reason = cell ? validateFieldValue(column, cell) : column.required ? 'Required.' : null
         if (reason) {

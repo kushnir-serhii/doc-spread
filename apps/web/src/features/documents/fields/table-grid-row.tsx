@@ -10,12 +10,24 @@ interface TableGridRowProps {
   row: TableValue['rows'][number]
   index: number
   focusId: string
+  computedColumnIds?: ReadonlySet<string>
+  computedFailure?: (rowId: string, columnId: string) => string | null
   nav: GridNavigation
   onCellChange?: CellChange
   onRemove?: (rowId: string, index: number) => void
 }
 
-export const TableGridRow = ({ columns, row, index, focusId, nav, onCellChange, onRemove }: TableGridRowProps) => {
+export const TableGridRow = ({
+  columns,
+  row,
+  index,
+  focusId,
+  computedColumnIds,
+  computedFailure,
+  nav,
+  onCellChange,
+  onRemove,
+}: TableGridRowProps) => {
   const actionCol = columns.length
   const actionActive = nav.active.row === index && nav.active.col === actionCol
   return (
@@ -28,7 +40,9 @@ export const TableGridRow = ({ columns, row, index, focusId, nav, onCellChange, 
           pos={{ row: index, col }}
           focusId={cellFocusId(focusId, row.id, column.id)}
           nav={nav}
-          onChange={onCellChange && ((next) => onCellChange(row.id, column.id, next))}
+          computed={computedColumnIds?.has(column.id) ?? false}
+          failure={computedFailure?.(row.id, column.id) ?? null}
+          onChange={onCellChange && !computedColumnIds?.has(column.id) ? (next) => onCellChange(row.id, column.id, next) : undefined}
         />
       ))}
       {onRemove && (

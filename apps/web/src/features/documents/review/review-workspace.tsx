@@ -32,7 +32,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const editable = doc.status === 'needs_review'
-  const { values, computed, setValue, confirm, save, saveNow, dirty, needsSave, mutation } = useReviewDraft(doc, type)
+  const { values, computed, rowOutcomes, setValue, confirm, save, saveNow, dirty, needsSave, mutation } = useReviewDraft(doc, type)
   // checks run live on the draft, computed values included
   const checks = summarizeChecks(type, runChecks(type, { values }))
   const pointing = useReviewPointing({ doc, type, draft: values, setValue, formRef })
@@ -109,6 +109,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
           type={type}
           values={values}
           computed={computed}
+          rowOutcomes={rowOutcomes}
           involvedFieldIds={checks.involvedFieldIds}
           onValueChange={editable ? setValue : undefined}
           onConfirm={editable ? confirm : undefined}
