@@ -87,7 +87,7 @@ export const CompanyForm = ({ initialValues, onSubmit, pending, error, submitLab
               if (isCurrency(event.target.value)) setCurrency(event.target.value)
             }}
             className={cn(
-              'min-h-touch w-full appearance-none rounded-md border border-input bg-card pr-9 pl-3 text-sm shadow-xs outline-none md:min-h-9',
+              'min-h-touch w-full cursor-pointer appearance-none rounded-md border border-input bg-card pr-9 pl-3 text-sm shadow-xs outline-none md:min-h-9',
               'focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               'disabled:cursor-not-allowed disabled:opacity-50',
             )}
