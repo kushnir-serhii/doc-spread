@@ -1,6 +1,6 @@
 # 004 — Auth
 
-**Status:** ready · **Depends on:** 001 · **Route(s):** `/sign-in`, `/sign-up`, `/reset-password`
+**Status:** in-progress · **Depends on:** 001 · **Route(s):** `/sign-in`, `/sign-up`, `/reset-password`
 
 ## Goal
 A user coming from the landing page can sign in (→ `/inbox`), create an account (→ `/onboarding`) or request a password reset, against mocks shaped like the future backend, so the forms, validation, pending and error states are final before a provider is wired in.
@@ -33,15 +33,15 @@ Mock `signIn`, `signUp`, `requestPasswordReset` in `src/lib/mock/api.ts` plus on
 - **Accept:**
   - [x] gap list recorded in the log; slices below adjusted
 
-### [ ] 2. Sign in
+### [x] 2. Sign in
 - **Model:** sonnet (designer)
 - **Files:** `src/pages/auth/sign-in-page.tsx`, `src/features/auth/` (`sign-in-form.tsx`, `password-input.tsx`), `src/lib/mock/types.ts`, `src/lib/mock/api.ts`, `src/lib/api/auth.ts`, `src/lib/api/index.ts`
 - **Build:** h1 "Sign in", subline "Welcome back to DocSpread." Fields: Email (`type="email"`, `autoComplete="email"`), Password (`autoComplete="current-password"`). Submit "Sign in" ("Signing in…"). Links: "Forgot password?" → `/reset-password`, "Don't have an account? Create one" → `/sign-up`. Validation: "Enter your email." / "Enter a valid email address." / "Enter your password." (no length rule on sign-in). The "Continue to app" link goes away.
 - **Accept:**
-  - [ ] email and password with labels, `autoComplete`, show/hide password button with an `aria-label`
-  - [ ] the submit button shows pending and is disabled; a wrong password (`wrong-password`) shows a `role="alert"` error "Email or password is incorrect." and keeps both values
-  - [ ] `rate_limited` shows "Too many attempts. Wait a few minutes and try again." as `role="alert"`
-  - [ ] success navigates to `/inbox`
+  - [x] email and password with labels, `autoComplete`, show/hide password button with an `aria-label`
+  - [x] the submit button shows pending and is disabled; a wrong password (`wrong-password`) shows a `role="alert"` error "Email or password is incorrect." and keeps both values
+  - [x] `rate_limited` shows "Too many attempts. Wait a few minutes and try again." as `role="alert"`
+  - [x] success navigates to `/inbox`
 
 ### [ ] 3. Sign up
 - **Model:** sonnet (designer)
@@ -75,3 +75,4 @@ Endpoints for sign-in, sign-up (name, email, password) and reset request; error 
 | --- | --- | --- | --- |
 | 2026-10-27 | — | ready | questions answered; draft → ready |
 | 2026-10-27 | 1 | done | gaps: all three pages render `AuthPlaceholder` ("Form coming…" + "Continue to app" → `/inbox`); no forms, validation, pending or error states; no mock `signIn`/`signUp`/`requestPasswordReset`, no `lib/api/auth.ts`, no `AuthError`. Already fine: `AuthLayout` card (logo, theme toggle), routes in `router.tsx`, landing CTAs and "Sign out" link to `/sign-in`/`/sign-up`. Slices 2–4 detailed with copy, mock rules and shared `PasswordInput` |
+| 2026-10-27 | 2 | done | sign-in form (validation, pending, `role="alert"` errors for `invalid_credentials`/`rate_limited`, generic fallback), → `/inbox`; `AuthError` + `AUTH_ERROR_CODES`, mock `signIn`, `useSignIn`, shared `PasswordInput`. `lib/mock/types.ts`, `lib/mock/api.ts`, `lib/api/auth.ts`, `lib/api/index.ts`, `features/auth/password-input.tsx`, `sign-in-form.tsx`, `pages/auth/sign-in-page.tsx` |

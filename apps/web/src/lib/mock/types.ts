@@ -9,6 +9,20 @@ export interface Money {
   currency: CurrencyCode
 }
 
+export const AUTH_ERROR_CODES = ['invalid_credentials', 'email_taken', 'rate_limited'] as const
+export type AuthErrorCode = (typeof AUTH_ERROR_CODES)[number]
+
+/** Provider-neutral auth failure; the API layer will translate the real provider's errors into these codes. */
+export class AuthError extends Error {
+  code: AuthErrorCode
+
+  constructor(code: AuthErrorCode) {
+    super(code)
+    this.name = 'AuthError'
+    this.code = code
+  }
+}
+
 export type FileType = 'pdf' | 'jpg' | 'png'
 
 /** A saved export recipient (edited in Settings, spec 011). */

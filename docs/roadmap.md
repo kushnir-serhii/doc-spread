@@ -9,7 +9,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 001 | [Lazy-loaded routes](specs/001-lazy-routes.md) | done | — |
 | 002 | [Query layer (lib/api)](specs/002-query-layer.md) | done | 012 |
 | 003 | [Landing](specs/003-landing.md) | done | 001 |
-| 004 | [Auth](specs/004-auth.md) | ready | 001 |
+| 004 | [Auth](specs/004-auth.md) | in-progress | 001 |
 | 005 | [Onboarding](specs/005-onboarding.md) | done | 002, 014 |
 | 006 | [Inbox](specs/006-inbox.md) | done | 002, 012 |
 | 007 | [Upload](specs/007-upload.md) | done | 002, 012 |

@@ -32,6 +32,7 @@
  *    (header line = columns, types guessed from the values, a preview of the first rows); test-extract must use a field's examples
  *    (their text and bbox) as hints for the document they were taken on.
  *  - Field examples are guidance for the AI, not schema: adding one does not raise the type version.
+ *  - Auth endpoints (sign-in first) that fail with the codes invalid_credentials, email_taken, rate_limited.
  *  - Export generation per document type (csv/xlsx/pdf bundle) with a download URL or email
  *    delivery, marking exported documents, and role checks (owner/admin/member).
  */
@@ -55,6 +56,7 @@ import type { PageSource } from './pages'
 import { guessFromSelection, proposeFieldsFromPages } from './propose-fields'
 import { buildTableSuggestion } from './suggest-table'
 import { overallConfidence } from './value-builders'
+import { AuthError } from './types'
 import type {
   BBox,
   Company,
@@ -184,6 +186,18 @@ function confirm(value: FieldValue): FieldValue {
       cells: Object.fromEntries(Object.entries(row.cells).map(([id, cell]) => [id, { ...cell, confidence: 1 }])),
     })),
   }
+}
+
+// ---------- auth ----------
+/**
+ * Magic values: an email containing "limit" (any case) -> AuthError('rate_limited');
+ * the password "wrong-password" -> AuthError('invalid_credentials'); anything else signs in.
+ */
+export async function signIn(input: { email: string; password: string }): Promise<{ email: string }> {
+  await delay()
+  if (input.email.toLowerCase().includes('limit')) throw new AuthError('rate_limited')
+  if (input.password === 'wrong-password') throw new AuthError('invalid_credentials')
+  return { email: input.email }
 }
 
 // ---------- document types ----------
