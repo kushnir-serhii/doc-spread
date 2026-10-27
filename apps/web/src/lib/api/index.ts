@@ -1,3 +1,4 @@
+export * from './auth'
 export * from './builder'
 export * from './company'
 export * from './document-types'

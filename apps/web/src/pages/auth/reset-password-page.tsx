@@ -1,7 +1,7 @@
-import { AuthPlaceholder } from '@/features/auth/auth-placeholder'
+import { ResetPassword } from '@/features/auth/reset-password'
 
 const ResetPasswordPage = () => {
-  return <AuthPlaceholder title="Reset password" links={[{ to: '/sign-in', label: 'Back to sign in' }]} />
+  return <ResetPassword />
 }
 
 export default ResetPasswordPage
