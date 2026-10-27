@@ -13,6 +13,9 @@ interface ActionRowProps {
   onRemove: () => void
 }
 
+const rowScope = (action: Extract<FieldAction, { tableFieldId: string }>, fields: readonly FieldDef[]) =>
+  `Each row of ${fields.find((f) => f.id === action.tableFieldId)?.label || 'a deleted table'}`
+
 /** One action: label, readable expression, severity; edit and delete. */
 export const ActionRow = ({ action, fields, invalid, onEdit, onRemove }: ActionRowProps) => {
   const title = actionTitle(action, fields)
@@ -39,7 +42,12 @@ export const ActionRow = ({ action, fields, invalid, onEdit, onRemove }: ActionR
             Needs fixing
           </span>
         )}
-        {action.kind === 'check' && (
+        {(action.kind === 'row_check' || action.kind === 'row_compute') && (
+          <span className="shrink-0 rounded border px-1.5 py-0.5 text-xs text-muted-foreground">
+            {rowScope(action, fields)}
+          </span>
+        )}
+        {(action.kind === 'check' || action.kind === 'row_check') && (
           <span
             className={cn(
               'shrink-0 rounded px-1.5 py-0.5 text-xs',

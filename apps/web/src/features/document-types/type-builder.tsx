@@ -1,7 +1,7 @@
 import { useReducer, useRef, useState } from 'react'
 import { ArrowLeft, ScanSearch } from 'lucide-react'
 import { Link } from 'react-router'
-import { getComputedFieldIds } from '@/lib/fields/computed-fields'
+import { getAllComputedColumnIds, getComputedFieldIds } from '@/lib/fields/computed-fields'
 import { ActionsSection } from './actions/actions-section'
 import type { ActionEditorTarget } from './actions/action-form'
 import { resolveSelection, type Selection } from './editor-target'
@@ -120,6 +120,7 @@ export const TypeBuilder = ({ initialDraft, savedType, notice = null, onSaved }:
             titleFieldId={draft.titleFieldId}
             listColumnIds={draft.listColumnIds}
             computedIds={getComputedFieldIds(draft)}
+            computedColumnIds={getAllComputedColumnIds(draft)}
             selection={selection}
             invalidIds={getInvalidIds(shownIssues)}
             onSelect={setSelection}

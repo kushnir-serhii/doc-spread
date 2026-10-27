@@ -1,10 +1,11 @@
-import { CircleAlert, CircleCheck, CircleX } from 'lucide-react'
-import { computeValues, runChecks } from '@/lib/fields/evaluate'
+import { computeValues, runChecks, runRowChecksOnDocument } from '@/lib/fields/run-checks'
 import { describeCheckError, describeCheckSides } from '@/lib/fields/describe-check-outcome'
 import { describeFailure } from '@/lib/fields/describe-failure'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import type { Document, FieldAction, FieldDef } from '@/lib/mock/types'
-import { cn } from '@/lib/utils'
+import { PreviewBox } from './preview-box'
+import { RowCheckPreview } from './row-check-preview'
+import { RowComputePreview } from './row-compute-preview'
 import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface PreviewResultProps {
@@ -16,66 +17,56 @@ interface PreviewResultProps {
   actions: FieldAction[]
 }
 
-interface BoxProps {
-  tone: 'ok' | 'bad' | 'neutral'
-  title: string
-  children: string
-}
-
-const Box = ({ tone, title, children }: BoxProps) => {
-  const Icon = tone === 'ok' ? CircleCheck : tone === 'bad' ? CircleX : CircleAlert
-  return (
-    <div
-      className={cn(
-        'rounded-md border p-3 text-sm',
-        tone === 'ok' && 'border-success bg-success-soft text-success-soft-foreground',
-        tone === 'bad' && 'border-destructive',
-        tone === 'neutral' && 'bg-warning-soft text-warning-soft-foreground',
-      )}
-    >
-      <p className={cn('flex items-center gap-2 font-medium', tone === 'bad' && 'text-destructive')}>
-        <Icon className="size-4 shrink-0" aria-hidden />
-        {title}
-      </p>
-      <p className="mt-1 break-words tabular-nums">{children}</p>
-    </div>
-  )
-}
-
 /** The action evaluated on one document, using the draft's fields. */
 export const PreviewResult = ({ action, document, fields, actions }: PreviewResultProps) => {
   const locale = useFormatLocale()
   const type = { fields, actions }
-  if (action.kind === 'check') {
-    const outcome = runChecks(type, document).find((o) => o.check.id === action.id)
-    if (!outcome) return null
-    if (outcome.status === 'error') {
+  switch (action.kind) {
+    case 'check': {
+      const outcome = runChecks(type, document).find((o) => o.check.id === action.id)
+      if (!outcome) return null
+      if (outcome.status === 'error') {
+        return (
+          <PreviewBox tone="neutral" title="Can’t check">
+            {describeCheckError(outcome, fields)}
+          </PreviewBox>
+        )
+      }
       return (
-        <Box tone="neutral" title="Can’t check">
-          {describeCheckError(outcome, fields)}
-        </Box>
+        <PreviewBox
+          tone={outcome.status === 'passed' ? 'ok' : 'bad'}
+          title={outcome.status === 'passed' ? 'Passes' : 'Fails'}
+        >
+          {describeCheckSides(outcome, fields, locale)}
+        </PreviewBox>
       )
     }
-    return (
-      <Box tone={outcome.status === 'passed' ? 'ok' : 'bad'} title={outcome.status === 'passed' ? 'Passes' : 'Fails'}>
-        {describeCheckSides(outcome, fields, locale)}
-      </Box>
-    )
+    case 'row_check': {
+      const outcome = runRowChecksOnDocument(type, document).find((o) => o.check.id === action.id)
+      return outcome ? <RowCheckPreview outcome={outcome} fields={fields} /> : null
+    }
+    case 'row_compute':
+      return <RowComputePreview action={action} document={document} fields={fields} actions={actions} />
+    case 'compute': {
+      const outcome = computeValues(type, document.values)[action.fieldId]
+      const label = fields.find((f) => f.id === action.fieldId)?.label ?? 'Computed field'
+      if (!outcome) return null
+      if (!outcome.ok) {
+        return (
+          <PreviewBox tone="neutral" title="Can’t compute">
+            {describeFailure(outcome.reason, outcome.fieldIds, fields)}
+          </PreviewBox>
+        )
+      }
+      return (
+        <PreviewBox tone="ok" title="Computed">
+          {`${label} = ${formatFieldValue(outcome.value, locale)}`}
+        </PreviewBox>
+      )
+    }
+    default: {
+      const unreachable: never = action
+      throw new Error(`Unknown action: ${String(unreachable)}`)
+    }
   }
-
-  const outcome = computeValues(type, document.values)[action.fieldId]
-  const label = fields.find((f) => f.id === action.fieldId)?.label ?? 'Computed field'
-  if (!outcome) return null
-  if (!outcome.ok) {
-    return (
-      <Box tone="neutral" title="Can’t compute">
-        {describeFailure(outcome.reason, outcome.fieldIds, fields)}
-      </Box>
-    )
-  }
-  return (
-    <Box tone="ok" title="Computed">
-      {`${label} = ${formatFieldValue(outcome.value, locale)}`}
-    </Box>
-  )
 }

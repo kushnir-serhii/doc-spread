@@ -5,24 +5,11 @@ import type { CompareOp, FieldAction, FieldDef } from '@/lib/mock/types'
 import { OP_SYMBOL } from '@/lib/fields/check-ops'
 import { nodeFieldIds, type ExprNode } from './expr-node'
 import { exprProblems } from './expr-problems'
+import { findCycle } from './find-cycle'
+import { rowCheckProblems, rowComputeProblems } from './row-action-problems'
 import { ANY_SCALAR, scalarTypeOf } from './expr-typing'
 
 const labelOf = (fields: readonly FieldDef[], id: string) => fields.find((f) => f.id === id)?.label.trim() || 'Untitled field'
-
-/** The field ids of a chain A → B → A, or null. `deps` maps a computed field to the fields its expression reads. */
-export const findCycle = (deps: ReadonlyMap<string, readonly string[]>, start: string): string[] | null => {
-  const visit = (id: string, path: string[]): string[] | null => {
-    for (const next of deps.get(id) ?? []) {
-      if (next === start) return [...path, start]
-      if (!path.includes(next) && deps.has(next)) {
-        const found = visit(next, [...path, next])
-        if (found) return found
-      }
-    }
-    return null
-  }
-  return visit(start, [start])
-}
 
 export const describeCycle = (ids: readonly string[], fields: readonly FieldDef[]) =>
   ids.map((id) => labelOf(fields, id)).join(' → ')
@@ -86,7 +73,19 @@ export const computeProblems = (
 }
 
 /** The problems of a saved action against the current fields of the draft. */
-export const actionProblems = (action: FieldAction, fields: readonly FieldDef[], actions: readonly FieldAction[]) =>
-  action.kind === 'check'
-    ? checkProblems(action, fields)
-    : computeProblems({ id: action.id, fieldId: action.fieldId, expr: action.expr }, fields, actions)
+export const actionProblems = (action: FieldAction, fields: readonly FieldDef[], actions: readonly FieldAction[]): string[] => {
+  switch (action.kind) {
+    case 'check':
+      return checkProblems(action, fields)
+    case 'compute':
+      return computeProblems({ id: action.id, fieldId: action.fieldId, expr: action.expr }, fields, actions)
+    case 'row_check':
+      return rowCheckProblems(action, fields, actions)
+    case 'row_compute':
+      return rowComputeProblems(action, fields, actions)
+    default: {
+      const unreachable: never = action
+      throw new Error(`Unknown action: ${String(unreachable)}`)
+    }
+  }
+}

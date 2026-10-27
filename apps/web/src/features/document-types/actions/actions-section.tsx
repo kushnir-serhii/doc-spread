@@ -21,8 +21,7 @@ interface ActionsSectionProps {
 export const ActionsSection = ({ draft, dispatch, typeId, target, onTarget }: ActionsSectionProps) => {
   const { actions, fields } = draft
   const noFields = fields.length === 0
-  const editing = target?.mode === 'edit' ? actions.find((a) => a.id === target.id) : undefined
-  const dialogOpen = target !== null && (target.mode === 'new' || editing !== undefined)
+  const dialogOpen = target !== null && (target.mode === 'new' || actions.some((a) => a.id === target.id))
 
   return (
     <section aria-labelledby="actions-heading" className="mt-8">
@@ -36,7 +35,7 @@ export const ActionsSection = ({ draft, dispatch, typeId, target, onTarget }: Ac
             <p className="max-w-prose text-sm text-muted-foreground">
               Actions work across fields. A <strong>check</strong> warns or blocks approval in Review, like Gross = Net +
               VAT. A <strong>computed field</strong> is calculated instead of extracted, like Due in days = Due date −
-              Issue date.
+              Issue date. With a table, either can run on <strong>each row</strong>, like Net = Quantity × Unit price.
             </p>
           </div>
           <AddActionMenu disabled={noFields} onAdd={(kind) => onTarget({ mode: 'new', kind })} />

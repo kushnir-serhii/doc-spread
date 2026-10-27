@@ -1,5 +1,5 @@
 import { getComputedFieldIds } from '@/lib/fields/computed-fields'
-import { computeValues } from '@/lib/fields/evaluate'
+import { computeValues } from '@/lib/fields/run-checks'
 import { formatMoney } from '@/lib/mock/format'
 import type { Document, DocumentType, ExportColumnMapping, ExportFormat, Recipient } from '@/lib/mock/types'
 import { FORMAT_OPTIONS } from './export-options'

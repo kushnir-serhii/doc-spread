@@ -7,7 +7,8 @@ import type { Document, DocumentType } from '@/lib/mock/types'
 import { ReviewForm } from './review-form'
 import { ReviewIssues } from './review-issues'
 import { summarizeChecks } from './summarize-checks'
-import { runChecks } from '@/lib/fields/evaluate'
+import { runChecks } from '@/lib/fields/run-checks'
+import { runRowChecks } from '@/lib/fields/evaluate-rows'
 import { ReviewViewerPane } from './review-viewer-pane'
 import { ReviewShortcutsDialog } from './review-shortcuts-dialog'
 import { ReviewActions } from './review-actions'
@@ -34,9 +35,9 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const editable = doc.status === 'needs_review'
-  const { values, computed, setValue, confirm, save, saveNow, dirty, needsSave, mutation } = useReviewDraft(doc, type)
+  const { values, computed, rowOutcomes, setValue, confirm, save, saveNow, dirty, needsSave, mutation } = useReviewDraft(doc, type)
   // checks run live on the draft, computed values included
-  const checks = summarizeChecks(type, runChecks(type, { values }), locale)
+  const checks = summarizeChecks(type, runChecks(type, { values }), runRowChecks(type, values), locale)
   const pointing = useReviewPointing({ doc, type, draft: values, setValue, formRef })
   const highlights = useReviewHighlights(doc.id, values, type)
   const actions = useReviewActions({
@@ -83,7 +84,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
       <ReviewViewerPane
         ref={viewerRef}
         doc={doc}
@@ -111,7 +112,9 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
           type={type}
           values={values}
           computed={computed}
+          rowOutcomes={rowOutcomes}
           involvedFieldIds={checks.involvedFieldIds}
+          rowFailures={checks.rowFailures}
           onValueChange={editable ? setValue : undefined}
           onConfirm={editable ? confirm : undefined}
           pointing={editable ? pointing : undefined}

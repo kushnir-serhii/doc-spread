@@ -1,4 +1,6 @@
 // Evaluates expressions, checks and computed fields (spec 016) through the function registry.
+// A row action (spec 017) reads its row through `EvalContext.row`; computed columns and row checks live in
+// evaluate-rows.ts, the whole order (columns, fields, checks) in run-checks.ts.
 //
 // Currency rule: a money constant has only an amount. All money in one call, or on both sides of a
 // comparison, must share one currency (otherwise `currency_mismatch`), and a money constant takes
@@ -11,11 +13,11 @@ import type {
   CurrencyCode,
   Expr,
   FieldDef,
+  FieldType,
   FieldValue,
   FunctionId,
   Money,
   DocumentType,
-  Document,
 } from '@/lib/mock/types'
 import { getComputeActions } from './computed-fields'
 import { toMajor, toMinor } from './currency-digits'
@@ -34,10 +36,21 @@ export type EvalValue =
 
 export type ExprResult = EvalResult<EvalValue>
 
-/** What an expression reads: the type's fields and the document's values (by field id). */
+/** The row a row action is evaluated on: its table field and the cells of the row. */
+export interface RowContext {
+  tableFieldId: string
+  cells: Record<string, AnyExtractedValue>
+  /** computed document fields: a row expression may not read them (the order is columns, fields, checks) */
+  computedFieldIds: ReadonlySet<string>
+  /** computed columns that aren't available yet (while computing columns): a column list over them is not allowed */
+  pendingColumnIds: ReadonlySet<string>
+}
+
+/** What an expression reads: the type's fields and the document's values (by field id), and in a row action the current row. */
 export interface EvalContext {
   fields: readonly FieldDef[]
   values: Record<string, FieldValue>
+  row?: RowContext
 }
 
 // ---------- internal values ----------
@@ -53,7 +66,7 @@ type Scalar =
   | { type: 'boolean'; value: boolean }
   | { type: 'money'; amount: number; currency: CurrencyCode | null }
 
-type Node =
+export type Node =
   | { kind: 'scalar'; scalar: Scalar }
   | { kind: 'empty'; type: ExprType }
   | { kind: 'list'; type: ExprType; items: Scalar[] }
@@ -146,7 +159,7 @@ const scalarsOf = (node: Node): Scalar[] =>
   node.kind === 'scalar' ? [node.scalar] : node.kind === 'list' ? node.items : []
 
 /** Gives every money in `nodes` the one currency they share. Different currencies fail; none known leaves them as they are. */
-const shareCurrency = (nodes: readonly Node[]): EvalResult<{ nodes: Node[]; currency: CurrencyCode | null }> => {
+export const shareCurrency = (nodes: readonly Node[]): EvalResult<{ nodes: Node[]; currency: CurrencyCode | null }> => {
   const currencies = new Set<CurrencyCode>()
   for (const scalar of nodes.flatMap(scalarsOf)) {
     if (scalar.type === 'money' && scalar.currency !== null) currencies.add(scalar.currency)
@@ -181,6 +194,7 @@ const evalField = (expr: Extract<Expr, { kind: 'field' }>, ctx: EvalContext): Ev
   const field = ctx.fields.find((f) => f.id === expr.fieldId)
   const type = field ? exprTypeOfField(field.type) : null
   if (!field || type === null) return fail('type_mismatch')
+  if (ctx.row?.computedFieldIds.has(field.id)) return fail('type_mismatch')
   const value = ctx.values[field.id]
   if (value === undefined) return ok({ kind: 'empty', type })
   if (value.type === 'table' || value.type !== field.type) return fail('type_mismatch')
@@ -193,6 +207,7 @@ const evalColumn = (expr: Extract<Expr, { kind: 'column' }>, ctx: EvalContext): 
   const column = field?.type === 'table' ? field.columns?.find((c) => c.id === expr.columnId) : undefined
   const type = column ? exprTypeOfField(column.type) : null
   if (!column || type === null) return fail('type_mismatch')
+  if (ctx.row?.pendingColumnIds.has(column.id)) return fail('type_mismatch')
   const value = ctx.values[expr.fieldId]
   if (value === undefined) return ok({ kind: 'list', type, items: [] })
   if (value.type !== 'table') return fail('type_mismatch')
@@ -203,6 +218,18 @@ const evalColumn = (expr: Extract<Expr, { kind: 'column' }>, ctx: EvalContext): 
     return scalar ? [scalar] : []
   })
   return ok({ kind: 'list', type, items })
+}
+
+const evalCell = (expr: Extract<Expr, { kind: 'cell' }>, ctx: EvalContext): EvalResult<Node> => {
+  // outside a row action there is no current row
+  if (!ctx.row) return fail('type_mismatch')
+  const table = ctx.fields.find((f) => f.id === ctx.row?.tableFieldId)
+  const column = table?.type === 'table' ? table.columns?.find((c) => c.id === expr.columnId) : undefined
+  const type = column ? exprTypeOfField(column.type) : null
+  if (!column || type === null) return fail('type_mismatch')
+  const cell = ctx.row.cells[column.id]
+  const scalar = cell && cell.type === column.type ? fromExtracted(cell) : null
+  return scalar === null ? ok({ kind: 'empty', type }) : scalarNode(scalar)
 }
 
 const evalConst = (expr: Extract<Expr, { kind: 'const' }>): EvalResult<Node> => {
@@ -251,12 +278,14 @@ const evalCall = (expr: Extract<Expr, { kind: 'call' }>, ctx: EvalContext): Eval
   return scalar === null ? fail('type_mismatch') : scalarNode(scalar)
 }
 
-const evalNode = (expr: Expr, ctx: EvalContext): EvalResult<Node> => {
+export const evalNode = (expr: Expr, ctx: EvalContext): EvalResult<Node> => {
   switch (expr.kind) {
     case 'field':
       return evalField(expr, ctx)
     case 'column':
       return evalColumn(expr, ctx)
+    case 'cell':
+      return evalCell(expr, ctx)
     case 'const':
       return evalConst(expr)
     case 'call':
@@ -269,7 +298,7 @@ const evalNode = (expr: Expr, ctx: EvalContext): EvalResult<Node> => {
 }
 
 /** A finished value: not a list, not empty, and money has its currency. */
-const finish = (node: Node): ExprResult => {
+export const finish = (node: Node): ExprResult => {
   if (node.kind === 'list') return fail('type_mismatch')
   if (node.kind === 'empty') return fail('missing_value')
   const { scalar } = node
@@ -290,7 +319,7 @@ export const evaluateExpr = (expr: Expr, ctx: EvalContext): ExprResult => {
 }
 
 // ---------- reading an expression ----------
-/** The ids of the top-level fields an expression reads (a column counts as its table field), each once. */
+/** The ids of the top-level fields an expression reads (a column counts as its table field, a cell reads no top-level field), each once. */
 export const collectFieldIds = (expr: Expr): string[] => {
   const ids = new Set<string>()
   const visit = (e: Expr) => {
@@ -299,6 +328,7 @@ export const collectFieldIds = (expr: Expr): string[] => {
       case 'column':
         ids.add(e.fieldId)
         break
+      case 'cell':
       case 'const':
         break
       case 'call':
@@ -314,17 +344,51 @@ export const collectFieldIds = (expr: Expr): string[] => {
   return [...ids]
 }
 
-/** Of the fields an expression reads, the ones that have no value (a table counts when the column has no values). */
-const findEmptyInputs = (expr: Expr, ctx: EvalContext): string[] => {
-  const empty = new Set<string>()
+/** The ids of the columns an expression reads as this row's cells (`cell` nodes), each once. */
+export const collectCellColumnIds = (expr: Expr): string[] => {
+  const ids = new Set<string>()
+  const visit = (e: Expr) => {
+    switch (e.kind) {
+      case 'cell':
+        ids.add(e.columnId)
+        break
+      case 'field':
+      case 'column':
+      case 'const':
+        break
+      case 'call':
+        e.args.forEach(visit)
+        break
+      default: {
+        const unreachable: never = e
+        throw new Error(`Unknown expression: ${String(unreachable)}`)
+      }
+    }
+  }
+  visit(expr)
+  return [...ids]
+}
+
+/**
+ * Of the inputs an expression reads, the ones that have no value: top-level fields (a table counts when the
+ * column has no values) and, in a row action, cells (by column id).
+ */
+export const findEmptyInputs = (expr: Expr, ctx: EvalContext): { fieldIds: string[]; columnIds: string[] } => {
+  const emptyFields = new Set<string>()
+  const emptyColumns = new Set<string>()
   const visit = (e: Expr) => {
     switch (e.kind) {
       case 'field':
       case 'column': {
         const node = evalNode(e, ctx)
         if (node.ok && (node.value.kind === 'empty' || (node.value.kind === 'list' && node.value.items.length === 0))) {
-          empty.add(e.fieldId)
+          emptyFields.add(e.fieldId)
         }
+        break
+      }
+      case 'cell': {
+        const node = evalNode(e, ctx)
+        if (node.ok && node.value.kind === 'empty') emptyColumns.add(e.columnId)
         break
       }
       case 'const':
@@ -339,7 +403,7 @@ const findEmptyInputs = (expr: Expr, ctx: EvalContext): string[] => {
     }
   }
   visit(expr)
-  return [...empty]
+  return { fieldIds: [...emptyFields], columnIds: [...emptyColumns] }
 }
 
 const INFIX: Partial<Record<FunctionId, { symbol: string; precedence: number }>> = {
@@ -356,7 +420,7 @@ const describeConst = (expr: Extract<Expr, { kind: 'const' }>): string => {
 }
 
 /**
- * A readable line for an expression: "Net total + VAT total", "sum(Line items › Net)".
+ * A readable line for an expression: "Net total + VAT total", "sum(Line items › Net)", "This row › Quantity".
  * add/subtract/multiply/divide are infix (parenthesized when nested), the rest are function calls.
  */
 export const describeExpr = (expr: Expr, fields: readonly FieldDef[]): string => {
@@ -368,6 +432,10 @@ export const describeExpr = (expr: Expr, fields: readonly FieldDef[]): string =>
       case 'column': {
         const column = fields.find((f) => f.id === e.fieldId)?.columns?.find((c) => c.id === e.columnId)
         return `${label(e.fieldId)} › ${column?.label ?? '(deleted column)'}`
+      }
+      case 'cell': {
+        const column = fields.flatMap((f) => f.columns ?? []).find((c) => c.id === e.columnId)
+        return `This row › ${column?.label ?? '(deleted column)'}`
       }
       case 'const':
         return describeConst(e)
@@ -398,8 +466,8 @@ export type ComputeOutcome =
   | { ok: true; value: AnyExtractedValue }
   | { ok: false; reason: EvalFailureReason | 'cycle'; fieldIds: string[] }
 
-/** The value as the target field's type, with confidence 1; null when the field's type doesn't match the result. */
-const toExtracted = (field: FieldDef, value: EvalValue): AnyExtractedValue | null => {
+/** The value as the target field's (or column's) type, with confidence 1; null when the field's type doesn't match the result. */
+export const toExtracted = (field: { type: FieldType }, value: EvalValue): AnyExtractedValue | null => {
   switch (field.type) {
     case 'text':
     case 'email':
@@ -429,7 +497,7 @@ const toExtracted = (field: FieldDef, value: EvalValue): AnyExtractedValue | nul
  * returns one outcome per computed field. Stored values of computed fields are ignored. A cycle fails
  * every field in it with `cycle`; a field that depends on a failed one gets `missing_value`.
  */
-export const computeValues = (
+export const computeFieldValues = (
   type: Pick<DocumentType, 'fields' | 'actions'>,
   values: Record<string, FieldValue>,
 ): Record<string, ComputeOutcome> => {
@@ -469,7 +537,7 @@ export const computeValues = (
     outcomes[fieldId] = {
       ok: false,
       reason,
-      fieldIds: reason === 'missing_value' ? findEmptyInputs(action.expr, ctx) : collectFieldIds(action.expr),
+      fieldIds: reason === 'missing_value' ? findEmptyInputs(action.expr, ctx).fieldIds : collectFieldIds(action.expr),
     }
   }
 
@@ -561,7 +629,7 @@ const compareMoney = (left: number, op: CompareOp, right: number, currency: Curr
 }
 
 /** null: these two values can't be compared with this operator. */
-const compareValues = (left: EvalValue, op: CompareOp, right: EvalValue, tolerance: number): boolean | null => {
+export const compareValues = (left: EvalValue, op: CompareOp, right: EvalValue, tolerance: number): boolean | null => {
   if (!allowedOps(left.type).includes(op)) return null
   switch (left.type) {
     case 'number':
@@ -587,8 +655,8 @@ const compareValues = (left: EvalValue, op: CompareOp, right: EvalValue, toleran
   }
 }
 
-const evaluateSides = (
-  check: CheckAction,
+export const evaluateSides = (
+  check: Pick<CheckAction, 'left' | 'right'>,
   ctx: EvalContext,
 ): EvalResult<{ left: EvalValue; right: EvalValue }> => {
   const left = evalNode(check.left, ctx)
@@ -606,7 +674,7 @@ const evaluateSides = (
   return ok({ left: leftDone.value, right: rightDone.value })
 }
 
-const runCheck = (check: CheckAction, ctx: EvalContext): CheckOutcome => {
+export const runCheck = (check: CheckAction, ctx: EvalContext): CheckOutcome => {
   const sides = evaluateSides(check, ctx)
   const passed = sides.ok ? compareValues(sides.value.left, check.op, sides.value.right, check.tolerance ?? 0) : null
   if (sides.ok && passed !== null) {
@@ -616,25 +684,7 @@ const runCheck = (check: CheckAction, ctx: EvalContext): CheckOutcome => {
   const fieldIds = [...new Set([...collectFieldIds(check.left), ...collectFieldIds(check.right)])]
   const emptyFieldIds =
     reason === 'missing_value'
-      ? [...new Set([...findEmptyInputs(check.left, ctx), ...findEmptyInputs(check.right, ctx)])]
+      ? [...new Set([...findEmptyInputs(check.left, ctx).fieldIds, ...findEmptyInputs(check.right, ctx).fieldIds])]
       : []
   return { status: 'error', check, reason, fieldIds, emptyFieldIds }
-}
-
-/**
- * Runs every check of the type on the document. Computed fields are recomputed first and win over
- * stored values, so a check on a computed field sees its current value. A check that can't be
- * evaluated is an `error` (with its reason and the fields involved), never `failed`.
- */
-export const runChecks = (
-  type: Pick<DocumentType, 'fields' | 'actions'>,
-  document: Pick<Document, 'values'>,
-): CheckOutcome[] => {
-  const values: Record<string, FieldValue> = { ...document.values }
-  for (const [fieldId, outcome] of Object.entries(computeValues(type, document.values))) {
-    if (outcome.ok) values[fieldId] = outcome.value
-    else delete values[fieldId]
-  }
-  const ctx: EvalContext = { fields: type.fields, values }
-  return type.actions.flatMap((action) => (action.kind === 'check' ? [runCheck(action, ctx)] : []))
 }

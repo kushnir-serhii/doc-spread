@@ -96,6 +96,38 @@ const invoiceActions: FieldAction[] = [
     severity: 'warning',
   },
   {
+    kind: 'row_check',
+    id: 'tpl-invoice-a-row-net-check',
+    tableFieldId: 'tpl-invoice-f-line-items',
+    label: 'Net = Quantity × Unit net price',
+    left: { kind: 'cell', columnId: 'tpl-invoice-f-line-items-c-net' },
+    op: 'eq',
+    right: {
+      kind: 'call',
+      fn: 'multiply',
+      args: [
+        { kind: 'cell', columnId: 'tpl-invoice-f-line-items-c-unit-net' },
+        { kind: 'cell', columnId: 'tpl-invoice-f-line-items-c-quantity' },
+      ],
+    },
+    tolerance: 0.01,
+    severity: 'warning',
+  },
+  {
+    kind: 'row_compute',
+    id: 'tpl-invoice-a-row-gross',
+    tableFieldId: 'tpl-invoice-f-line-items',
+    columnId: 'tpl-invoice-f-line-items-c-gross',
+    expr: {
+      kind: 'call',
+      fn: 'add',
+      args: [
+        { kind: 'cell', columnId: 'tpl-invoice-f-line-items-c-net' },
+        { kind: 'cell', columnId: 'tpl-invoice-f-line-items-c-vat' },
+      ],
+    },
+  },
+  {
     kind: 'compute',
     id: 'tpl-invoice-a-payment-term',
     fieldId: 'tpl-invoice-f-payment-term-days',
@@ -153,7 +185,7 @@ const invoice = ((): DocumentTemplate => {
         c('vat_rate', 'VAT rate', 'number', 'VAT rate in percent, for example 23. Use 0 for reverse charge or non-EU.'),
         c('net', 'Net', 'money', 'Net value of the row.'),
         c('vat', 'VAT', 'money', 'VAT amount of the row.'),
-        c('gross', 'Gross', 'money', 'Gross value of the row.'),
+        c('gross', 'Gross', 'money', "Calculated from the row's net and VAT."),
       ]),
     ],
     actions: invoiceActions,

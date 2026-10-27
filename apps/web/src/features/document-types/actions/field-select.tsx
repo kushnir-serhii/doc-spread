@@ -1,19 +1,22 @@
 import type { FieldDef } from '@/lib/mock/types'
 import { fieldsForSlot, type Allowed } from './expr-typing'
+import type { RowScope } from './row-scope'
 import { SlotSelect } from './slot-select'
 
 interface FieldSelectProps {
   label: string
   fields: readonly FieldDef[]
   allowed: Allowed
+  /** set in a row action: computed fields are not offered */
+  row?: RowScope
   /** '' = none chosen */
   value: string
   onChange: (fieldId: string) => void
 }
 
 /** Offers the scalar fields whose type fits; a chosen field that no longer fits stays listed so it isn't dropped silently. */
-export const FieldSelect = ({ label, fields, allowed, value, onChange }: FieldSelectProps) => {
-  const options = fieldsForSlot(fields, allowed)
+export const FieldSelect = ({ label, fields, allowed, row, value, onChange }: FieldSelectProps) => {
+  const options = fieldsForSlot(fields, allowed, row)
   const current = fields.find((f) => f.id === value)
   const stale = current && !options.some((f) => f.id === current.id)
   return (

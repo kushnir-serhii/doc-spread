@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react'
 import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ColumnDef, TableValue } from '@/lib/mock/types'
+import type { RowFailures } from './row-failures'
 import { TableGrid } from './table-grid'
 import { TableList } from './table-list'
 import { TableViewToggle } from './table-view-toggle'
@@ -17,6 +18,12 @@ export interface TableFieldViewProps {
   focusId: string
   /** set to make the table editable (cells, add and remove rows); omit for read-only */
   onChange?: (next: TableValue) => void
+  /** columns whose cells are calculated: shown read-only with a "computed" marker */
+  computedColumnIds?: ReadonlySet<string>
+  /** why a computed cell has no value (shown as "—"); `null` when it has one */
+  computedFailure?: (rowId: string, columnId: string) => string | null
+  /** rows a failed check fails in, with the columns it reads there: those cells get the warning ring */
+  failedRows?: RowFailures
 }
 
 type ViewProps = ComponentProps<typeof TableGrid>
@@ -25,13 +32,16 @@ type ViewProps = ComponentProps<typeof TableGrid>
  * The shared table field: "Table" (grid) or "List" (a card per row), chosen by viewport and remembered by the browser.
  * Read-only unless `onChange` is given. Reused by Review and by the document type preview.
  */
-export const TableFieldView = ({ label, columns, value, focusId, onChange }: TableFieldViewProps) => {
+export const TableFieldView = ({ label, columns, value, focusId, onChange, computedColumnIds, computedFailure, failedRows }: TableFieldViewProps) => {
   const { mode, setMode } = useTableViewMode()
   const view: ViewProps = {
     label,
     columns,
     value,
     focusId,
+    computedColumnIds,
+    computedFailure,
+    failedRows,
     onCellChange: onChange && ((rowId, columnId, next) => onChange(setCell(value, rowId, columnId, next))),
     onAddRow: onChange && (() => onChange(addRow(value, columns))),
     onRemoveRow: onChange && ((rowId: string) => onChange(removeRow(value, rowId))),

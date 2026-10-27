@@ -7,16 +7,19 @@ import { OP_LABEL } from '@/lib/fields/check-ops'
 import { CheckSettings } from './check-settings'
 import { ExprSlot } from './expr-slot'
 import { ANY_SCALAR, scalarTypeOf } from './expr-typing'
+import type { RowScope } from './row-scope'
 import { SlotSelect } from './slot-select'
 
 interface CheckFormProps {
   form: CheckFormState
   fields: readonly FieldDef[]
+  /** set when the check runs on every row of a table */
+  row?: RowScope
   onChange: (form: CheckFormState) => void
 }
 
 /** Left side, operator, right side; then tolerance, severity and label. */
-export const CheckForm = ({ form, fields, onChange }: CheckFormProps) => {
+export const CheckForm = ({ form, fields, row, onChange }: CheckFormProps) => {
   const opId = useId()
   const leftType = scalarTypeOf(form.left, fields)
   const op = effectiveOp(form.op, leftType)
@@ -30,6 +33,7 @@ export const CheckForm = ({ form, fields, onChange }: CheckFormProps) => {
         node={form.left}
         allowed={ANY_SCALAR}
         fields={fields}
+        row={row}
         onChange={(left) => patch({ left })}
       />
       <div className="flex flex-col gap-2">
@@ -57,6 +61,7 @@ export const CheckForm = ({ form, fields, onChange }: CheckFormProps) => {
         node={form.right}
         allowed={leftType ? [leftType] : ANY_SCALAR}
         fields={fields}
+        row={row}
         onChange={(right) => patch({ right })}
       />
       <CheckSettings

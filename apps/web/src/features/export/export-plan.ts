@@ -1,5 +1,5 @@
 import { getComputedFieldIds } from '@/lib/fields/computed-fields'
-import { computeValues } from '@/lib/fields/evaluate'
+import { computeValues } from '@/lib/fields/run-checks'
 import { columnKey } from '@/lib/fields/export-mapping'
 import type {
   Document,

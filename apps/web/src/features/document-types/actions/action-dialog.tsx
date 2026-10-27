@@ -9,13 +9,24 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import type { FieldAction, FieldDef } from '@/lib/mock/types'
-import { formFromAction, formProblems, formToAction, newForm, type ActionEditorTarget, type ActionForm } from './action-form'
+import {
+  formFromAction,
+  formProblems,
+  formToAction,
+  newForm,
+  withScope,
+  type ActionEditorTarget,
+  type ActionForm,
+} from './action-form'
+import { rowScopeOf } from './action-scope'
 import { ActionPreview } from './action-preview'
 import { ActionProblemList } from './action-problem-list'
 import { ActionLine } from './action-line'
 import { CheckForm } from './check-form'
 import { ComputeForm } from './compute-form'
 import { INCOMPLETE } from './expr-problems'
+import { RowComputeForm } from './row-compute-form'
+import { ScopeSelect } from './scope-select'
 
 interface ActionDialogProps {
   target: ActionEditorTarget
@@ -39,7 +50,10 @@ export const ActionDialog = ({ target, fields, actions, titleFieldId, typeId, on
   const [form, setForm] = useState(() => initialForm(target, fields, actions))
   const problems = formProblems(form, fields, actions)
   const action = problems.length === 0 ? formToAction(form, fields, actions) : null
-  const kindName = form.kind === 'check' ? 'check' : 'computed field'
+  const isRow = form.scope.kind === 'row'
+  const kindName = form.kind === 'check' ? 'check' : isRow ? 'computed column' : 'computed field'
+  // The choice is offered when there is a table; an action already on a row stays editable even if its table is gone.
+  const showScope = isRow || fields.some((field) => field.type === 'table')
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -48,13 +62,22 @@ export const ActionDialog = ({ target, fields, actions, titleFieldId, typeId, on
           <DialogTitle>{target.mode === 'new' ? `Add ${kindName}` : `Edit ${kindName}`}</DialogTitle>
           <DialogDescription>
             {form.kind === 'check'
-              ? 'Compare two values. A failed check is shown in Review.'
-              : 'Calculate a field from other fields instead of reading it from the document.'}
+              ? isRow
+                ? 'Compare two values in every row of a table. A failed row is shown in Review.'
+                : 'Compare two values. A failed check is shown in Review.'
+              : isRow
+                ? 'Calculate a column from the row’s other cells instead of reading it from the document.'
+                : 'Calculate a field from other fields instead of reading it from the document.'}
           </DialogDescription>
         </DialogHeader>
         <ActionLine form={form} fields={fields} />
+        {showScope && (
+          <ScopeSelect scope={form.scope} fields={fields} onChange={(scope) => setForm(withScope(form, scope, fields, actions))} />
+        )}
         {form.kind === 'check' ? (
-          <CheckForm form={form} fields={fields} onChange={setForm} />
+          <CheckForm form={form} fields={fields} row={rowScopeOf(form.scope, form.id, undefined, actions)} onChange={setForm} />
+        ) : form.scope.kind === 'row' ? (
+          <RowComputeForm form={form} tableFieldId={form.scope.tableFieldId} fields={fields} actions={actions} onChange={setForm} />
         ) : (
           <ComputeForm form={form} fields={fields} actions={actions} onChange={setForm} />
         )}

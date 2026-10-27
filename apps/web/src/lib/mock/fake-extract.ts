@@ -90,13 +90,14 @@ const fakeScalar = (
 }
 
 /**
- * A plausible value for every field except the computed ones (those are calculated, not extracted).
+ * A plausible value for every field except the computed ones and the computed columns (those are calculated, not extracted).
  * Money in one currency per document; same input, same output.
  */
 export const fakeExtractFields = (
   docId: string,
   fields: readonly FieldDef[],
   computedFieldIds: ReadonlySet<string> = new Set(),
+  computedColumnIds: ReadonlySet<string> = new Set(),
 ): Record<string, FieldValue> => {
   const currency = CURRENCIES[hash(docId) % CURRENCIES.length]
   const values: Record<string, FieldValue> = {}
@@ -112,7 +113,7 @@ export const fakeExtractFields = (
       Array.from({ length: rowCount }, (_, i) => ({
         id: `${docId}-${field.id}-r${i + 1}`,
         cells: Object.fromEntries(
-          (field.columns ?? []).map((column) => [
+          (field.columns ?? []).filter((column) => !computedColumnIds.has(column.id)).map((column) => [
             column.id,
             fakeScalar(column.type, column.options, currency, makeRng(hash(`${docId}:${field.id}:${i}:${column.id}`))),
           ]),

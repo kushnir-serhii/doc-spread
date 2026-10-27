@@ -7,13 +7,15 @@ interface ColumnListProps {
   table: FieldDef
   selectedColumnId: string | null
   invalidIds: ReadonlySet<string>
+  /** ids of the columns a row compute action fills in */
+  computedIds: ReadonlySet<string>
   onSelect: (columnId: string) => void
   onMove: (columnId: string, direction: 'up' | 'down') => void
   onAdd: () => void
 }
 
 /** The columns of one table field, indented under its row. Columns only move within their table. */
-export const ColumnList = ({ table, selectedColumnId, invalidIds, onSelect, onMove, onAdd }: ColumnListProps) => {
+export const ColumnList = ({ table, selectedColumnId, invalidIds, computedIds, onSelect, onMove, onAdd }: ColumnListProps) => {
   const columns = table.columns ?? []
   return (
     <div className="ml-6 border-l border-t bg-muted/30">
@@ -25,6 +27,7 @@ export const ColumnList = ({ table, selectedColumnId, invalidIds, onSelect, onMo
             <li key={column.id}>
               <FieldRow
                 field={column}
+                badges={computedIds.has(column.id) ? ['Computed'] : []}
                 selected={column.id === selectedColumnId}
                 invalid={invalidIds.has(column.id)}
                 isFirst={index === 0}

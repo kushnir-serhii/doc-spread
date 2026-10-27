@@ -1,5 +1,5 @@
 import type { Dispatch } from 'react'
-import { getComputeActions } from '@/lib/fields/computed-fields'
+import { getComputeActions, getRowComputeActions } from '@/lib/fields/computed-fields'
 import { describeExpr } from '@/lib/fields/evaluate'
 import { FIELD_TYPES, type FieldAction, type FieldDef } from '@/lib/mock/types'
 import type { EditorActions, EditorTarget } from './editor-target'
@@ -63,6 +63,7 @@ export const SelectedEditor = ({ target, fields, fieldActions, onOpenAction, dis
   }
 
   const { table, column } = target
+  const computedColumn = getRowComputeActions({ actions: fieldActions }).get(table.id)?.get(column.id)
   const run = (op: ColumnOp) => dispatch(columnAction(table.id, op))
   return (
     <FieldEditor
@@ -72,6 +73,12 @@ export const SelectedEditor = ({ target, fields, fieldActions, onOpenAction, dis
       keyError={getKeyError(column, table.columns ?? [], 'column')}
       {...shown}
       deleteLabel="Delete column"
+      computedBy={
+        computedColumn && {
+          text: describeExpr(computedColumn.expr, fields),
+          onOpen: onOpenAction && (() => onOpenAction(computedColumn.id)),
+        }
+      }
       onLabelChange={(label) => run({ kind: 'setLabel', id: column.id, label })}
       onKeyChange={(key) => run({ kind: 'setKey', id: column.id, key })}
       onPatch={(patch) => run({ kind: 'update', id: column.id, patch })}

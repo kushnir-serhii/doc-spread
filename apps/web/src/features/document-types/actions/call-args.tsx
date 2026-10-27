@@ -6,6 +6,7 @@ import { argLabel } from './arg-labels'
 import { EMPTY_NODE, type CallNode, type ExprNode } from './expr-node'
 import { argAllowed, getArity, type Allowed } from './expr-typing'
 import { ExprSlot } from './expr-slot'
+import type { RowScope } from './row-scope'
 
 interface CallArgsProps {
   /** the name of the slot this call sits in */
@@ -14,11 +15,12 @@ interface CallArgsProps {
   fields: readonly FieldDef[]
   /** what the call itself may produce */
   allowed: Allowed
+  row?: RowScope
   onChange: (node: ExprNode) => void
 }
 
 /** The argument slots of a function; "+ argument" and remove for the variadic ones (never below the minimum). */
-export const CallArgs = ({ label: parentLabel, node, fields, allowed, onChange }: CallArgsProps) => {
+export const CallArgs = ({ label: parentLabel, node, fields, allowed, row, onChange }: CallArgsProps) => {
   const fn = FUNCTIONS[node.fn]
   const arity = getArity(fn)
   const setArg = (index: number, arg: ExprNode) =>
@@ -40,6 +42,7 @@ export const CallArgs = ({ label: parentLabel, node, fields, allowed, onChange }
                 node={arg}
                 allowed={argAllowed(node, index, fields, allowed)}
                 fields={fields}
+                row={row}
                 onChange={(next) => setArg(index, next)}
               />
             </div>

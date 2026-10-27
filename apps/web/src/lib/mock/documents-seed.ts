@@ -60,6 +60,8 @@ interface DocPlan {
   classification?: number
   /** invoices: minor units added to Gross, so Gross != Net + VAT (a failed check in Review) */
   grossOffset?: number
+  /** invoices: minor units added to the Net of the first line only, so Net != Quantity × Unit net price (a failed row check); the totals follow the line nets */
+  badLine?: number
 }
 
 const PLAN: DocPlan[] = [
@@ -98,8 +100,8 @@ const PLAN: DocPlan[] = [
   /* 026 */ { status: 'error', kind: null, fileType: 'pdf' },
   /* 027 */ { status: 'error', kind: null, fileType: 'jpg' },
   /* 028 */ { status: 'needs_review', kind: 'contract', supplier: 2, long: true },
-  // Gross is off by $10.00 / -$25.00 from Net + VAT, so the Invoice checks fail in Review
-  /* 029 */ { status: 'needs_review', kind: 'invoice', supplier: 11, currency: 'USD', lines: 3, grossOffset: 1000 },
+  // Gross is off by $10.00 / -$25.00 from Net + VAT, so the Invoice checks fail in Review; 029 also has a first line whose Net is $7.50 too high (the row check fails)
+  /* 029 */ { status: 'needs_review', kind: 'invoice', supplier: 11, currency: 'USD', lines: 3, grossOffset: 1000, badLine: 750 },
   /* 030 */ { status: 'needs_review', kind: 'invoice', supplier: 11, currency: 'USD', lines: 2, grossOffset: -2500 },
 ]
 
@@ -209,7 +211,7 @@ interface Ctx {
 }
 
 // ---------- invoices ----------
-const invoiceValues = (c: Ctx, lineCount: number, grossOffset = 0): Record<string, FieldValue> => {
+const invoiceValues = (c: Ctx, lineCount: number, grossOffset = 0, badLine = 0): Record<string, FieldValue> => {
   const { rng, id, index, review, supplier, currency } = c
   const conf = makeConfidence(rng, review)
   const vatChoices = VAT_BY_COUNTRY[supplier.country] ?? [0]
@@ -220,7 +222,8 @@ const invoiceValues = (c: Ctx, lineCount: number, grossOffset = 0): Record<strin
     const quantity = 1 + Math.floor(rng() * 12)
     const unitNet = 500 + Math.floor(rng() * 150_000)
     const vatRate = pick(rng, vatChoices)
-    const rowNet = quantity * unitNet
+    // only the first line can be off; its (wrong) net is what the totals add up
+    const rowNet = quantity * unitNet + (i === 0 ? badLine : 0)
     const rowVat = Math.round((rowNet * vatRate) / 100)
     net += rowNet
     vat += rowVat
@@ -466,7 +469,7 @@ export const buildSeedDocuments = (
         ? showcaseReceiptValues(id)
         : showcaseInvoiceValues(id)
       : plan.kind === 'invoice'
-        ? invoiceValues(ctx, plan.lines ?? 1 + Math.floor(rng() * 5), plan.grossOffset)
+        ? invoiceValues(ctx, plan.lines ?? 1 + Math.floor(rng() * 5), plan.grossOffset, plan.badLine)
         : plan.kind === 'receipt'
           ? receiptValues(ctx)
           : contractValues(ctx, company)

@@ -201,8 +201,8 @@ export const FUNCTION_IDS = [
 export type FunctionId = (typeof FUNCTION_IDS)[number]
 
 /**
- * An expression is a tree: a field, a table column, a constant, or a function call.
- * Document-level only: `field` is a top-level scalar field, `column` a column of a top-level table field.
+ * An expression is a tree: a field, a table column, a constant, a function call, or (row actions only) a cell.
+ * `field` is a top-level scalar field, `column` a column of a top-level table field.
  */
 export type Expr =
   | { kind: 'field'; fieldId: string }
@@ -211,6 +211,8 @@ export type Expr =
   /** money: `value` is the amount in major units of the document's currency (12.5); the currency comes from the other money in the same call or comparison */
   | { kind: 'const'; type: ScalarFieldType; value: unknown }
   | { kind: 'call'; fn: FunctionId; args: Expr[] }
+  /** this row's value in a column of the action's table; valid only inside a row action (spec 017) */
+  | { kind: 'cell'; columnId: string }
 
 export const COMPARE_OPS = ['eq', 'neq', 'lt', 'lte', 'gt', 'gte'] as const
 export type CompareOp = (typeof COMPARE_OPS)[number]
@@ -236,7 +238,24 @@ export interface ComputeAction {
   expr: Expr
 }
 
-export type FieldAction = CheckAction | ComputeAction
+/** A check run on every row of a table field (spec 017); `cell` nodes read the row being checked. */
+export interface RowCheckAction extends Omit<CheckAction, 'kind'> {
+  kind: 'row_check'
+  /** the table field whose every row is checked */
+  tableFieldId: string
+}
+
+/** A table column computed in every row from the row's other cells (spec 017). */
+export interface RowComputeAction {
+  kind: 'row_compute'
+  id: string
+  tableFieldId: string
+  /** the target column; it is computed in every row, never extracted */
+  columnId: string
+  expr: Expr
+}
+
+export type FieldAction = CheckAction | ComputeAction | RowCheckAction | RowComputeAction
 
 export interface DocumentType {
   id: string
@@ -406,7 +425,7 @@ export interface TableSuggestion {
 
 export interface TestExtractInput {
   fields: FieldDef[]
-  /** computed fields (those targeted by a compute action) are left out of the result */
+  /** computed fields and computed columns (those targeted by a compute / row_compute action) are left out of the result */
   actions?: FieldAction[]
   documentId: string
 }

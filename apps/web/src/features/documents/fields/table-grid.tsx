@@ -1,6 +1,8 @@
 import { useRef } from 'react'
 import type { ColumnDef, TableValue } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
+import type { RowFailures } from './row-failures'
+import { ComputedMark } from './computed-mark'
 import { TableAddRowButton } from './table-add-row-button'
 import { TableGridRow } from './table-grid-row'
 import { isAmountColumn, type CellChange } from './table-value-ops'
@@ -11,6 +13,9 @@ interface TableGridProps {
   columns: ColumnDef[]
   value: TableValue
   focusId: string
+  computedColumnIds?: ReadonlySet<string>
+  computedFailure?: (rowId: string, columnId: string) => string | null
+  failedRows?: RowFailures
   /** the editing callbacks are set together, only when the table is editable */
   onCellChange?: CellChange
   onAddRow?: () => void
@@ -18,13 +23,25 @@ interface TableGridProps {
 }
 
 /** The "Table" view: a spreadsheet-like grid. Contained scroll and a sticky header keep 50+ rows usable. */
-export const TableGrid = ({ label, columns, value, focusId, onCellChange, onAddRow, onRemoveRow }: TableGridProps) => {
+export const TableGrid = ({
+  label,
+  columns,
+  value,
+  focusId,
+  computedColumnIds,
+  computedFailure,
+  failedRows,
+  onCellChange,
+  onAddRow,
+  onRemoveRow,
+}: TableGridProps) => {
   const rowCount = value.rows.length
   const { gridRef, nav } = useGridNavigation({
     rowCount,
     dataColCount: columns.length,
     hasActionCol: onRemoveRow !== undefined,
     editable: onCellChange !== undefined,
+    readOnlyCols: new Set(columns.flatMap((c, i) => (computedColumnIds?.has(c.id) ? [i] : []))),
   })
   const addRef = useRef<HTMLButtonElement>(null)
   const remove = (rowId: string, index: number) => {
@@ -42,7 +59,7 @@ export const TableGrid = ({ label, columns, value, focusId, onCellChange, onAddR
       {rowCount === 0 ? (
         <p className="text-sm text-muted-foreground italic">{onAddRow ? 'No rows yet' : 'Not found'}</p>
       ) : (
-        <div className="max-h-table-scroll overflow-auto rounded-md border">
+        <div className="relative max-h-table-scroll overflow-auto rounded-md border">
           <table
             ref={gridRef}
             role="grid"
@@ -60,6 +77,7 @@ export const TableGrid = ({ label, columns, value, focusId, onCellChange, onAddR
                     className={cn('px-3 py-2 text-left font-medium whitespace-nowrap', isAmountColumn(column) && 'text-right')}
                   >
                     {column.label}
+                    {computedColumnIds?.has(column.id) && <ComputedMark />}
                   </th>
                 ))}
                 {onRemoveRow && (
@@ -77,6 +95,9 @@ export const TableGrid = ({ label, columns, value, focusId, onCellChange, onAddR
                   row={row}
                   index={index}
                   focusId={focusId}
+                  computedColumnIds={computedColumnIds}
+                  computedFailure={computedFailure}
+                  failedColumnIds={failedRows?.get(row.id)}
                   nav={nav}
                   onCellChange={onCellChange}
                   onRemove={onRemoveRow && remove}
