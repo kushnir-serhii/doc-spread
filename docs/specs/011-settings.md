@@ -1,6 +1,6 @@
 # 011 — Settings
 
-**Status:** in-progress · **Depends on:** 002 · **Route(s):** `/settings`
+**Status:** done · **Depends on:** 002 · **Route(s):** `/settings`
 
 ## Goal
 The user maintains company data, how dates, numbers and amounts are formatted, the saved export recipients, the team and sees the plan.
@@ -64,10 +64,15 @@ Team invites and roles (`TeamMember.status`), plan and usage endpoints; `Company
 ## Open questions
 - Which plans and limits exist?
   **Decided:** Free / Pro / Business as above, mock; the real list comes with billing.
+- Usage period: the mock counts the calendar month in local time; the backend should use the company's billing period (and say which time zone).
+- The mock backend accepts any recipients list; the real one should validate emails and reject duplicates too.
+- Counts in copy ("30 documents", "4 values") are plain numbers, not locale-formatted; fine while they stay small.
+- `pnpm ui-check` waits for `networkidle`, which doesn't cover the mock delay, so screens with a query often capture the skeleton; waiting for content (or a fixed settle) would make the screenshots show loaded states.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-27 | — | done | UI check (Playwright) passed: settings tabs, inbox, export history, groups at 375/1280 light+dark; scratch flows (recipients, invite, locale de-DE → Inbox) passed; screenshots in apps/web/e2e/screenshots/011/ |
 | 2026-10-27 | 4 | done | Plan/PlanUsage types, PLANS mock (company on Pro), getPlanUsage() + usePlan(); upload and type creation invalidate plan usage; plan card with usage meters (<progress>, warning ≥90%) · features/settings/plan-tab.tsx, usage-meter.tsx; lib/api/plan.ts; mock/ |
 | 2026-10-27 | 3 | done | TeamMember.status + nullable name, inviteTeamMember mock + useInviteMember(); members table (cards below sm), role and Pending badges, invite form · features/settings/team-*, invite-*, role-badge, member-pending-badge; lib/api/team.ts; mock/ |
 | 2026-10-27 | 2 | done | Company.locale; FormatLocaleProvider in AppShell + useFormatLocale(); locale threaded into every formatter call (~25 files; helpers take a locale param); Language and formats card with live preview · lib/format-locale/, features/settings/locale-*.tsx, app-shell.tsx, formatter call sites |
