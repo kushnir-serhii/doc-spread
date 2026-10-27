@@ -16,15 +16,16 @@ import { buildListParams, effectiveFilters, parseStatus, resolveView } from '@/f
 import type { InboxView } from '@/features/documents/inbox-view'
 import { useTypeCounts } from '@/features/documents/use-type-counts'
 import type { DocumentStatus, DocumentType } from '@/lib/mock/types'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
-const columnsFor = (view: InboxView, types: DocumentType[]) => {
+const columnsFor = (view: InboxView, types: DocumentType[], locale?: string) => {
   switch (view.kind) {
     case 'all':
-      return allColumns(types)
+      return allColumns(types, locale)
     case 'unclassified':
       return []
     case 'type':
-      return typeColumns(view.type)
+      return typeColumns(view.type, locale)
     default: {
       const unreachable: never = view
       return unreachable
@@ -34,6 +35,7 @@ const columnsFor = (view: InboxView, types: DocumentType[]) => {
 
 const InboxPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
+  const locale = useFormatLocale()
   const typesQuery = useDocumentTypes()
   const types = typesQuery.data ?? []
   const view = resolveView(searchParams.get('type'), types)
@@ -128,7 +130,7 @@ const InboxPage = () => {
           key={active}
           documents={documents}
           types={types}
-          columns={columnsFor(view, types)}
+          columns={columnsFor(view, types, locale)}
           exportTypeId={view.kind === 'type' ? view.type.id : undefined}
         />
       )}

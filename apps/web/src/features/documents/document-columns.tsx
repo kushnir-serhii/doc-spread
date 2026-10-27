@@ -12,20 +12,20 @@ const NO_CONFIDENCE: DocumentStatus[] = ['uploaded', 'processing', 'unclassified
 /** Title + up to 6 type columns + status must fit ~1000px, so cells get narrower as columns grow. */
 const WIDE_COLUMN_LIMIT = 4
 
-const titleColumn = (typesById: Map<string, DocumentType>): DocumentColumn => ({
+const titleColumn = (typesById: Map<string, DocumentType>, locale?: string): DocumentColumn => ({
   id: 'title',
   header: 'Title',
   cell: (doc) => {
     const type = doc.typeId ? typesById.get(doc.typeId) : undefined
-    return <DocumentTitleLink id={doc.id} title={documentTitle(doc, type)} />
+    return <DocumentTitleLink id={doc.id} title={documentTitle(doc, type, locale)} />
   },
 })
 
-const uploadedColumn: DocumentColumn = {
+const uploadedColumn = (locale?: string): DocumentColumn => ({
   id: 'uploaded',
   header: 'Uploaded',
-  cell: (doc) => <span className="text-muted-foreground">{formatDate(doc.uploadedAt)}</span>,
-}
+  cell: (doc) => <span className="text-muted-foreground">{formatDate(doc.uploadedAt, locale)}</span>,
+})
 
 const statusColumn: DocumentColumn = {
   id: 'status',
@@ -46,17 +46,17 @@ const confidenceColumn: DocumentColumn = {
     ),
 }
 
-const fieldColumn = (field: FieldDef, widthClass: string): DocumentColumn => ({
+const fieldColumn = (field: FieldDef, widthClass: string, locale?: string): DocumentColumn => ({
   id: field.id,
   header: field.label,
   align: field.type === 'money' || field.type === 'number' ? 'right' : undefined,
-  cell: (doc) => <TruncatedText text={formatFieldValue(doc.values[field.id])} className={widthClass} />,
+  cell: (doc) => <TruncatedText text={formatFieldValue(doc.values[field.id], locale)} className={widthClass} />,
 })
 
-export const allColumns = (types: DocumentType[]): DocumentColumn[] => {
+export const allColumns = (types: DocumentType[], locale?: string): DocumentColumn[] => {
   const typesById = new Map(types.map((type) => [type.id, type]))
   return [
-    titleColumn(typesById),
+    titleColumn(typesById, locale),
     {
       id: 'type',
       header: 'Type',
@@ -69,23 +69,27 @@ export const allColumns = (types: DocumentType[]): DocumentColumn[] => {
         )
       },
     },
-    uploadedColumn,
+    uploadedColumn(locale),
     statusColumn,
     confidenceColumn,
   ]
 }
 
-export const unclassifiedColumns = (actionsColumn: DocumentColumn): DocumentColumn[] => [
-  titleColumn(new Map()),
-  uploadedColumn,
+export const unclassifiedColumns = (actionsColumn: DocumentColumn, locale?: string): DocumentColumn[] => [
+  titleColumn(new Map(), locale),
+  uploadedColumn(locale),
   statusColumn,
   actionsColumn,
 ]
 
-export const typeColumns = (type: DocumentType): DocumentColumn[] => {
+export const typeColumns = (type: DocumentType, locale?: string): DocumentColumn[] => {
   const fields = type.listColumnIds
     .map((id) => type.fields.find((field) => field.id === id))
     .filter((field): field is FieldDef => field !== undefined)
   const widthClass = fields.length > WIDE_COLUMN_LIMIT ? 'max-w-24' : 'max-w-40'
-  return [titleColumn(new Map([[type.id, type]])), ...fields.map((field) => fieldColumn(field, widthClass)), statusColumn]
+  return [
+    titleColumn(new Map([[type.id, type]]), locale),
+    ...fields.map((field) => fieldColumn(field, widthClass, locale)),
+    statusColumn,
+  ]
 }

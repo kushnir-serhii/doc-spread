@@ -4,6 +4,7 @@ import { useDocumentPages, useDocumentType } from '@/lib/api'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import { confidenceLevel } from '@/lib/mock/format'
 import type { BBox, Document, ExtractedValue } from '@/lib/mock/types'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 const ACCEPTANCE_TEXT = '2026-10-14'
 const SIDEWAYS_PAGE = 1
@@ -20,6 +21,7 @@ const unionBBox = (boxes: BBox[]): BBox => {
 export const useDemoHighlights = (doc: Document | undefined): ViewerHighlight[] => {
   const type = useDocumentType(doc?.typeId ?? null, doc?.typeVersion ?? undefined).data
   const pages = useDocumentPages(doc?.id ?? null).data
+  const locale = useFormatLocale()
 
   return useMemo(() => {
     if (!doc) return []
@@ -41,11 +43,11 @@ export const useDemoHighlights = (doc: Document | undefined): ViewerHighlight[] 
         for (const [rowIndex, row] of value.rows.entries()) {
           for (const column of field.columns ?? []) {
             const cell = row.cells[column.id]
-            if (cell) add(`${doc.id}:${row.id}:${column.id}`, `${field.label}, row ${rowIndex + 1}, ${column.label}: ${formatFieldValue(cell)}`, cell)
+            if (cell) add(`${doc.id}:${row.id}:${column.id}`, `${field.label}, row ${rowIndex + 1}, ${column.label}: ${formatFieldValue(cell, locale)}`, cell)
           }
         }
       } else {
-        add(`${doc.id}:${field.id}`, `${field.label}: ${formatFieldValue(value)}`, value)
+        add(`${doc.id}:${field.id}`, `${field.label}: ${formatFieldValue(value, locale)}`, value)
       }
     }
     // the sample invoice's sideways page has no sources: derive one from its OCR tokens
@@ -60,5 +62,5 @@ export const useDemoHighlights = (doc: Document | undefined): ViewerHighlight[] 
       })
     }
     return result
-  }, [doc, type, pages])
+  }, [doc, type, pages, locale])
 }

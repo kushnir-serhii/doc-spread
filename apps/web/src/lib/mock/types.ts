@@ -23,6 +23,8 @@ export interface Company {
   taxId: string
   recipients: Recipient[]
   defaultCurrency: CurrencyCode
+  /** BCP 47 tag dates, numbers and amounts are formatted in; `null` = the browser's. */
+  locale: string | null
 }
 
 export type TeamRole = 'owner' | 'admin' | 'member'

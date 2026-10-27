@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CompanyForm, type CompanyFormValues } from '@/features/company/company-form'
 import { useCompany, useUpdateCompany } from '@/lib/api'
+import { LocaleSettings } from './locale-settings'
 
 export const CompanyTab = () => {
   const company = useCompany()
@@ -48,6 +49,7 @@ export const CompanyTab = () => {
       <p role="status" className="text-sm text-muted-foreground">
         {saved && !update.isPending && !update.isError ? 'Company details saved.' : ''}
       </p>
+      <LocaleSettings company={company.data} />
     </div>
   )
 }

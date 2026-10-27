@@ -14,6 +14,7 @@ import { PointAgainFeedback } from './point-again-feedback'
 import { confidenceOf } from './proposal-highlights'
 import type { PointAgain } from './use-point-again'
 import type { ProposalItem } from './use-proposal-review'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface ProposalRowProps {
   item: ProposalItem
@@ -55,10 +56,11 @@ export const ProposalRow = ({
   onRename,
   position,
 }: ProposalRowProps) => {
+  const locale = useFormatLocale()
   const inputId = useId()
   const { field, status } = item
   const confidence = confidenceOf(value)
-  const text = formatFieldValue(value)
+  const text = formatFieldValue(value, locale)
   const name = field.label.trim() || 'this field'
   const notFound = !valueLoading && isNotFound(value)
 

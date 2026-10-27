@@ -33,14 +33,14 @@ The user maintains company data, how dates, numbers and amounts are formatted, t
   - [x] loading skeleton and error with retry for the company query; long names and emails wrap or truncate with a title; works at 375px
   - [x] the Export recipient picker shows the edited list
 
-### [ ] 2. Language and formats
+### [x] 2. Language and formats
 - **Build:** a "Language and formats" card on the Company tab with its own Save: a locale select ("Browser default (<detected locale>)" or one of the listed locales) and a live preview of a date, a number and an amount (in the company's default currency). `Company.locale: string | null`. A `FormatLocaleProvider` in `AppShell` and `useFormatLocale()`; thread the locale into every formatter call site.
 - **Files:** `src/features/settings/`, `src/lib/format-locale/` (or `src/lib/fields/`), `src/components/layout/app-shell.tsx`, every file that calls a formatter
 - **Accept:**
-  - [ ] "Browser default (<detected locale>)" or a chosen locale, with a live preview of a date, a number and an amount that follows the select before saving
-  - [ ] save shows pending and announces success or error
-  - [ ] after saving, every screen formats with it (Inbox, Review, Groups, Export, Types, Design); "Browser default" goes back to the browser's locale
-  - [ ] no hard-coded locale anywhere; no formatter call site is left without the locale (except locale-independent code such as CSV values and ISO dates)
+  - [x] "Browser default (<detected locale>)" or a chosen locale, with a live preview of a date, a number and an amount that follows the select before saving
+  - [x] save shows pending and announces success or error
+  - [x] after saving, every screen formats with it (Inbox, Review, Groups, Export, Types, Design); "Browser default" goes back to the browser's locale
+  - [x] no hard-coded locale anywhere; no formatter call site is left without the locale (except locale-independent code such as CSV values and ISO dates)
 
 ### [ ] 3. Team
 - **Build:** members table with role badges; `TeamMember.status: 'active' | 'invited'`; invite form (email plus role Admin or Member) through a new `useInviteMember()` mock that adds a pending row.
@@ -68,6 +68,7 @@ Team invites and roles (`TeamMember.status`), plan and usage endpoints; `Company
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-27 | 2 | done | Company.locale; FormatLocaleProvider in AppShell + useFormatLocale(); locale threaded into every formatter call (~25 files; helpers take a locale param); Language and formats card with live preview · lib/format-locale/, features/settings/locale-*.tsx, app-shell.tsx, formatter call sites |
 | 2026-10-27 | 1 | done | settings page + URL tabs, company tab (CompanyForm reused), recipients add/edit/remove; accountantEmail removed; placeholder page deleted · pages/settings/, features/settings/, router.tsx, mock/types.ts, mock/data.ts |
 | 2026-10-27 | — | ready | questions settled: 4 slices (locale threading split out), URL tabs, accountantEmail removed, locale via context, plans mocked |
 | 2026-10-26 | — | rescoped | Language and formats: browser locale by default, a company can choose one (decided in 008 review) |

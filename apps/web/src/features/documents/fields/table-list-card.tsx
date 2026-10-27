@@ -9,6 +9,7 @@ import { cellFocusId } from './field-focus-ids'
 import { FieldValueEdit } from './field-value-edit'
 import { TableRemoveRowButton } from './table-remove-row-button'
 import { cellOf, isCell, type CellChange } from './table-value-ops'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface TableListCardProps {
   columns: ColumnDef[]
@@ -22,6 +23,7 @@ interface TableListCardProps {
 
 /** The "List" view: one row as a card, a label and a value (or input) per column. */
 export const TableListCard = ({ columns, row, index, focusId, onCellChange, onRemove }: TableListCardProps) => {
+  const locale = useFormatLocale()
   const base = useId()
   return (
     <li className="flex flex-col gap-2 rounded-md border bg-card p-3">
@@ -59,7 +61,7 @@ export const TableListCard = ({ columns, row, index, focusId, onCellChange, onRe
               />
             ) : (
               <p className={cn('text-sm font-medium break-words', cell.value === null && 'text-muted-foreground italic')}>
-                {cell.value === null ? 'Not found' : formatFieldValue(cell)}
+                {cell.value === null ? 'Not found' : formatFieldValue(cell, locale)}
               </p>
             )}
           </div>

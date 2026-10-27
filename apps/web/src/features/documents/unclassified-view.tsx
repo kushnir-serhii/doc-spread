@@ -4,6 +4,7 @@ import { AssignTypeCell } from './assign-type-cell'
 import { unclassifiedColumns } from './document-columns'
 import { DocumentList } from './document-list'
 import { UnclassifiedEmpty } from './unclassified-empty'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface UnclassifiedViewProps {
   documents: Document[]
@@ -12,24 +13,28 @@ interface UnclassifiedViewProps {
 
 /** Unclassified bucket. One mutation; a row is pending when its id is the in-flight variable. */
 export const UnclassifiedView = ({ documents, types }: UnclassifiedViewProps) => {
+  const locale = useFormatLocale()
   const reassign = useReassignDocumentType()
   const pendingId = reassign.isPending ? reassign.variables.id : undefined
   const assigned = reassign.isSuccess
     ? { file: reassign.data.file.name, type: types.find((type) => type.id === reassign.data.typeId)?.name }
     : undefined
 
-  const columns = unclassifiedColumns({
-    id: 'actions',
-    header: 'Classify',
-    cell: (doc) => (
-      <AssignTypeCell
-        doc={doc}
-        types={types}
-        isPending={pendingId === doc.id}
-        onAssign={(id, typeId) => reassign.mutate({ id, typeId })}
-      />
-    ),
-  })
+  const columns = unclassifiedColumns(
+    {
+      id: 'actions',
+      header: 'Classify',
+      cell: (doc) => (
+        <AssignTypeCell
+          doc={doc}
+          types={types}
+          isPending={pendingId === doc.id}
+          onAssign={(id, typeId) => reassign.mutate({ id, typeId })}
+        />
+      ),
+    },
+    locale,
+  )
 
   return (
     <>

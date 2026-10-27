@@ -9,11 +9,12 @@ import type { FieldDef } from '@/lib/mock/types'
 export const describeCheckSides = (
   outcome: Extract<CheckOutcome, { status: 'passed' | 'failed' }>,
   fields: readonly FieldDef[],
+  locale?: string,
 ): string => {
   const { check } = outcome
   const symbols = outcome.status === 'passed' ? OP_SYMBOL : NEGATED_OP_SYMBOL
-  const left = `${describeExpr(check.left, fields)} ${formatEvalValue(outcome.left)}`
-  const right = `${describeExpr(check.right, fields)} ${formatEvalValue(outcome.right)}`
+  const left = `${describeExpr(check.left, fields)} ${formatEvalValue(outcome.left, locale)}`
+  const right = `${describeExpr(check.right, fields)} ${formatEvalValue(outcome.right, locale)}`
   return `${left} ${symbols[check.op]} ${right}`
 }
 

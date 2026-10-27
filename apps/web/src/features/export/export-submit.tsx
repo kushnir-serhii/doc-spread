@@ -12,6 +12,7 @@ import { buildExportPlan } from './export-plan'
 import type { ExportResult } from './export-result'
 import { destinationText, moneyTotals } from './export-summary'
 import { SubmitSummary } from './submit-summary'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface ExportSubmitProps {
   type: DocumentType
@@ -34,6 +35,7 @@ interface Attempt {
 /** Summary, the Export button and its pending / error states. */
 export const ExportSubmit = ({ type, selected, options, mapping, attempted, onBlocked, onExported }: ExportSubmitProps) => {
   const id = useId()
+  const locale = useFormatLocale()
   const mutation = useCreateExportJob()
   const recipients = useCompany().data?.recipients ?? []
   const [last, setLast] = useState<Attempt>()
@@ -92,7 +94,7 @@ export const ExportSubmit = ({ type, selected, options, mapping, attempted, onBl
       </h2>
       <SubmitSummary
         count={selected.length}
-        totals={moneyTotals(type, mapping, format, selected)}
+        totals={moneyTotals(type, mapping, format, selected, locale)}
         format={format}
         destination={destinationText(destination, recipients)}
       />

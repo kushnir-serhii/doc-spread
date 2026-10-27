@@ -14,6 +14,7 @@ export const seedCompany: Company = {
   taxId: 'TX-4821-0937',
   recipients: [{ id: 'rcp-001', name: 'Accountant', email: 'accounting@ledgerworks.example' }],
   defaultCurrency: 'USD',
+  locale: null,
 }
 
 export const seedTeam: TeamMember[] = [

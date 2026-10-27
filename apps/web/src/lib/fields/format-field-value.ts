@@ -5,7 +5,7 @@ const EMPTY = '—'
 
 const formatText = (value: string | null): string => value?.trim() || EMPTY
 
-/** No `locale`: the browser's; a company locale (spec 011) is passed in once it exists. */
+/** No `locale`: the browser's. Callers pass `useFormatLocale()` (the company's locale). */
 export const formatFieldValue = (
   value: FieldValue | null | undefined,
   locale?: string,

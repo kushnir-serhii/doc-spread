@@ -19,6 +19,7 @@ import { useReviewDraft } from './use-review-draft'
 import { useReviewShortcuts } from './use-review-shortcuts'
 import { useReviewPointing } from './use-review-pointing'
 import { useReviewHighlights } from './use-review-highlights'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface ReviewWorkspaceProps {
   doc: Document
@@ -27,6 +28,7 @@ interface ReviewWorkspaceProps {
 
 /** Viewer and form side by side (stacked on small screens), tied together by focus ids. */
 export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
+  const locale = useFormatLocale()
   const viewerRef = useRef<DocumentViewerHandle>(null)
   const formRef = useRef<HTMLDivElement>(null)
   const [focusedId, setFocusedId] = useState<string | null>(null)
@@ -34,7 +36,7 @@ export const ReviewWorkspace = ({ doc, type }: ReviewWorkspaceProps) => {
   const editable = doc.status === 'needs_review'
   const { values, computed, setValue, confirm, save, saveNow, dirty, needsSave, mutation } = useReviewDraft(doc, type)
   // checks run live on the draft, computed values included
-  const checks = summarizeChecks(type, runChecks(type, { values }))
+  const checks = summarizeChecks(type, runChecks(type, { values }), locale)
   const pointing = useReviewPointing({ doc, type, draft: values, setValue, formRef })
   const highlights = useReviewHighlights(doc.id, values, type)
   const actions = useReviewActions({

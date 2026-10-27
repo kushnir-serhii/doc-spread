@@ -1,6 +1,7 @@
 import { FIELD_TYPE_META } from '@/lib/fields/field-meta'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import type { FieldValue } from '@/lib/mock/types'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 const SAMPLES: { label: string; value: FieldValue | null }[] = [
   { label: 'Empty', value: null },
@@ -19,6 +20,7 @@ const SAMPLES: { label: string; value: FieldValue | null }[] = [
 ]
 
 export const FieldTypesSection = () => {
+  const locale = useFormatLocale()
   return (
     <div className="flex flex-col gap-6">
       <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -41,7 +43,7 @@ export const FieldTypesSection = () => {
         {SAMPLES.map((s) => (
           <div key={s.label} className="flex items-center justify-between gap-3 px-3 py-2">
             <dt className="text-muted-foreground">{s.label}</dt>
-            <dd className="amount min-w-0 truncate font-medium">{formatFieldValue(s.value)}</dd>
+            <dd className="amount min-w-0 truncate font-medium">{formatFieldValue(s.value, locale)}</dd>
           </div>
         ))}
       </dl>
