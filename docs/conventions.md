@@ -56,6 +56,7 @@ React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 
 - All routes live in `src/app/router.tsx` as route objects. Pages load through `lazy`.
 - Filters, search, tabs and selected ids that should survive a reload go in the URL (`useSearchParams`, `useParams`).
 - Navigate with `<Link>` / `<NavLink>`. Use `useNavigate` only after an action, such as a successful submit.
+- Each path appears once in `router.tsx`. When a page replaces a placeholder, delete the placeholder; after a merge, check for a path listed twice (the first match wins and the page silently disappears).
 
 ## Data (TanStack Query 5)
 - One hook per operation in `src/lib/api/<domain>.ts`: `useDocuments(params)`, `useDocument(id)`, `useApproveDocuments()`.
@@ -70,7 +71,8 @@ React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 
 - Compose classes with `cn()` from `@/lib/utils`. Use `cva` for variants.
 - Amounts use tabular numbers (`tabular-nums`) and are right-aligned in tables.
 - Mobile-first classes. Review is desktop-first. Upload, Inbox and Approve must work at 375px. The type builder is desktop-first.
-
+- Pointer cursor on clickable native controls (buttons, selects, checkboxes, radios, `summary`, their labels) comes from the base layer in `src/styles/index.css`. Don't add `cursor-pointer` to them; add it only to custom clickable elements (a `div` row, a card). A new kind of native control goes into that base rule.
+- Action rows at 375px: actions are full width and stacked, the primary action last (thumb zone), navigation (Back/Skip) in its own row above. From `sm` up: one row, navigation left, actions right. DOM order matches visual order.
 ## Accessibility
 - WCAG 2.1 AA contrast. Focus must be visible (don't remove outlines).
 - Touch targets are at least 44px. Icon-only buttons have an `aria-label`.
