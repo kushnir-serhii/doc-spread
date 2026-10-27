@@ -22,7 +22,7 @@ pnpm lint     # turbo run lint
 
 Scope to one workspace with a filter, e.g. `pnpm --filter @docspread/web dev` or `pnpm turbo run build --filter=@docspread/web`.
 
-Inside `apps/web`: `pnpm build` runs `tsc -b && vite build` (type-checking is part of build; `pnpm typecheck` runs `tsc -b` alone), `pnpm preview` serves the build.
+Inside `apps/web`: `pnpm build` runs `tsc -b && vite build` (type-checking is part of build; `pnpm typecheck` runs `tsc -b` alone), `pnpm preview` serves the build. `pnpm ui-check` runs the Playwright UI check (`e2e/ui-check.spec.ts`; starts Vite on port 5199): `SPEC=005 ROUTES=onboarding,inbox pnpm ui-check` screenshots each route at 375px/1280px in light and dark into `e2e/screenshots/<spec>/` (git-ignored) and fails on console errors or horizontal scroll.
 
 There is no test runner configured yet; the root `test` script is a placeholder that exits with an error.
 
@@ -44,4 +44,4 @@ All process documents live in `docs/`:
 - `docs/conventions.md`: the rules every slice is checked against.
 - `docs/specs/`: one spec per task, split into slices (`_template.md` for new ones).
 
-`/run-implement` (short: `/run-i`) runs one step of the loop in `docs/process.md`. Key rules: all questions for a spec are asked once, up front; then its slices run one after another without stopping (each verified and committed on the spec's branch) and are reported once at the end; Opus orchestrates, Sonnet implements, Haiku takes mechanical work; the user merges branches into `main` (PRs).
+`/run-implement` (short: `/run-i`) runs one step of the loop in `docs/process.md`. Key rules: before any code the agent reads the main docs, pins down the spec's purpose and aims, and asks all questions for the whole spec once, up front (a `draft` spec is moved to `ready` in that same round, after the user approves); then its slices run one after another without stopping (each verified and committed on the spec's branch) and are reported once at the end; Opus orchestrates, Sonnet implements, Haiku takes mechanical work; the user merges branches into `main` (PRs).
