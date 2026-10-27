@@ -38,10 +38,12 @@
  */
 import {
   findValueMismatches,
+  PLANS,
   seedCompany,
   seedDocuments,
   seedDocumentTypeVersions,
   seedExportJobs,
+  seedPlanId,
   seedTeam,
 } from './data'
 import { DOCUMENT_TEMPLATES } from './templates'
@@ -78,6 +80,8 @@ import type {
   SuggestFieldInput,
   SuggestTableInput,
   TableSuggestion,
+  InviteRole,
+  PlanUsage,
   TeamMember,
   TestExtractInput,
   Token,
@@ -98,6 +102,8 @@ const db = {
   exportMappings: {} as Record<string, ExportMapping>,
   company: copy(seedCompany),
   team: copy(seedTeam),
+  planId: seedPlanId,
+
   /** lower-cased emails signed up in this session */
   signedUpEmails: new Set<string>(),
 }
@@ -738,4 +744,37 @@ export async function updateCompany(patch: Partial<Company>): Promise<Company> {
 export async function listTeam(): Promise<TeamMember[]> {
   await delay()
   return copy(db.team)
+}
+
+export async function inviteTeamMember(input: { email: string; role: InviteRole }): Promise<TeamMember> {
+  await delay()
+  const email = input.email.trim()
+  // the type allows only admin and member; guard anyway for callers outside the type system
+  if ((input.role as string) === 'owner') throw new Error('An invite can’t make someone the owner.')
+  if (db.team.some((member) => member.email.toLowerCase() === email.toLowerCase())) {
+    throw new Error(`${email} is already on the team.`)
+  }
+  const member: TeamMember = {
+    id: `u${crypto.randomUUID()}`,
+    name: null,
+    email,
+    role: input.role,
+    status: 'invited',
+  }
+  db.team.push(member)
+  return copy(member)
+}
+
+// ---------- plan ----------
+export async function getPlanUsage(): Promise<PlanUsage> {
+  await delay()
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), 1)
+  const documentsThisMonth = db.documents.filter((doc) => new Date(doc.uploadedAt) >= start).length
+  return {
+    plan: copy(PLANS[db.planId]),
+    documentsThisMonth,
+    types: currentVersions().length,
+    periodStart: start.toISOString(),
+  }
 }

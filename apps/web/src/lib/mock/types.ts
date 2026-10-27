@@ -35,18 +35,29 @@ export interface Recipient {
 export interface Company {
   name: string
   taxId: string
-  accountantEmail: string
   recipients: Recipient[]
   defaultCurrency: CurrencyCode
+  /** BCP 47 tag dates, numbers and amounts are formatted in; `null` = the browser's. */
+  locale: string | null
 }
 
-export type TeamRole = 'owner' | 'admin' | 'member'
+export const TEAM_ROLES = ['owner', 'admin', 'member'] as const
+export type TeamRole = (typeof TEAM_ROLES)[number]
+
+/** Roles that can be given by an invite (there is only one owner). */
+export const INVITE_ROLES = ['admin', 'member'] as const
+export type InviteRole = (typeof INVITE_ROLES)[number]
+
+export const TEAM_MEMBER_STATUSES = ['active', 'invited'] as const
+export type TeamMemberStatus = (typeof TEAM_MEMBER_STATUSES)[number]
 
 export interface TeamMember {
   id: string
-  name: string
+  /** `null` for an invited member who hasn't joined yet. */
+  name: string | null
   email: string
   role: TeamRole
+  status: TeamMemberStatus
 }
 
 export type ExportFormat = 'csv' | 'xlsx' | 'pdf_bundle'
@@ -417,4 +428,24 @@ export interface TestExtractInput {
   /** computed fields and computed columns (those targeted by a compute / row_compute action) are left out of the result */
   actions?: FieldAction[]
   documentId: string
+}
+
+// ---------- plan (spec 011) ----------
+export const PLAN_IDS = ['free', 'pro', 'business'] as const
+export type PlanId = (typeof PLAN_IDS)[number]
+
+export interface Plan {
+  id: PlanId
+  name: string
+  documentsPerMonth: number
+  /** `null` = unlimited */
+  typeLimit: number | null
+}
+
+export interface PlanUsage {
+  plan: Plan
+  documentsThisMonth: number
+  types: number
+  /** ISO date, first day of the current month (local time) */
+  periodStart: string
 }

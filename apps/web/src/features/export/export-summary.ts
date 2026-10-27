@@ -18,6 +18,7 @@ export const moneyTotals = (
   mapping: ExportColumnMapping,
   format: ExportFormat,
   documents: Document[],
+  locale?: string,
 ): MoneyTotal[] => {
   if (format === 'pdf_bundle') return []
   const computedIds = getComputedFieldIds(type)
@@ -38,7 +39,7 @@ export const moneyTotals = (
     totals.push({
       columnKey: fieldId,
       label: field.label,
-      amounts: [...sums].map(([currency, minor]) => formatMoney(minor, currency)),
+      amounts: [...sums].map(([currency, minor]) => formatMoney(minor, currency, locale)),
     })
   }
   return totals

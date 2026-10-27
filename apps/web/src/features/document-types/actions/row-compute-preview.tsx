@@ -1,6 +1,7 @@
 import { computeRowValues } from '@/lib/fields/evaluate-rows'
 import { describeFailure } from '@/lib/fields/describe-failure'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 import type { Document, FieldAction, FieldDef, RowComputeAction } from '@/lib/mock/types'
 import { PreviewBox } from './preview-box'
 import { PreviewRowList } from './preview-row-list'
@@ -16,6 +17,7 @@ interface RowComputePreviewProps {
 
 /** A computed column on the sample document: the first computed values, and the rows that can't be computed. */
 export const RowComputePreview = ({ action, document, fields, actions }: RowComputePreviewProps) => {
+  const locale = useFormatLocale()
   const value = document.values[action.tableFieldId]
   const rows = value?.type === 'table' ? value.rows : []
   if (rows.length === 0) {
@@ -33,7 +35,7 @@ export const RowComputePreview = ({ action, document, fields, actions }: RowComp
     return outcome ? [{ row, index, outcome }] : []
   })
   const computed = results.flatMap(({ row, index, outcome }) =>
-    outcome.ok ? [{ key: row.id, text: `Row ${index + 1}: ${formatFieldValue(outcome.value)}` }] : [],
+    outcome.ok ? [{ key: row.id, text: `Row ${index + 1}: ${formatFieldValue(outcome.value, locale)}` }] : [],
   )
   const failed = results.flatMap(({ row, index, outcome }) =>
     outcome.ok

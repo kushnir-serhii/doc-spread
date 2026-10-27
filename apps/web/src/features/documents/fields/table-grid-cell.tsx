@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { FieldValueEdit } from './field-value-edit'
 import { isAmountColumn, isCell } from './table-value-ops'
 import type { GridNavigation, GridPos } from './use-grid-navigation'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface TableGridCellProps {
   column: ColumnDef
@@ -26,12 +27,13 @@ interface TableGridCellProps {
 
 /** Shows the formatted value; switches to the field's own input on Enter, F2, double-click or typing. */
 export const TableGridCell = ({ column, cell, pos, focusId, nav, computed = false, failure = null, checkFailed = false, onChange }: TableGridCellProps) => {
+  const locale = useFormatLocale()
   const inputId = useId()
   const ref = useRef<HTMLTableCellElement>(null)
   const isActive = nav.active.row === pos.row && nav.active.col === pos.col
   const isEditing = nav.editing?.row === pos.row && nav.editing.col === pos.col
   const empty = cell.value === null
-  const text = failure ? '—' : empty ? 'Not found' : formatFieldValue(cell)
+  const text = failure ? '—' : empty ? 'Not found' : formatFieldValue(cell, locale)
   const low = onChange !== undefined && isLowConfidence(cell.confidence)
 
   // DOM focus: the input that replaces the text takes focus (and selects, so typing replaces)

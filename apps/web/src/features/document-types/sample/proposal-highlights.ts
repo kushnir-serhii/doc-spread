@@ -13,6 +13,7 @@ export const buildProposalHighlights = (
   items: readonly ProposalItem[],
   documentId: string,
   values: Record<string, FieldValue> | undefined,
+  locale?: string,
 ): ViewerHighlight[] =>
   items.flatMap(({ field, status }): ViewerHighlight[] => {
     const example = field.examples.find((e) => e.documentId === documentId)
@@ -25,7 +26,7 @@ export const buildProposalHighlights = (
         page: example.page,
         bbox: example.bbox,
         tone: confidence !== undefined && confidenceLevel(confidence) !== 'high' ? 'low-confidence' : 'normal',
-        label: value ? `${field.label}: ${formatFieldValue(value)}` : field.label,
+        label: value ? `${field.label}: ${formatFieldValue(value, locale)}` : field.label,
       },
     ]
   })

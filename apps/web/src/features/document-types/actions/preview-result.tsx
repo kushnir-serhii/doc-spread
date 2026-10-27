@@ -6,6 +6,7 @@ import type { Document, FieldAction, FieldDef } from '@/lib/mock/types'
 import { PreviewBox } from './preview-box'
 import { RowCheckPreview } from './row-check-preview'
 import { RowComputePreview } from './row-compute-preview'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface PreviewResultProps {
   /** the action as it is being edited */
@@ -18,6 +19,7 @@ interface PreviewResultProps {
 
 /** The action evaluated on one document, using the draft's fields. */
 export const PreviewResult = ({ action, document, fields, actions }: PreviewResultProps) => {
+  const locale = useFormatLocale()
   const type = { fields, actions }
   switch (action.kind) {
     case 'check': {
@@ -35,7 +37,7 @@ export const PreviewResult = ({ action, document, fields, actions }: PreviewResu
           tone={outcome.status === 'passed' ? 'ok' : 'bad'}
           title={outcome.status === 'passed' ? 'Passes' : 'Fails'}
         >
-          {describeCheckSides(outcome, fields)}
+          {describeCheckSides(outcome, fields, locale)}
         </PreviewBox>
       )
     }
@@ -58,7 +60,7 @@ export const PreviewResult = ({ action, document, fields, actions }: PreviewResu
       }
       return (
         <PreviewBox tone="ok" title="Computed">
-          {`${label} = ${formatFieldValue(outcome.value)}`}
+          {`${label} = ${formatFieldValue(outcome.value, locale)}`}
         </PreviewBox>
       )
     }

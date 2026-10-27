@@ -27,6 +27,7 @@ export const summarizeChecks = (
   type: Pick<DocumentType, 'fields'>,
   outcomes: readonly CheckOutcome[],
   rowOutcomes: readonly RowCheckOutcome[] = [],
+  locale?: string,
 ): CheckSummary => {
   const listed: ValidationIssue[] = []
   const blocking: ValidationIssue[] = []
@@ -49,7 +50,7 @@ export const summarizeChecks = (
     }
     const ids = [...new Set([...collectFieldIds(check.left), ...collectFieldIds(check.right)])]
     for (const id of ids) involvedFieldIds.add(id)
-    const sides = describeCheckSides(outcome, type.fields)
+    const sides = describeCheckSides(outcome, type.fields, locale)
     const issue = { fieldId: ids[0] ?? '', label: check.label, reason: sides }
     if (check.severity === 'blocking') {
       blocking.push(issue)

@@ -8,6 +8,7 @@ import type { Document, FieldAction, FieldDef } from '@/lib/mock/types'
 import { PreviewFrame } from './preview-frame'
 import { PreviewResult } from './preview-result'
 import { SlotSelect } from './slot-select'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface PreviewDocumentsProps {
   typeId: string
@@ -17,14 +18,15 @@ interface PreviewDocumentsProps {
   titleFieldId: string | null
 }
 
-const documentName = (document: Document, titleFieldId: string | null) => {
-  const title = titleFieldId ? formatFieldValue(document.values[titleFieldId]) : '—'
+const documentName = (document: Document, titleFieldId: string | null, locale?: string) => {
+  const title = titleFieldId ? formatFieldValue(document.values[titleFieldId], locale) : '—'
   return title === '—' ? document.file.name : `${title} (${document.file.name})`
 }
 
 /** The documents of a saved type: pick one (newest by default) and see the action run on it. */
 export const PreviewDocuments = ({ typeId, action, fields, otherActions, titleFieldId }: PreviewDocumentsProps) => {
   const selectId = useId()
+  const locale = useFormatLocale()
   const [chosenId, setChosenId] = useState<string | null>(null)
   const query = useDocuments({ typeId })
 
@@ -69,7 +71,7 @@ export const PreviewDocuments = ({ typeId, action, fields, otherActions, titleFi
       <SlotSelect id={selectId} value={document.id} onChange={(event) => setChosenId(event.target.value)}>
         {documents.map((d) => (
           <option key={d.id} value={d.id}>
-            {documentName(d, titleFieldId)}
+            {documentName(d, titleFieldId, locale)}
           </option>
         ))}
       </SlotSelect>

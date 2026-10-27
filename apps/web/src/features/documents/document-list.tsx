@@ -5,6 +5,7 @@ import { documentTitle } from './document-title'
 import { DocumentTable } from './document-table'
 import { SelectCheckbox } from './select-checkbox'
 import type { Selection } from './use-selection'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface DocumentListProps {
   documents: Document[]
@@ -16,9 +17,10 @@ interface DocumentListProps {
 
 /** Table from md up, cards below it; switched in CSS so there is no JS media query. */
 export const DocumentList = ({ documents, types, columns, selection }: DocumentListProps) => {
+  const locale = useFormatLocale()
   const typesById = new Map(types.map((type) => [type.id, type]))
   const typeOf = (doc: Document) => (doc.typeId ? typesById.get(doc.typeId) : undefined)
-  const titleFor = (doc: Document) => documentTitle(doc, typeOf(doc))
+  const titleFor = (doc: Document) => documentTitle(doc, typeOf(doc), locale)
 
   return (
     <>

@@ -2,6 +2,7 @@ import { describeCheckSides } from '@/lib/fields/describe-check-outcome'
 import { describeFailure } from '@/lib/fields/describe-failure'
 import type { RowCheckOutcome, RowCheckRowOutcome } from '@/lib/fields/evaluate-rows'
 import type { FieldDef } from '@/lib/mock/types'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 import { PreviewBox } from './preview-box'
 import { PreviewRowList } from './preview-row-list'
 import { MAX_PREVIEW_ROWS, rowsText } from './row-count-text'
@@ -13,6 +14,7 @@ interface RowCheckPreviewProps {
 
 /** A row check on the sample document: "Fails in 2 of 64 rows", then the first failing rows with both sides. */
 export const RowCheckPreview = ({ outcome, fields }: RowCheckPreviewProps) => {
+  const locale = useFormatLocale()
   const { check, rowCount, rows } = outcome
   const failed = rows.filter((row) => row.status === 'failed')
   const errors = rows.filter((row) => row.status === 'error')
@@ -29,6 +31,7 @@ export const RowCheckPreview = ({ outcome, fields }: RowCheckPreviewProps) => {
     const sides = describeCheckSides(
       { status: row.status, check: { ...check, kind: 'check' }, left: row.left, right: row.right },
       fields,
+      locale,
     )
     return { key: row.rowId, text: prefix + sides }
   }

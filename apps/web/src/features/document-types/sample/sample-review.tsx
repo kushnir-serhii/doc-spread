@@ -23,6 +23,7 @@ import { useProposalActivation } from './use-proposal-activation'
 import type { ProposalItem } from './use-proposal-review'
 import { useSamplePointing } from './use-sample-pointing'
 import { useUnreadableSample } from './use-sample-readability'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface SampleReviewProps {
   /** The active sample. Mount with a `key` per sample: pointing restarts on a tab switch. */
@@ -60,6 +61,7 @@ export const SampleReview = ({
   reviewActions,
   onTryExample,
 }: SampleReviewProps) => {
+  const locale = useFormatLocale()
   const viewerRef = useRef<DocumentViewerHandle>(null)
   const pointRef = useRef<HTMLButtonElement>(null)
   const tableRef = useRef<HTMLButtonElement>(null)
@@ -71,7 +73,7 @@ export const SampleReview = ({
   const again = usePointAgain(documentId, items, preview.data, dispatch)
   const pointing = useSamplePointing(point, again, table)
   const unreadable = useUnreadableSample(documentId)
-  const highlights = buildProposalHighlights(items, documentId, preview.data)
+  const highlights = buildProposalHighlights(items, documentId, preview.data, locale)
   const selectedId = selection?.fieldId ?? null
 
   const selectField = (id: string) => {

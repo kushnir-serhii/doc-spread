@@ -1,5 +1,5 @@
 import { defaultExportMapping } from '@/lib/fields/export-mapping'
-import type { Company, Document, ExportJob, TeamMember } from './types'
+import type { Company, Document, ExportJob, Plan, PlanId, TeamMember } from './types'
 import { seedDocumentTypeVersions } from './document-types-seed'
 import { buildSeedDocuments } from './documents-seed'
 import type { SeedSupplier } from './documents-seed'
@@ -12,17 +12,28 @@ export { findValueMismatches } from './value-check'
 export const seedCompany: Company = {
   name: 'Northwind Studio Ltd',
   taxId: 'TX-4821-0937',
-  accountantEmail: 'accounting@ledgerworks.example',
   recipients: [{ id: 'rcp-001', name: 'Accountant', email: 'accounting@ledgerworks.example' }],
   defaultCurrency: 'USD',
+  locale: null,
 }
 
 export const seedTeam: TeamMember[] = [
-  { id: 'u1', name: 'Alex Morgan', email: 'alex@northwind-studio.example', role: 'owner' },
-  { id: 'u2', name: 'Sam Rivera', email: 'sam@northwind-studio.example', role: 'admin' },
-  { id: 'u3', name: 'Jordan Lee', email: 'jordan@northwind-studio.example', role: 'member' },
-  { id: 'u4', name: 'Priya Shah', email: 'priya@northwind-studio.example', role: 'member' },
+  { id: 'u1', name: 'Alex Morgan', email: 'alex@northwind-studio.example', role: 'owner', status: 'active' },
+  { id: 'u2', name: 'Sam Rivera', email: 'sam@northwind-studio.example', role: 'admin', status: 'active' },
+  { id: 'u3', name: 'Jordan Lee', email: 'jordan@northwind-studio.example', role: 'member', status: 'active' },
+  { id: 'u4', name: 'Priya Shah', email: 'priya@northwind-studio.example', role: 'member', status: 'active' },
+  { id: 'u5', name: null, email: 'taylor@northwind-studio.example', role: 'member', status: 'invited' },
 ]
+
+// ---------- plans ----------
+export const PLANS: Record<PlanId, Plan> = {
+  free: { id: 'free', name: 'Free', documentsPerMonth: 50, typeLimit: 3 },
+  pro: { id: 'pro', name: 'Pro', documentsPerMonth: 1000, typeLimit: null },
+  business: { id: 'business', name: 'Business', documentsPerMonth: 10000, typeLimit: null },
+}
+
+/** The mock company's plan. */
+export const seedPlanId: PlanId = 'pro'
 
 // private: the seed suppliers of the invoice, receipt and contract documents
 const SEED_SUPPLIERS: SeedSupplier[] = [
@@ -59,9 +70,9 @@ const invoiceColumns = seedMapping('type-invoice')
 const receiptColumns = seedMapping('type-receipt')
 
 export const seedExportJobs: ExportJob[] = [
-  { id: 'exp_001', createdAt: '2026-10-19T14:05:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: seedCompany.accountantEmail, columns: invoiceColumns, status: 'completed' },
+  { id: 'exp_001', createdAt: '2026-10-19T14:05:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: seedCompany.recipients[0].email, columns: invoiceColumns, status: 'completed' },
   { id: 'exp_002', createdAt: '2026-10-12T09:40:00.000Z', format: 'csv', typeId: 'type-receipt', documentIds: exportedReceipts, destination: 'download', columns: receiptColumns, status: 'completed' },
-  { id: 'exp_003', createdAt: '2026-10-05T16:20:00.000Z', format: 'pdf_bundle', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 1), destination: 'email', recipient: seedCompany.accountantEmail, columns: invoiceColumns, status: 'completed' },
+  { id: 'exp_003', createdAt: '2026-10-05T16:20:00.000Z', format: 'pdf_bundle', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 1), destination: 'email', recipient: seedCompany.recipients[0].email, columns: invoiceColumns, status: 'completed' },
   { id: 'exp_004', createdAt: '2026-09-28T11:00:00.000Z', format: 'csv', typeId: 'type-invoice', documentIds: exportedInvoices.slice(0, 2), destination: 'email', recipient: 'old-accountant@ledgerworks.example', columns: invoiceColumns, status: 'failed' },
   { id: 'exp_005', createdAt: '2026-09-21T08:15:00.000Z', format: 'xlsx', typeId: 'type-invoice', documentIds: exportedInvoices.slice(1, 2), destination: 'download', columns: invoiceColumns, status: 'completed' },
 ]

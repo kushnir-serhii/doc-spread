@@ -4,7 +4,7 @@ import type { Confidence, CurrencyCode } from './types'
 
 /**
  * Formats an amount given in minor units (cents, or yen for JPY: see minorDigits).
- * No `locale`: the browser's; a company locale (spec 011) is passed in once it exists.
+ * No `locale`: the browser's. Callers pass `useFormatLocale()` (the company's locale).
  */
 export function formatMoney(
   minor: number | null | undefined,
