@@ -1,6 +1,6 @@
 # 004 — Auth
 
-**Status:** in-progress · **Depends on:** 001 · **Route(s):** `/sign-in`, `/sign-up`, `/reset-password`
+**Status:** done · **Depends on:** 001 · **Route(s):** `/sign-in`, `/sign-up`, `/reset-password`
 
 ## Goal
 A user coming from the landing page can sign in (→ `/inbox`), create an account (→ `/onboarding`) or request a password reset, against mocks shaped like the future backend, so the forms, validation, pending and error states are final before a provider is wired in.
@@ -78,3 +78,4 @@ Endpoints for sign-in, sign-up (name, email, password) and reset request; error 
 | 2026-10-27 | 2 | done | sign-in form (validation, pending, `role="alert"` errors for `invalid_credentials`/`rate_limited`, generic fallback), → `/inbox`; `AuthError` + `AUTH_ERROR_CODES`, mock `signIn`, `useSignIn`, shared `PasswordInput`. `lib/mock/types.ts`, `lib/mock/api.ts`, `lib/api/auth.ts`, `lib/api/index.ts`, `features/auth/password-input.tsx`, `sign-in-form.tsx`, `pages/auth/sign-in-page.tsx` |
 | 2026-10-27 | 3 | done | sign-up form (name, email, password with hint; `aria-describedby` to hint + errors), `email_taken` alert with "Sign in instead" link, → `/onboarding`; mock `signUp` (team emails + `db.signedUpEmails`), `useSignUp`; email validation and error messages shared with sign-in. `features/auth/sign-up-form.tsx`, `auth-validation.ts`, `auth-error-message.ts`, `sign-in-form.tsx`, `lib/mock/api.ts`, `lib/api/auth.ts`, `pages/auth/sign-up-page.tsx` |
 | 2026-10-27 | 4 | done | reset form → "Check your email" (`role="status"`, long email wraps, heading focused), "Use a different email" keeps the email; `rate_limited` alert; mock `requestPasswordReset`, `useRequestPasswordReset`; `AuthPlaceholder` deleted. `features/auth/reset-password.tsx`, `reset-password-form.tsx`, `reset-password-sent.tsx`, `pages/auth/reset-password-page.tsx`, `lib/mock/api.ts`, `lib/api/auth.ts` |
+| 2026-10-27 | — | done | UI check `SPEC=004 ROUTES=sign-in,sign-up,reset-password` passes (12/12), screenshots reviewed; error, pending, email-taken, rate-limit and sent states (long email at 375px, no horizontal scroll) checked with a throwaway Playwright run; spec done |
