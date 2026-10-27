@@ -42,13 +42,13 @@ The user maintains company data, how dates, numbers and amounts are formatted, t
   - [x] after saving, every screen formats with it (Inbox, Review, Groups, Export, Types, Design); "Browser default" goes back to the browser's locale
   - [x] no hard-coded locale anywhere; no formatter call site is left without the locale (except locale-independent code such as CSV values and ISO dates)
 
-### [ ] 3. Team
+### [x] 3. Team
 - **Build:** members table with role badges; `TeamMember.status: 'active' | 'invited'`; invite form (email plus role Admin or Member) through a new `useInviteMember()` mock that adds a pending row.
 - **Files:** `src/features/settings/`, `src/lib/api/team.ts`, `src/lib/mock/`
 - **Accept:**
-  - [ ] a members table with role badges; invited members show their email and a "Pending" badge
-  - [ ] the invite form (email plus role) is a mock that adds a pending row; email validated; an email already on the team is an error; pending and the result are announced
-  - [ ] loading skeleton, error with retry; cards instead of the table at 375px; long names and emails handled
+  - [x] a members table with role badges; invited members show their email and a "Pending" badge
+  - [x] the invite form (email plus role) is a mock that adds a pending row; email validated; an email already on the team is an error; pending and the result are announced
+  - [x] loading skeleton, error with retry; cards instead of the table at 375px; long names and emails handled
 
 ### [ ] 4. Plan
 - **Build:** `usePlan()` returning the plan and usage (documents uploaded this calendar month, number of types) from the mock.
@@ -68,6 +68,7 @@ Team invites and roles (`TeamMember.status`), plan and usage endpoints; `Company
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-27 | 3 | done | TeamMember.status + nullable name, inviteTeamMember mock + useInviteMember(); members table (cards below sm), role and Pending badges, invite form · features/settings/team-*, invite-*, role-badge, member-pending-badge; lib/api/team.ts; mock/ |
 | 2026-10-27 | 2 | done | Company.locale; FormatLocaleProvider in AppShell + useFormatLocale(); locale threaded into every formatter call (~25 files; helpers take a locale param); Language and formats card with live preview · lib/format-locale/, features/settings/locale-*.tsx, app-shell.tsx, formatter call sites |
 | 2026-10-27 | 1 | done | settings page + URL tabs, company tab (CompanyForm reused), recipients add/edit/remove; accountantEmail removed; placeholder page deleted · pages/settings/, features/settings/, router.tsx, mock/types.ts, mock/data.ts |
 | 2026-10-27 | — | ready | questions settled: 4 slices (locale threading split out), URL tabs, accountantEmail removed, locale via context, plans mocked |

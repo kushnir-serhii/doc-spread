@@ -76,6 +76,7 @@ import type {
   SuggestFieldInput,
   SuggestTableInput,
   TableSuggestion,
+  InviteRole,
   TeamMember,
   TestExtractInput,
   Token,
@@ -687,4 +688,23 @@ export async function updateCompany(patch: Partial<Company>): Promise<Company> {
 export async function listTeam(): Promise<TeamMember[]> {
   await delay()
   return copy(db.team)
+}
+
+export async function inviteTeamMember(input: { email: string; role: InviteRole }): Promise<TeamMember> {
+  await delay()
+  const email = input.email.trim()
+  // the type allows only admin and member; guard anyway for callers outside the type system
+  if ((input.role as string) === 'owner') throw new Error('An invite can’t make someone the owner.')
+  if (db.team.some((member) => member.email.toLowerCase() === email.toLowerCase())) {
+    throw new Error(`${email} is already on the team.`)
+  }
+  const member: TeamMember = {
+    id: `u${crypto.randomUUID()}`,
+    name: null,
+    email,
+    role: input.role,
+    status: 'invited',
+  }
+  db.team.push(member)
+  return copy(member)
 }

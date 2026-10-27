@@ -27,13 +27,23 @@ export interface Company {
   locale: string | null
 }
 
-export type TeamRole = 'owner' | 'admin' | 'member'
+export const TEAM_ROLES = ['owner', 'admin', 'member'] as const
+export type TeamRole = (typeof TEAM_ROLES)[number]
+
+/** Roles that can be given by an invite (there is only one owner). */
+export const INVITE_ROLES = ['admin', 'member'] as const
+export type InviteRole = (typeof INVITE_ROLES)[number]
+
+export const TEAM_MEMBER_STATUSES = ['active', 'invited'] as const
+export type TeamMemberStatus = (typeof TEAM_MEMBER_STATUSES)[number]
 
 export interface TeamMember {
   id: string
-  name: string
+  /** `null` for an invited member who hasn't joined yet. */
+  name: string | null
   email: string
   role: TeamRole
+  status: TeamMemberStatus
 }
 
 export type ExportFormat = 'csv' | 'xlsx' | 'pdf_bundle'

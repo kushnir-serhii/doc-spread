@@ -18,10 +18,11 @@ export const seedCompany: Company = {
 }
 
 export const seedTeam: TeamMember[] = [
-  { id: 'u1', name: 'Alex Morgan', email: 'alex@northwind-studio.example', role: 'owner' },
-  { id: 'u2', name: 'Sam Rivera', email: 'sam@northwind-studio.example', role: 'admin' },
-  { id: 'u3', name: 'Jordan Lee', email: 'jordan@northwind-studio.example', role: 'member' },
-  { id: 'u4', name: 'Priya Shah', email: 'priya@northwind-studio.example', role: 'member' },
+  { id: 'u1', name: 'Alex Morgan', email: 'alex@northwind-studio.example', role: 'owner', status: 'active' },
+  { id: 'u2', name: 'Sam Rivera', email: 'sam@northwind-studio.example', role: 'admin', status: 'active' },
+  { id: 'u3', name: 'Jordan Lee', email: 'jordan@northwind-studio.example', role: 'member', status: 'active' },
+  { id: 'u4', name: 'Priya Shah', email: 'priya@northwind-studio.example', role: 'member', status: 'active' },
+  { id: 'u5', name: null, email: 'taylor@northwind-studio.example', role: 'member', status: 'invited' },
 ]
 
 // private: the seed suppliers of the invoice, receipt and contract documents

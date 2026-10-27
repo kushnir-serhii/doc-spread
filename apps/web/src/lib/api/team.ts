@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { listTeam } from '@/lib/mock'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { inviteTeamMember, listTeam } from '@/lib/mock'
 
 export const teamKeys = {
   all: ['team'] as const,
@@ -11,3 +11,11 @@ export const useTeam = () =>
     queryKey: teamKeys.list(),
     queryFn: listTeam,
   })
+
+export const useInviteMember = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: inviteTeamMember,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: teamKeys.all }),
+  })
+}
