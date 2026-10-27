@@ -43,14 +43,14 @@ Mock `signIn`, `signUp`, `requestPasswordReset` in `src/lib/mock/api.ts` plus on
   - [x] `rate_limited` shows "Too many attempts. Wait a few minutes and try again." as `role="alert"`
   - [x] success navigates to `/inbox`
 
-### [ ] 3. Sign up
+### [x] 3. Sign up
 - **Model:** sonnet (designer)
 - **Files:** `src/pages/auth/sign-up-page.tsx`, `src/features/auth/sign-up-form.tsx`, `src/lib/mock/api.ts`, `src/lib/api/auth.ts`
 - **Build:** h1 "Create your account", subline "Start turning documents into spreadsheets." Fields: Full name (`autoComplete="name"`), Email (`autoComplete="email"`), Password (`PasswordInput`, `autoComplete="new-password"`, hint "At least 8 characters." always visible). No confirm field, no Terms checkbox. Submit "Create account" ("Creating account…"). Link: "Already have an account? Sign in" → `/sign-in`. Validation: "Enter your name." / email messages as in sign-in / "Use at least 8 characters."
 - **Accept:**
-  - [ ] field-level validation messages are linked with `aria-describedby` (the password's hint and its error both)
-  - [ ] `email_taken` shows "An account with this email already exists." with a "Sign in instead" link to `/sign-in`, as `role="alert"`; `rate_limited` as in sign-in
-  - [ ] success navigates to `/onboarding`
+  - [x] field-level validation messages are linked with `aria-describedby` (the password's hint and its error both)
+  - [x] `email_taken` shows "An account with this email already exists." with a "Sign in instead" link to `/sign-in`, as `role="alert"`; `rate_limited` as in sign-in
+  - [x] success navigates to `/onboarding`
 
 ### [ ] 4. Reset password
 - **Model:** sonnet (designer)
@@ -76,3 +76,4 @@ Endpoints for sign-in, sign-up (name, email, password) and reset request; error 
 | 2026-10-27 | — | ready | questions answered; draft → ready |
 | 2026-10-27 | 1 | done | gaps: all three pages render `AuthPlaceholder` ("Form coming…" + "Continue to app" → `/inbox`); no forms, validation, pending or error states; no mock `signIn`/`signUp`/`requestPasswordReset`, no `lib/api/auth.ts`, no `AuthError`. Already fine: `AuthLayout` card (logo, theme toggle), routes in `router.tsx`, landing CTAs and "Sign out" link to `/sign-in`/`/sign-up`. Slices 2–4 detailed with copy, mock rules and shared `PasswordInput` |
 | 2026-10-27 | 2 | done | sign-in form (validation, pending, `role="alert"` errors for `invalid_credentials`/`rate_limited`, generic fallback), → `/inbox`; `AuthError` + `AUTH_ERROR_CODES`, mock `signIn`, `useSignIn`, shared `PasswordInput`. `lib/mock/types.ts`, `lib/mock/api.ts`, `lib/api/auth.ts`, `lib/api/index.ts`, `features/auth/password-input.tsx`, `sign-in-form.tsx`, `pages/auth/sign-in-page.tsx` |
+| 2026-10-27 | 3 | done | sign-up form (name, email, password with hint; `aria-describedby` to hint + errors), `email_taken` alert with "Sign in instead" link, → `/onboarding`; mock `signUp` (team emails + `db.signedUpEmails`), `useSignUp`; email validation and error messages shared with sign-in. `features/auth/sign-up-form.tsx`, `auth-validation.ts`, `auth-error-message.ts`, `sign-in-form.tsx`, `lib/mock/api.ts`, `lib/api/auth.ts`, `pages/auth/sign-up-page.tsx` |

@@ -6,33 +6,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useSignIn } from '@/lib/api'
 import { AuthError } from '@/lib/mock/types'
-import type { AuthErrorCode } from '@/lib/mock/types'
+import { authErrorMessage, GENERIC_ERROR } from './auth-error-message'
+import { emailMessage } from './auth-validation'
 import { PasswordInput } from './password-input'
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const GENERIC_ERROR = 'Something went wrong. Try again.'
-
-const authErrorMessage = (code: AuthErrorCode): string => {
-  switch (code) {
-    case 'invalid_credentials':
-      return 'Email or password is incorrect.'
-    case 'rate_limited':
-      return 'Too many attempts. Wait a few minutes and try again.'
-    case 'email_taken':
-      return GENERIC_ERROR
-    default: {
-      const unreachable: never = code
-      return unreachable
-    }
-  }
-}
-
-const emailMessage = (email: string): string | null => {
-  const trimmed = email.trim()
-  if (trimmed === '') return 'Enter your email.'
-  if (!EMAIL_PATTERN.test(trimmed)) return 'Enter a valid email address.'
-  return null
-}
 
 export const SignInForm = () => {
   const id = useId()

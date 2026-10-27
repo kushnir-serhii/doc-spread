@@ -98,6 +98,8 @@ const db = {
   exportMappings: {} as Record<string, ExportMapping>,
   company: copy(seedCompany),
   team: copy(seedTeam),
+  /** lower-cased emails signed up in this session */
+  signedUpEmails: new Set<string>(),
 }
 
 function delay(): Promise<void> {
@@ -198,6 +200,26 @@ export async function signIn(input: { email: string; password: string }): Promis
   if (input.email.toLowerCase().includes('limit')) throw new AuthError('rate_limited')
   if (input.password === 'wrong-password') throw new AuthError('invalid_credentials')
   return { email: input.email }
+}
+
+/**
+ * Magic values: an email containing "limit" (any case) -> AuthError('rate_limited');
+ * a team member's email (e.g. alex@northwind-studio.example) or one already signed up
+ * in this session (any case) -> AuthError('email_taken'); anything else creates the account.
+ */
+export async function signUp(input: {
+  name: string
+  email: string
+  password: string
+}): Promise<{ name: string; email: string }> {
+  await delay()
+  const email = input.email.trim().toLowerCase()
+  if (email.includes('limit')) throw new AuthError('rate_limited')
+  if (db.team.some((m) => m.email.toLowerCase() === email) || db.signedUpEmails.has(email)) {
+    throw new AuthError('email_taken')
+  }
+  db.signedUpEmails.add(email)
+  return { name: input.name, email: input.email }
 }
 
 // ---------- document types ----------
