@@ -6,11 +6,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { DocumentAction } from './action-form'
+import type { NewActionKind } from './action-form'
 
 interface AddActionMenuProps {
   disabled?: boolean
-  onAdd: (kind: DocumentAction['kind']) => void
+  onAdd: (kind: NewActionKind) => void
 }
 
 export const AddActionMenu = ({ disabled = false, onAdd }: AddActionMenuProps) => (
@@ -25,11 +25,11 @@ export const AddActionMenu = ({ disabled = false, onAdd }: AddActionMenuProps) =
     <DropdownMenuContent align="start" className="w-72 max-w-[calc(100vw-2rem)]">
       <DropdownMenuItem onSelect={() => onAdd('check')} className="min-h-touch flex-col items-start gap-0.5 md:min-h-9">
         <span className="font-medium">Check</span>
-        <span className="text-xs text-muted-foreground">Compare two values, e.g. Gross = Net + VAT.</span>
+        <span className="text-xs text-muted-foreground">Compare two values, e.g. Gross = Net + VAT. Can run on each table row.</span>
       </DropdownMenuItem>
       <DropdownMenuItem onSelect={() => onAdd('compute')} className="min-h-touch flex-col items-start gap-0.5 md:min-h-9">
-        <span className="font-medium">Computed field</span>
-        <span className="text-xs text-muted-foreground">Calculate a field instead of extracting it.</span>
+        <span className="font-medium">Computed field or column</span>
+        <span className="text-xs text-muted-foreground">Calculate a field or table column instead of extracting it.</span>
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

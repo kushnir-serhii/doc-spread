@@ -1,12 +1,14 @@
 import { FUNCTIONS, type ExprType } from '@/lib/fields/functions'
 import type { FieldDef, FunctionId } from '@/lib/mock/types'
 import { CallArgs } from './call-args'
+import { CellSelect } from './cell-select'
 import { ColumnSelect } from './column-select'
 import { ConstInput } from './const-input'
 import { EMPTY_NODE, type ExprNode } from './expr-node'
 import { constTypesForSlot, getArity, type Allowed } from './expr-typing'
 import { FieldSelect } from './field-select'
 import { KindButtons } from './kind-buttons'
+import type { RowScope } from './row-scope'
 
 interface ExprSlotProps {
   /** the accessible name, the whole path: "Left side › Add › Argument 1" */
@@ -17,8 +19,13 @@ interface ExprSlotProps {
   /** the types this slot accepts */
   allowed: Allowed
   fields: readonly FieldDef[]
+  /** set for a row action: the table's cells can be used, computed fields can't */
+  row?: RowScope
   onChange: (node: ExprNode) => void
 }
+
+/** A cell in a document-level action (a stale one): no table to offer columns of. */
+const NO_ROW: RowScope = { tableFieldId: '', computedFieldIds: new Set(), blockedListColumnIds: new Set() }
 
 /** Switching to another function keeps the arguments that are already there, padded or cut to the new count. */
 const withFunction = (node: ExprNode, fn: FunctionId): ExprNode => {
@@ -33,7 +40,7 @@ const withFunction = (node: ExprNode, fn: FunctionId): ExprNode => {
 }
 
 /** One place in an expression: pick a field, a column, a constant or a function; a function opens slots for its arguments. */
-export const ExprSlot = ({ label, title = label, node, allowed, fields, onChange }: ExprSlotProps) => {
+export const ExprSlot = ({ label, title = label, node, allowed, fields, row, onChange }: ExprSlotProps) => {
   const constTypes: ExprType[] = constTypesForSlot(allowed)
   return (
     <div role="group" aria-label={label} className="flex flex-col gap-2">
@@ -43,9 +50,11 @@ export const ExprSlot = ({ label, title = label, node, allowed, fields, onChange
         node={node}
         fields={fields}
         allowed={allowed}
+        row={row}
         onKind={(kind) => {
           if (kind === 'field') onChange({ kind: 'field', fieldId: '' })
           else if (kind === 'column') onChange({ kind: 'column', fieldId: '', columnId: '' })
+          else if (kind === 'cell') onChange({ kind: 'cell', columnId: '' })
           else onChange({ kind: 'const', type: constTypes[0] ?? 'text', value: null })
         }}
         onFunction={(fn) => onChange(withFunction(node, fn))}
@@ -55,6 +64,7 @@ export const ExprSlot = ({ label, title = label, node, allowed, fields, onChange
           label={label}
           fields={fields}
           allowed={allowed}
+          row={row}
           value={node.fieldId}
           onChange={(fieldId) => onChange({ kind: 'field', fieldId })}
         />
@@ -64,16 +74,27 @@ export const ExprSlot = ({ label, title = label, node, allowed, fields, onChange
           label={label}
           fields={fields}
           allowed={allowed}
+          row={row}
           fieldId={node.fieldId}
           columnId={node.columnId}
           onChange={(fieldId, columnId) => onChange({ kind: 'column', fieldId, columnId })}
+        />
+      )}
+      {node.kind === 'cell' && (
+        <CellSelect
+          label={label}
+          fields={fields}
+          allowed={allowed}
+          row={row ?? NO_ROW}
+          value={node.columnId}
+          onChange={(columnId) => onChange({ kind: 'cell', columnId })}
         />
       )}
       {node.kind === 'const' && (
         <ConstInput label={label} node={node} types={constTypes} onChange={onChange} />
       )}
       {node.kind === 'call' && (
-        <CallArgs label={label} node={node} fields={fields} allowed={allowed} onChange={onChange} />
+        <CallArgs label={label} node={node} fields={fields} allowed={allowed} row={row} onChange={onChange} />
       )}
     </div>
   )

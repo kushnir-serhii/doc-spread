@@ -64,6 +64,25 @@ export const nodeFieldIds = (node: ExprNode): string[] => {
   }
 }
 
+/** The columns an unfinished expression reads as this row's cells. */
+export const nodeCellColumnIds = (node: ExprNode): string[] => {
+  switch (node.kind) {
+    case 'cell':
+      return node.columnId === '' ? [] : [node.columnId]
+    case 'call':
+      return [...new Set(node.args.flatMap(nodeCellColumnIds))]
+    case 'empty':
+    case 'field':
+    case 'column':
+    case 'const':
+      return []
+    default: {
+      const unreachable: never = node
+      throw new Error(`Unknown expression: ${String(unreachable)}`)
+    }
+  }
+}
+
 const PLACEHOLDER_ID = '__empty__'
 const PLACEHOLDER_FIELD: FieldDef = {
   id: PLACEHOLDER_ID,

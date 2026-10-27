@@ -50,14 +50,14 @@ A row expression may read: cells of its own table's row, top-level fields that a
   - [x] `sum(Line items › Gross)` sees computed Gross values; a row action can't read a computed document field (`type_mismatch`)
   - [x] the Invoice template, seed types and the seed invoice with a bad line are in place
 
-### [ ] 2. Row actions in the builder
+### [x] 2. Row actions in the builder
 - **Build:** in the action dialog, an "Applies to" choice (Whole document / Each row of <table>), shown only when the type has a table field. With a row scope the expression picker also offers "This row › <column>" for the chosen table, a computed action targets a column of that table, and computed document fields are not offered. Rows in "Actions (n)" show the scope. The field editor marks computed columns "Computed by …" (hint, examples and required hidden). The preview summarises row results on the sample document.
 - **Files:** `src/features/document-types/actions/*`, `src/features/document-types/` (field editor, validation)
 - **Accept:**
-  - [ ] only the cells, fields and functions whose types fit are offered; the readable line shows "This row › Quantity × This row › Unit net price"
-  - [ ] a row check has operator, tolerance and severity like a check; a computed column's type must equal the expression's result type
-  - [ ] a cycle between computed columns, a deleted column or table, or a column whose type no longer fits is a draft validation error (Save blocked, `ErrorSummary` links to the action)
-  - [ ] the preview says "Fails in 2 of 64 rows" with the first failing rows and both sides' values; for a computed column, the first computed values
+  - [x] only the cells, fields and functions whose types fit are offered; the readable line shows "This row › Quantity × This row › Unit net price"
+  - [x] a row check has operator, tolerance and severity like a check; a computed column's type must equal the expression's result type
+  - [x] a cycle between computed columns, a deleted column or table, or a column whose type no longer fits is a draft validation error (Save blocked, `ErrorSummary` links to the action)
+  - [x] the preview says "Fails in 2 of 64 rows" with the first failing rows and both sides' values; for a computed column, the first computed values
 
 ### [ ] 3. Computed columns in Review
 - **Build:** computed cells are derived from the draft every render (like computed fields), shown read-only in the grid and in List cards, and stored with the next save with confidence 1.
@@ -91,6 +91,7 @@ Store row actions with the type version; evaluate computed columns and row check
 
 - **Decided (2026-10-27):** inside a row compute, a column list over a computed column is `type_mismatch` (its order would be undefined); row checks and document-level actions may read it.
 - Seed doc-029 fails both the document check "Gross = Net + VAT" and the row check (first line).
+- **Decided (2026-10-27):** a computed column's own column stays in the "This row" picker; choosing it shows the cycle error (as for computed fields).
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -98,3 +99,4 @@ Store row actions with the type version; evaluate computed columns and row check
 | 2026-10-26 | — | drafted | from the open questions of 009 / 016 |
 | 2026-10-27 | — | ready | questions answered (all recommended), split into 4 slices |
 | 2026-10-27 | 1 | done | `cell` node, `row_check` / `row_compute`; `evaluate-rows.ts` (`computeRowValues`, `applyComputedCells`, `runRowChecks`), `run-checks.ts` (order: columns → fields → checks; `resolveValues`, `computeValues`, `runChecks`, `runRowChecksOnDocument`); id mapping, describe "This row › …"; extraction skips computed columns; Invoice row check + computed Gross; doc-029 `badLine`; builder lists row actions read-only. `lib/fields/*`, `lib/mock/{types,templates,documents-seed,fake-extract,api}.ts`, `lib/api/builder.ts`, `features/document-types/actions/*`, review/export imports |
+| 2026-10-27 | 2 | done | "Applies to" scope in the action dialog, "This row › column" in the picker, row checks and computed columns saved as `row_check` / `row_compute`, row-scoped validation (cycles, deleted table/column, type, cell scope) through `actionProblems`, row previews ("Fails in N of M rows", first computed values), computed columns marked in the column list and editor. `features/document-types/actions/*` (new: `action-scope`, `row-scope`, `row-action-problems`, `find-cycle`, `scope-select`, `cell-select`, `row-compute-form`, `row-check-preview`, `row-compute-preview`, `preview-box`, `preview-row-list`, `row-count-text`), `selected-editor.tsx`, `column-list.tsx`, `field-list.tsx`, `type-builder.tsx` |

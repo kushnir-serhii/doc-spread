@@ -13,6 +13,8 @@ interface FieldListProps {
   listColumnIds: string[]
   /** ids of the fields a compute action fills in */
   computedIds: ReadonlySet<string>
+  /** ids of the table columns a row compute action fills in */
+  computedColumnIds: ReadonlySet<string>
   selection: Selection
   /** Ids of fields and columns with problems to show. */
   invalidIds: ReadonlySet<string>
@@ -28,6 +30,7 @@ export const FieldList = ({
   titleFieldId,
   listColumnIds,
   computedIds,
+  computedColumnIds,
   selection,
   invalidIds,
   onSelect,
@@ -88,6 +91,7 @@ export const FieldList = ({
               <ColumnList
                 table={field}
                 invalidIds={invalidIds}
+                computedIds={computedColumnIds}
                 selectedColumnId={
                   selection?.kind === 'column' && selection.fieldId === field.id ? selection.columnId : null
                 }

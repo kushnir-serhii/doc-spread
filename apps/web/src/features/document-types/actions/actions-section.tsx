@@ -2,7 +2,7 @@ import type { Dispatch } from 'react'
 import type { BuilderAction } from '../type-draft-reducer'
 import type { TypeDraft } from '../type-draft'
 import { ActionDialog } from './action-dialog'
-import { isDocumentAction, type ActionEditorTarget } from './action-form'
+import type { ActionEditorTarget } from './action-form'
 import { actionProblems } from './action-problems'
 import { ActionRow } from './action-row'
 import { AddActionMenu } from './add-action-menu'
@@ -21,10 +21,7 @@ interface ActionsSectionProps {
 export const ActionsSection = ({ draft, dispatch, typeId, target, onTarget }: ActionsSectionProps) => {
   const { actions, fields } = draft
   const noFields = fields.length === 0
-  // row actions are shown but not edited yet (spec 017 slice 2)
-  const found = target?.mode === 'edit' ? actions.find((a) => a.id === target.id) : undefined
-  const editing = found && isDocumentAction(found) ? found : undefined
-  const dialogOpen = target !== null && (target.mode === 'new' || editing !== undefined)
+  const dialogOpen = target !== null && (target.mode === 'new' || actions.some((a) => a.id === target.id))
 
   return (
     <section aria-labelledby="actions-heading" className="mt-8">
@@ -38,7 +35,7 @@ export const ActionsSection = ({ draft, dispatch, typeId, target, onTarget }: Ac
             <p className="max-w-prose text-sm text-muted-foreground">
               Actions work across fields. A <strong>check</strong> warns or blocks approval in Review, like Gross = Net +
               VAT. A <strong>computed field</strong> is calculated instead of extracted, like Due in days = Due date −
-              Issue date.
+              Issue date. With a table, either can run on <strong>each row</strong>, like Net = Quantity × Unit price.
             </p>
           </div>
           <AddActionMenu disabled={noFields} onAdd={(kind) => onTarget({ mode: 'new', kind })} />
@@ -53,7 +50,7 @@ export const ActionsSection = ({ draft, dispatch, typeId, target, onTarget }: Ac
                   action={action}
                   fields={fields}
                   invalid={actionProblems(action, fields, actions).length > 0}
-                  onEdit={isDocumentAction(action) ? () => onTarget({ mode: 'edit', id: action.id }) : undefined}
+                  onEdit={() => onTarget({ mode: 'edit', id: action.id })}
                   onRemove={() => dispatch({ type: 'removeAction', id: action.id })}
                 />
               </li>

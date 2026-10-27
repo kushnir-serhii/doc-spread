@@ -11,6 +11,7 @@ import {
 } from '@/lib/fields/functions'
 import type { ColumnDef, FieldDef } from '@/lib/mock/types'
 import type { CallNode, ExprNode } from './expr-node'
+import type { RowScope } from './row-scope'
 
 /** The types a slot accepts: scalars, and lists (a table column) where the function takes one. */
 export type Allowed = readonly TypeName[]
@@ -104,23 +105,32 @@ export const argAllowed = (call: CallNode, index: number, fields: readonly Field
 export const functionsForSlot = (allowed: Allowed): readonly FunctionDef[] =>
   FUNCTION_LIST.filter((fn) => fn.signatures.some((signature) => allowed.includes(signature.result)))
 
-/** Scalar top-level fields whose type fits. */
-export const fieldsForSlot = (fields: readonly FieldDef[], allowed: Allowed): FieldDef[] =>
+/** Scalar top-level fields whose type fits; in a row action without the computed ones. */
+export const fieldsForSlot = (fields: readonly FieldDef[], allowed: Allowed, row?: RowScope): FieldDef[] =>
   fields.filter((field) => {
     const type = exprTypeOfField(field.type)
-    return type !== null && allowed.includes(type)
+    return type !== null && allowed.includes(type) && !row?.computedFieldIds.has(field.id)
   })
 
-/** Columns of table fields that fit as a list. */
-export const columnsForSlot = (fields: readonly FieldDef[], allowed: Allowed) =>
+/** Columns of table fields that fit as a list; in a row compute without the computed columns. */
+export const columnsForSlot = (fields: readonly FieldDef[], allowed: Allowed, row?: RowScope) =>
   fields.flatMap((table) =>
     table.type === 'table'
       ? (table.columns ?? []).flatMap((column) => {
           const type = columnType(column)
-          return type !== null && allowed.includes(`${type}[]`) ? [{ table, column }] : []
+          return type !== null && allowed.includes(`${type}[]`) && !row?.blockedListColumnIds.has(column.id)
+            ? [{ table, column }]
+            : []
         })
       : [],
   )
+
+/** Columns of the row action's own table whose type fits as this row's cell. */
+export const cellsForSlot = (fields: readonly FieldDef[], allowed: Allowed, row: RowScope): ColumnDef[] =>
+  (fields.find((f) => f.id === row.tableFieldId && f.type === 'table')?.columns ?? []).filter((column) => {
+    const type = columnType(column)
+    return type !== null && allowed.includes(type)
+  })
 
 /** The constant types a slot can take. */
 export const constTypesForSlot = (allowed: Allowed): ExprType[] => EXPR_TYPES.filter((type) => allowed.includes(type))

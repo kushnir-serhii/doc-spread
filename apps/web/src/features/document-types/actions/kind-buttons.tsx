@@ -2,14 +2,16 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { FieldDef, FunctionId } from '@/lib/mock/types'
 import type { ExprNode } from './expr-node'
-import { columnsForSlot, constTypesForSlot, fieldsForSlot, functionsForSlot, type Allowed } from './expr-typing'
+import { cellsForSlot, columnsForSlot, constTypesForSlot, fieldsForSlot, functionsForSlot, type Allowed } from './expr-typing'
 import { FunctionMenu } from './function-menu'
+import type { RowScope } from './row-scope'
 
-type PlainKind = 'field' | 'column' | 'const'
+type PlainKind = 'field' | 'column' | 'cell' | 'const'
 
 const PLAIN_KINDS: { kind: PlainKind; label: string }[] = [
   { kind: 'field', label: 'Field' },
   { kind: 'column', label: 'Column' },
+  { kind: 'cell', label: 'This row' },
   { kind: 'const', label: 'Constant' },
 ]
 
@@ -18,15 +20,18 @@ interface KindButtonsProps {
   node: ExprNode
   fields: readonly FieldDef[]
   allowed: Allowed
+  /** set in a row action: offers this row's cells, hides computed fields */
+  row?: RowScope
   onKind: (kind: PlainKind) => void
   onFunction: (fn: FunctionId) => void
 }
 
 /** What goes in a slot: a field, a column, a constant or a function. Only the kinds that have an option are offered. */
-export const KindButtons = ({ label, node, fields, allowed, onKind, onFunction }: KindButtonsProps) => {
+export const KindButtons = ({ label, node, fields, allowed, row, onKind, onFunction }: KindButtonsProps) => {
   const offered: Record<PlainKind, boolean> = {
-    field: fieldsForSlot(fields, allowed).length > 0,
-    column: columnsForSlot(fields, allowed).length > 0,
+    field: fieldsForSlot(fields, allowed, row).length > 0,
+    column: columnsForSlot(fields, allowed, row).length > 0,
+    cell: row !== undefined && cellsForSlot(fields, allowed, row).length > 0,
     const: constTypesForSlot(allowed).length > 0,
   }
   const functions = functionsForSlot(allowed)

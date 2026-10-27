@@ -5,14 +5,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useDocuments } from '@/lib/api'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import type { Document, FieldAction, FieldDef } from '@/lib/mock/types'
-import type { DocumentAction } from './action-form'
 import { PreviewFrame } from './preview-frame'
 import { PreviewResult } from './preview-result'
 import { SlotSelect } from './slot-select'
 
 interface PreviewDocumentsProps {
   typeId: string
-  action: DocumentAction | null
+  action: FieldAction | null
   fields: FieldDef[]
   otherActions: FieldAction[]
   titleFieldId: string | null
