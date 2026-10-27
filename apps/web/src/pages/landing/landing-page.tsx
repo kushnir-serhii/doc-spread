@@ -3,6 +3,8 @@ import { Logo } from '@/components/layout/logo'
 import { ThemeToggle } from '@/components/layout/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Hero } from '@/features/landing/hero'
+import { HowItWorks } from '@/features/landing/how-it-works'
+import { LandingFooter } from '@/features/landing/landing-footer'
 
 const LandingPage = () => {
   return (
@@ -18,7 +20,9 @@ const LandingPage = () => {
       </header>
       <main className="flex-1">
         <Hero />
+        <HowItWorks />
       </main>
+      <LandingFooter />
     </div>
   )
 }

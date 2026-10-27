@@ -1,6 +1,6 @@
 # 003 — Landing
 
-**Status:** in-progress · **Depends on:** 001 · **Route(s):** `/`
+**Status:** done · **Depends on:** 001 · **Route(s):** `/`
 
 ## Goal
 A visitor understands what DocSpread does in a few seconds and signs up.
@@ -33,7 +33,7 @@ None (static).
   - [x] illustration is decorative (`aria-hidden`), uses tokens only
   - [x] works at 375px, light and dark
 
-### [ ] 3. How it works (3 steps) + footer
+### [x] 3. How it works (3 steps) + footer
 - **Files:** `src/pages/landing/landing-page.tsx`, `src/features/landing/`
 - **Build:**
   - Section heading (`h2`) "How it works" and three steps:
@@ -42,10 +42,10 @@ None (static).
     3. **Review and export** — check the values side by side with the document, approve, and export CSV or XLSX.
   - Footer: logo, "© {current year} DocSpread", links "Sign in" → `/sign-in` and "Create account" → `/sign-up`.
 - **Accept:**
-  - [ ] the steps are an ordered list semantically (`ol`)
-  - [ ] icons are decorative (`aria-hidden`)
-  - [ ] footer in a `footer` landmark; year computed, not hard-coded; links are 44px touch targets
-  - [ ] works at 375px, light and dark
+  - [x] the steps are an ordered list semantically (`ol`)
+  - [x] icons are decorative (`aria-hidden`)
+  - [x] footer in a `footer` landmark; year computed, not hard-coded; links are 44px touch targets
+  - [x] works at 375px, light and dark
 
 ## Backend needs
 None.
@@ -63,3 +63,4 @@ None.
 | 2026-10-27 | — | ready | questions answered; draft → ready |
 | 2026-10-27 | 1 | done | gaps in `landing-page.tsx`: invoice-only copy ("Supplier invoices…"); secondary CTA "Open the app" → `/inbox` instead of `/sign-in`; no "how it works"; no footer; no visual; placeholder doc comment. CTAs and touch targets, header (logo, theme toggle, Sign in) and the single `h1` already fine. Slices 2–3 adjusted with the approved copy |
 | 2026-10-27 | 2 | done | hero with horizontal copy, niche chips, CTAs (`/sign-in`, `/sign-up`), decorative illustration; `/inbox` link removed. `pages/landing/landing-page.tsx`, `features/landing/hero.tsx`, `niche-list.tsx`, `hero-illustration.tsx` |
+| 2026-10-27 | 3 | done | "How it works" section (`ol`, decorative icons, h2/h3) and footer (logo, computed year, Sign in / Create account, 44px). `features/landing/how-it-works.tsx`, `landing-footer.tsx`, `pages/landing/landing-page.tsx`. UI check `SPEC=003 ROUTES=root` passes, screenshots reviewed; spec done |
