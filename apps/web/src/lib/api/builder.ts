@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { addFieldExample, proposeFields, suggestField, suggestTable, testExtract } from '@/lib/mock'
 import type { FieldAction, FieldDef, FieldExample, SuggestFieldInput, SuggestTableInput, TestExtractInput } from '@/lib/mock/types'
-import { getComputedFieldIds } from '@/lib/fields/computed-fields'
+import { getAllComputedColumnIds, getComputedFieldIds } from '@/lib/fields/computed-fields'
 import { documentTypeKeys } from './document-types'
 
 export const builderKeys = {
@@ -23,6 +23,7 @@ export const builderKeys = {
       ]),
       // computed fields are not extracted
       [...getComputedFieldIds({ actions })],
+      [...getAllComputedColumnIds({ actions })],
     ] as const,
 }
 

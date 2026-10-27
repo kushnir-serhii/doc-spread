@@ -1,6 +1,6 @@
 # 017 — Row actions (table rows)
 
-**Status:** ready · **Depends on:** 016 · **Route(s):** `/types/:typeId`, `/documents/:documentId`
+**Status:** in-progress · **Depends on:** 016 · **Route(s):** `/types/:typeId`, `/documents/:documentId`
 
 ## Goal
 The user adds computed columns and checks that work per table row ("Net = Quantity × Unit net price", "Gross = Net + VAT" on every line item), so line items are calculated and checked like document-level fields.
@@ -40,15 +40,15 @@ A row expression may read: cells of its own table's row, top-level fields that a
 
 ## Slices
 
-### [ ] 1. Types + row evaluation + template
+### [x] 1. Types + row evaluation + template
 - **Build:** the types above; `cell` in `evaluateExpr` (the context carries the current row); row computed columns in dependency order with cycle detection; row checks in `runChecks` (outcomes per row); computed cells written into the rows before document-level computes and checks; every exhaustive switch handles the new kinds (`mapActionIds`, `collectFieldIds`, `describeExpr` → "This row › Quantity" or the column label, builder rows show them minimally until slice 2). Mock extraction and `testExtract` skip computed columns. Invoice template and the seed Invoice types (v1, v2) get the row check "Net = Quantity × Unit net price" (tolerance 0.01, warning) and the computed column Gross = Net + VAT; one USD `needs_review` seed invoice has a line whose Net ≠ Quantity × Unit net price.
 - **Files:** `src/lib/mock/types.ts`, `src/lib/fields/{evaluate,action-ids,computed-fields}.ts`, `src/lib/mock/{templates,document-types-seed,documents-seed,fake-extract}.ts`
 - **Accept:**
-  - [ ] `cell` evaluates against the current row; outside a row action it is `type_mismatch`
-  - [ ] computed columns feed each other in dependency order; a cycle fails every column in it with `cycle`, naming the columns
-  - [ ] a row check gives one outcome per row: passed / failed (both sides) / error (reason, empty inputs); a table with no rows has nothing to check; a row where every input of the check is empty is skipped
-  - [ ] `sum(Line items › Gross)` sees computed Gross values; a row action can't read a computed document field (`type_mismatch`)
-  - [ ] the Invoice template, seed types and the seed invoice with a bad line are in place
+  - [x] `cell` evaluates against the current row; outside a row action it is `type_mismatch`
+  - [x] computed columns feed each other in dependency order; a cycle fails every column in it with `cycle`, naming the columns
+  - [x] a row check gives one outcome per row: passed / failed (both sides) / error (reason, empty inputs); a table with no rows has nothing to check; a row where every input of the check is empty is skipped
+  - [x] `sum(Line items › Gross)` sees computed Gross values; a row action can't read a computed document field (`type_mismatch`)
+  - [x] the Invoice template, seed types and the seed invoice with a bad line are in place
 
 ### [ ] 2. Row actions in the builder
 - **Build:** in the action dialog, an "Applies to" choice (Whole document / Each row of <table>), shown only when the type has a table field. With a row scope the expression picker also offers "This row › <column>" for the chosen table, a computed action targets a column of that table, and computed document fields are not offered. Rows in "Actions (n)" show the scope. The field editor marks computed columns "Computed by …" (hint, examples and required hidden). The preview summarises row results on the sample document.
@@ -89,8 +89,12 @@ Store row actions with the type version; evaluate computed columns and row check
 - **Decided (2026-10-27):** the builder uses one dialog with an "Applies to" choice, not new menu items.
 - **Decided (2026-10-27):** Review lists one entry per row check with the failing row numbers; the involved cells are highlighted per row.
 
+- **Decided (2026-10-27):** inside a row compute, a column list over a computed column is `type_mismatch` (its order would be undefined); row checks and document-level actions may read it.
+- Seed doc-029 fails both the document check "Gross = Net + VAT" and the row check (first line).
+
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-10-26 | — | drafted | from the open questions of 009 / 016 |
 | 2026-10-27 | — | ready | questions answered (all recommended), split into 4 slices |
+| 2026-10-27 | 1 | done | `cell` node, `row_check` / `row_compute`; `evaluate-rows.ts` (`computeRowValues`, `applyComputedCells`, `runRowChecks`), `run-checks.ts` (order: columns → fields → checks; `resolveValues`, `computeValues`, `runChecks`, `runRowChecksOnDocument`); id mapping, describe "This row › …"; extraction skips computed columns; Invoice row check + computed Gross; doc-029 `badLine`; builder lists row actions read-only. `lib/fields/*`, `lib/mock/{types,templates,documents-seed,fake-extract,api}.ts`, `lib/api/builder.ts`, `features/document-types/actions/*`, review/export imports |

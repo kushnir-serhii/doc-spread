@@ -48,7 +48,7 @@ import { DOCUMENT_TEMPLATES } from './templates'
 import type { DocumentTemplate } from './templates'
 import { majorText } from '@/lib/fields/currency-digits'
 import { parseFieldValue } from '@/lib/fields/parse-field-value'
-import { getComputedFieldIds } from '@/lib/fields/computed-fields'
+import { getAllComputedColumnIds, getComputedFieldIds } from '@/lib/fields/computed-fields'
 import { totalFields } from '@/lib/fields/total-fields'
 import { fakeExtractFields } from './fake-extract'
 import { seedDocumentPages } from './pages'
@@ -408,7 +408,7 @@ export async function rejectDocument(id: string, reason: string): Promise<Docume
 }
 
 function applyExtraction(doc: Document, type: DocumentType, classificationConfidence: number): void {
-  const values = fakeExtractFields(doc.id, type.fields, getComputedFieldIds(type))
+  const values = fakeExtractFields(doc.id, type.fields, getComputedFieldIds(type), getAllComputedColumnIds(type))
   doc.typeId = type.id
   doc.typeVersion = type.version
   doc.classification = { confidence: classificationConfidence }
@@ -579,7 +579,8 @@ export async function testExtract(input: TestExtractInput): Promise<Record<strin
   await delay()
   const doc = findDocument(input.documentId)
   const computed = getComputedFieldIds(input)
-  const fake = fakeExtractFields(doc.id, input.fields, computed)
+  const computedColumns = getAllComputedColumnIds(input)
+  const fake = fakeExtractFields(doc.id, input.fields, computed, computedColumns)
   const out: Record<string, FieldValue> = {}
   for (const field of input.fields) {
     if (computed.has(field.id)) continue
@@ -598,7 +599,12 @@ export async function testExtract(input: TestExtractInput): Promise<Record<strin
       }
     }
     const existing = doc.values[field.id]
-    out[field.id] = copy(existing && existing.type === field.type ? existing : fake[field.id])
+    const value = copy(existing && existing.type === field.type ? existing : fake[field.id])
+    // computed columns are calculated, not extracted: a stored cell is dropped
+    out[field.id] =
+      value.type === 'table' && computedColumns.size > 0
+        ? { ...value, rows: value.rows.map((row) => ({ ...row, cells: Object.fromEntries(Object.entries(row.cells).filter(([id]) => !computedColumns.has(id))) })) }
+        : value
   }
   return out
 }

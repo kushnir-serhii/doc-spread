@@ -40,6 +40,9 @@ export const exprProblems = (node: ExprNode, fields: readonly FieldDef[], allowe
         }
         return
       }
+      case 'cell':
+        // the document-level editor never offers it; the row editor comes with spec 017 slice 2
+        return void found.push(current.columnId === '' ? INCOMPLETE : 'A row’s cell can only be used in a row action.')
       case 'const': {
         if (current.value === null || current.value === undefined) return void found.push(INCOMPLETE)
         const type = nodeType(current, fields)

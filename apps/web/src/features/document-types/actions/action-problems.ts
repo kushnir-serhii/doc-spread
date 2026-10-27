@@ -86,7 +86,19 @@ export const computeProblems = (
 }
 
 /** The problems of a saved action against the current fields of the draft. */
-export const actionProblems = (action: FieldAction, fields: readonly FieldDef[], actions: readonly FieldAction[]) =>
-  action.kind === 'check'
-    ? checkProblems(action, fields)
-    : computeProblems({ id: action.id, fieldId: action.fieldId, expr: action.expr }, fields, actions)
+export const actionProblems = (action: FieldAction, fields: readonly FieldDef[], actions: readonly FieldAction[]): string[] => {
+  switch (action.kind) {
+    case 'check':
+      return checkProblems(action, fields)
+    case 'compute':
+      return computeProblems({ id: action.id, fieldId: action.fieldId, expr: action.expr }, fields, actions)
+    case 'row_check':
+    case 'row_compute':
+      // validated with the row editor (spec 017 slice 2)
+      return []
+    default: {
+      const unreachable: never = action
+      throw new Error(`Unknown action: ${String(unreachable)}`)
+    }
+  }
+}

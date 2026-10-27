@@ -25,6 +25,8 @@ export const toExpr = (node: ExprNode): Expr | null => {
       return node.fieldId === '' ? null : node
     case 'column':
       return node.fieldId === '' || node.columnId === '' ? null : node
+    case 'cell':
+      return node.columnId === '' ? null : node
     case 'const':
       return node.value === null || node.value === undefined ? null : node
     case 'call': {
@@ -52,6 +54,7 @@ export const nodeFieldIds = (node: ExprNode): string[] => {
     case 'call':
       return [...new Set(node.args.flatMap(nodeFieldIds))]
     case 'empty':
+    case 'cell':
     case 'const':
       return []
     default: {
@@ -81,6 +84,8 @@ const placeholders = (node: ExprNode): Expr => {
       return node.fieldId === '' ? { kind: 'field', fieldId: PLACEHOLDER_ID } : node
     case 'column':
       return node.fieldId === '' || node.columnId === '' ? { kind: 'field', fieldId: PLACEHOLDER_ID } : node
+    case 'cell':
+      return node.columnId === '' ? { kind: 'field', fieldId: PLACEHOLDER_ID } : node
     case 'const':
       return node.value === null || node.value === undefined ? { kind: 'field', fieldId: PLACEHOLDER_ID } : node
     default: {

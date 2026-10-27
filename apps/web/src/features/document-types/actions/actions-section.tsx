@@ -2,7 +2,7 @@ import type { Dispatch } from 'react'
 import type { BuilderAction } from '../type-draft-reducer'
 import type { TypeDraft } from '../type-draft'
 import { ActionDialog } from './action-dialog'
-import type { ActionEditorTarget } from './action-form'
+import { isDocumentAction, type ActionEditorTarget } from './action-form'
 import { actionProblems } from './action-problems'
 import { ActionRow } from './action-row'
 import { AddActionMenu } from './add-action-menu'
@@ -21,7 +21,9 @@ interface ActionsSectionProps {
 export const ActionsSection = ({ draft, dispatch, typeId, target, onTarget }: ActionsSectionProps) => {
   const { actions, fields } = draft
   const noFields = fields.length === 0
-  const editing = target?.mode === 'edit' ? actions.find((a) => a.id === target.id) : undefined
+  // row actions are shown but not edited yet (spec 017 slice 2)
+  const found = target?.mode === 'edit' ? actions.find((a) => a.id === target.id) : undefined
+  const editing = found && isDocumentAction(found) ? found : undefined
   const dialogOpen = target !== null && (target.mode === 'new' || editing !== undefined)
 
   return (
@@ -51,7 +53,7 @@ export const ActionsSection = ({ draft, dispatch, typeId, target, onTarget }: Ac
                   action={action}
                   fields={fields}
                   invalid={actionProblems(action, fields, actions).length > 0}
-                  onEdit={() => onTarget({ mode: 'edit', id: action.id })}
+                  onEdit={isDocumentAction(action) ? () => onTarget({ mode: 'edit', id: action.id }) : undefined}
                   onRemove={() => dispatch({ type: 'removeAction', id: action.id })}
                 />
               </li>

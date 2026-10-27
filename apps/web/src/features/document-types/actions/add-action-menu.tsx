@@ -6,11 +6,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { FieldAction } from '@/lib/mock/types'
+import type { DocumentAction } from './action-form'
 
 interface AddActionMenuProps {
   disabled?: boolean
-  onAdd: (kind: FieldAction['kind']) => void
+  onAdd: (kind: DocumentAction['kind']) => void
 }
 
 export const AddActionMenu = ({ disabled = false, onAdd }: AddActionMenuProps) => (

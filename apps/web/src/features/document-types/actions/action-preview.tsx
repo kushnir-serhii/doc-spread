@@ -1,10 +1,11 @@
 import type { FieldAction, FieldDef } from '@/lib/mock/types'
+import type { DocumentAction } from './action-form'
 import { PreviewDocuments } from './preview-documents'
 import { PreviewFrame } from './preview-frame'
 
 interface ActionPreviewProps {
   /** null = the action isn't finished */
-  action: FieldAction | null
+  action: DocumentAction | null
   fields: FieldDef[]
   /** the draft's actions without the one being edited */
   otherActions: FieldAction[]

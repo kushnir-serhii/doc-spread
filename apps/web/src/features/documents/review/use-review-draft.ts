@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useUpdateDocumentValues } from '@/lib/api'
-import { computeValues } from '@/lib/fields/evaluate'
+import { computeValues } from '@/lib/fields/run-checks'
 import type { Document, DocumentType, FieldValue } from '@/lib/mock/types'
 
 type Values = Record<string, FieldValue>

@@ -9,9 +9,13 @@ interface ActionRowProps {
   fields: readonly FieldDef[]
   /** the action refers to something that is gone or no longer fits */
   invalid: boolean
-  onEdit: () => void
+  /** undefined = the action can't be edited here yet (row actions) */
+  onEdit?: () => void
   onRemove: () => void
 }
+
+const rowScope = (action: Extract<FieldAction, { tableFieldId: string }>, fields: readonly FieldDef[]) =>
+  `Each row of ${fields.find((f) => f.id === action.tableFieldId)?.label || 'a deleted table'}`
 
 /** One action: label, readable expression, severity; edit and delete. */
 export const ActionRow = ({ action, fields, invalid, onEdit, onRemove }: ActionRowProps) => {
@@ -23,7 +27,8 @@ export const ActionRow = ({ action, fields, invalid, onEdit, onRemove }: ActionR
         type="button"
         data-action-select={action.id}
         onClick={onEdit}
-        className="flex min-h-touch min-w-0 flex-1 items-center gap-3 rounded-md px-4 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-12"
+        disabled={onEdit === undefined}
+        className="flex min-h-touch min-w-0 flex-1 items-center gap-3 rounded-md px-4 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:cursor-default md:min-h-12"
       >
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium" title={title}>
@@ -39,7 +44,12 @@ export const ActionRow = ({ action, fields, invalid, onEdit, onRemove }: ActionR
             Needs fixing
           </span>
         )}
-        {action.kind === 'check' && (
+        {(action.kind === 'row_check' || action.kind === 'row_compute') && (
+          <span className="shrink-0 rounded border px-1.5 py-0.5 text-xs text-muted-foreground">
+            {rowScope(action, fields)}
+          </span>
+        )}
+        {(action.kind === 'check' || action.kind === 'row_check') && (
           <span
             className={cn(
               'shrink-0 rounded px-1.5 py-0.5 text-xs',
@@ -52,9 +62,11 @@ export const ActionRow = ({ action, fields, invalid, onEdit, onRemove }: ActionR
           </span>
         )}
       </button>
-      <Button variant="ghost" size="icon" className="size-touch md:size-9" aria-label={`Edit ${title}`} onClick={onEdit}>
-        <Pencil aria-hidden />
-      </Button>
+      {onEdit && (
+        <Button variant="ghost" size="icon" className="size-touch md:size-9" aria-label={`Edit ${title}`} onClick={onEdit}>
+          <Pencil aria-hidden />
+        </Button>
+      )}
       <Button
         variant="ghost"
         size="icon"

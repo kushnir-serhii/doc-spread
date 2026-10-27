@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import type { FieldAction, FieldDef } from '@/lib/mock/types'
-import { formFromAction, formProblems, formToAction, newForm, type ActionEditorTarget, type ActionForm } from './action-form'
+import { formFromAction, formProblems, formToAction, isDocumentAction, newForm, type ActionEditorTarget, type ActionForm } from './action-form'
 import { ActionPreview } from './action-preview'
 import { ActionProblemList } from './action-problem-list'
 import { ActionLine } from './action-line'
@@ -30,7 +30,8 @@ interface ActionDialogProps {
 }
 
 const initialForm = (target: ActionEditorTarget, fields: FieldDef[], actions: FieldAction[]): ActionForm => {
-  const existing = target.mode === 'edit' ? actions.find((a) => a.id === target.id) : undefined
+  const found = target.mode === 'edit' ? actions.find((a) => a.id === target.id) : undefined
+  const existing = found && isDocumentAction(found) ? found : undefined
   return existing ? formFromAction(existing, fields) : newForm(target.mode === 'new' ? target.kind : 'check')
 }
 

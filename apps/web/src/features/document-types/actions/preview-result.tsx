@@ -1,14 +1,15 @@
 import { CircleAlert, CircleCheck, CircleX } from 'lucide-react'
-import { computeValues, runChecks } from '@/lib/fields/evaluate'
+import { computeValues, runChecks } from '@/lib/fields/run-checks'
 import { describeCheckError, describeCheckSides } from '@/lib/fields/describe-check-outcome'
 import { describeFailure } from '@/lib/fields/describe-failure'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import type { Document, FieldAction, FieldDef } from '@/lib/mock/types'
+import type { DocumentAction } from './action-form'
 import { cn } from '@/lib/utils'
 
 interface PreviewResultProps {
   /** the action as it is being edited */
-  action: FieldAction
+  action: DocumentAction
   document: Document
   fields: FieldDef[]
   /** the draft's actions with `action` in place of its saved version */

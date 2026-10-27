@@ -65,6 +65,10 @@ export const nodeType = (node: ExprNode, fields: readonly FieldDef[]): TypeName 
       const type = column ? columnType(column) : null
       return type ? `${type}[]` : null
     }
+    case 'cell': {
+      const column = fields.flatMap((f) => f.columns ?? []).find((c) => c.id === node.columnId)
+      return column ? columnType(column) : null
+    }
     case 'const':
       return exprTypeOfField(node.type)
     case 'call': {

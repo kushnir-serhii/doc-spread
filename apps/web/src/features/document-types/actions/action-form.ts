@@ -1,12 +1,18 @@
 import { allowedOps, supportsTolerance } from '@/lib/fields/evaluate'
 import type { ExprType } from '@/lib/fields/functions'
-import type { CheckAction, CompareOp, FieldAction, FieldDef } from '@/lib/mock/types'
+import type { CheckAction, CompareOp, ComputeAction, FieldAction, FieldDef } from '@/lib/mock/types'
 import { checkProblems, computeProblems } from './action-problems'
 import { OP_SYMBOL } from '@/lib/fields/check-ops'
 import { describeNode, EMPTY_NODE, toExpr, type ExprNode } from './expr-node'
 import { scalarTypeOf } from './expr-typing'
 
 export type Severity = CheckAction['severity']
+
+/** The document-level actions the dialog edits; row actions get their editor in spec 017 slice 2. */
+export type DocumentAction = CheckAction | ComputeAction
+
+export const isDocumentAction = (action: FieldAction): action is DocumentAction =>
+  action.kind === 'check' || action.kind === 'compute'
 
 /** The state of the action dialog: expressions may still have empty slots, the tolerance is the typed text. */
 export interface CheckForm {
@@ -33,7 +39,7 @@ export interface ComputeForm {
 export type ActionForm = CheckForm | ComputeForm
 
 /** What the dialog is open for; null = closed. */
-export type ActionEditorTarget = { mode: 'new'; kind: FieldAction['kind'] } | { mode: 'edit'; id: string }
+export type ActionEditorTarget = { mode: 'new'; kind: DocumentAction['kind'] } | { mode: 'edit'; id: string }
 
 export const generatedLabel = (form: Pick<CheckForm, 'left' | 'op' | 'right'>, fields: readonly FieldDef[]) =>
   `${describeNode(form.left, fields)} ${OP_SYMBOL[form.op]} ${describeNode(form.right, fields)}`
@@ -48,7 +54,7 @@ export const parseTolerance = (text: string): number | undefined | 'invalid' => 
 
 const toleranceText = (tolerance: number | undefined) => (tolerance === undefined ? '' : String(tolerance))
 
-export const newForm = (kind: FieldAction['kind']): ActionForm =>
+export const newForm = (kind: DocumentAction['kind']): ActionForm =>
   kind === 'check'
     ? {
         kind,
@@ -63,7 +69,7 @@ export const newForm = (kind: FieldAction['kind']): ActionForm =>
       }
     : { kind, id: crypto.randomUUID(), fieldId: '', expr: EMPTY_NODE }
 
-export const formFromAction = (action: FieldAction, fields: readonly FieldDef[]): ActionForm => {
+export const formFromAction = (action: DocumentAction, fields: readonly FieldDef[]): ActionForm => {
   if (action.kind === 'compute') return { kind: 'compute', id: action.id, fieldId: action.fieldId, expr: action.expr }
   return {
     kind: 'check',
@@ -103,7 +109,7 @@ export const formToAction = (
   form: ActionForm,
   fields: readonly FieldDef[],
   actions: readonly FieldAction[],
-): FieldAction | null => {
+): DocumentAction | null => {
   if (formProblems(form, fields, actions).length > 0) return null
   if (form.kind === 'compute') {
     const expr = toExpr(form.expr)
