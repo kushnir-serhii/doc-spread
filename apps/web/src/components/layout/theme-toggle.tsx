@@ -27,7 +27,13 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-touch md:size-9" aria-label="Change theme">
+        {/* Full accent in dark mode too: the ghost's accent/50 disappears on the tinted auth background. */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-touch hover:bg-accent data-[state=open]:bg-accent md:size-9 dark:hover:bg-accent"
+          aria-label="Change theme"
+        >
           <Icon aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
