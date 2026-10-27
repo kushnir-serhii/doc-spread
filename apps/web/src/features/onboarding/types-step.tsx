@@ -84,19 +84,21 @@ export const TypesStep = () => {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Button asChild variant="outline" className={touch}>
+      {/* Mobile: navigation row on top, then full-width actions with Finish last (thumb zone).
+          sm+: one row, navigation left, actions right. DOM order = visual order on both. */}
+      <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
+        <Button asChild variant="ghost" className={cn(touch, 'justify-self-start')}>
           <Link to="/onboarding?step=company">Back</Link>
         </Button>
-        <Button asChild variant="outline" className={touch}>
-          <Link to={sampleTo}>From a sample</Link>
-        </Button>
-        <Button asChild variant="ghost" className={touch}>
+        <Button asChild variant="ghost" className={cn(touch, 'justify-self-end')}>
           <Link to="/inbox">Skip for now</Link>
+        </Button>
+        <Button asChild variant="outline" className={cn(touch, 'col-span-2 sm:ml-auto')}>
+          <Link to={sampleTo}>From a sample</Link>
         </Button>
         <Button
           type="button"
-          className={cn(touch, 'sm:ml-auto')}
+          className={cn(touch, 'col-span-2')}
           disabled={create.isPending || templates.isPending}
           aria-describedby={showEmptyMessage ? emptyId : undefined}
           onClick={finish}

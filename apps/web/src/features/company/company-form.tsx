@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type FormEvent } from 'react'
-import { LoaderCircle } from 'lucide-react'
+import { ChevronDown, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -76,26 +76,33 @@ export const CompanyForm = ({ initialValues, onSubmit, pending, error, submitLab
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor={`${id}-currency`}>Default currency</Label>
-        <select
-          id={`${id}-currency`}
-          value={currency}
-          disabled={pending}
-          aria-describedby={`${id}-currency-help`}
-          onChange={(event) => {
-            if (isCurrency(event.target.value)) setCurrency(event.target.value)
-          }}
-          className={cn(
-            'min-h-touch w-full rounded-md border border-input bg-card px-3 text-sm shadow-xs outline-none md:min-h-9',
-            'focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-            'disabled:cursor-not-allowed disabled:opacity-50',
-          )}
-        >
-          {CURRENCIES.map((code) => (
-            <option key={code} value={code}>
-              {code}
-            </option>
-          ))}
-        </select>
+        {/* The native arrow hugs the edge; it's hidden and replaced by a chevron with the input's padding. */}
+        <div className="relative">
+          <select
+            id={`${id}-currency`}
+            value={currency}
+            disabled={pending}
+            aria-describedby={`${id}-currency-help`}
+            onChange={(event) => {
+              if (isCurrency(event.target.value)) setCurrency(event.target.value)
+            }}
+            className={cn(
+              'min-h-touch w-full cursor-pointer appearance-none rounded-md border border-input bg-card pr-9 pl-3 text-sm shadow-xs outline-none md:min-h-9',
+              'focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+              'disabled:cursor-not-allowed disabled:opacity-50',
+            )}
+          >
+            {CURRENCIES.map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+        </div>
         <p id={`${id}-currency-help`} className="text-xs text-muted-foreground">
           Used when a document doesn’t show a currency.
         </p>
