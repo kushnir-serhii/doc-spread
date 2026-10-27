@@ -25,7 +25,7 @@ export const TeamMembersTable = ({ members }: TeamMembersTableProps) => (
             <TableCell className="truncate font-medium" title={member.name ?? member.email}>
               {member.name ?? member.email}
             </TableCell>
-            <TableCell className="truncate text-muted-foreground" title={member.email}>
+            <TableCell className="truncate text-muted-foreground" title={member.name === null ? undefined : member.email}>
               {member.name === null ? '' : member.email}
             </TableCell>
             <TableCell>
