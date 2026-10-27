@@ -12,6 +12,8 @@ interface TableGridRowProps {
   focusId: string
   computedColumnIds?: ReadonlySet<string>
   computedFailure?: (rowId: string, columnId: string) => string | null
+  /** columns a failed row check reads in this row; set when the row fails a check */
+  failedColumnIds?: ReadonlySet<string>
   nav: GridNavigation
   onCellChange?: CellChange
   onRemove?: (rowId: string, index: number) => void
@@ -24,6 +26,7 @@ export const TableGridRow = ({
   focusId,
   computedColumnIds,
   computedFailure,
+  failedColumnIds,
   nav,
   onCellChange,
   onRemove,
@@ -42,6 +45,7 @@ export const TableGridRow = ({
           nav={nav}
           computed={computedColumnIds?.has(column.id) ?? false}
           failure={computedFailure?.(row.id, column.id) ?? null}
+          checkFailed={failedColumnIds?.has(column.id) ?? false}
           onChange={onCellChange && !computedColumnIds?.has(column.id) ? (next) => onCellChange(row.id, column.id, next) : undefined}
         />
       ))}

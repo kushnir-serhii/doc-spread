@@ -1,4 +1,5 @@
 import type { ColumnDef, TableValue } from '@/lib/mock/types'
+import type { RowFailures } from './row-failures'
 import { TableAddRowButton } from './table-add-row-button'
 import { TableListCard } from './table-list-card'
 import type { CellChange } from './table-value-ops'
@@ -10,6 +11,7 @@ interface TableListProps {
   focusId: string
   computedColumnIds?: ReadonlySet<string>
   computedFailure?: (rowId: string, columnId: string) => string | null
+  failedRows?: RowFailures
   onCellChange?: CellChange
   onAddRow?: () => void
   onRemoveRow?: (rowId: string) => void
@@ -23,6 +25,7 @@ export const TableList = ({
   focusId,
   computedColumnIds,
   computedFailure,
+  failedRows,
   onCellChange,
   onAddRow,
   onRemoveRow,
@@ -41,6 +44,7 @@ export const TableList = ({
             focusId={focusId}
             computedColumnIds={computedColumnIds}
             computedFailure={computedFailure}
+            failedColumnIds={failedRows?.get(row.id)}
             onCellChange={onCellChange}
             onRemove={onRemoveRow && (() => onRemoveRow(row.id))}
           />

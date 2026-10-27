@@ -67,13 +67,13 @@ A row expression may read: cells of its own table's row, top-level fields that a
   - [x] cells update as soon as their inputs change; a cell that can't be computed shows "—" with the reason as title and screen-reader text
   - [x] a computed value that differs from the stored one is saved with the next save and never makes the document dirty on its own
 
-### [ ] 4. Row checks in Review
+### [x] 4. Row checks in Review
 - **Build:** row check outcomes join the check summary above the form and the Approve flow from 016.
 - **Files:** `src/features/documents/review/{summarize-checks,review-workspace,review-form,review-field-row}.tsx/ts`, `src/features/documents/fields/*`
 - **Accept:**
-  - [ ] one list entry per row check, not per row: "Net = Quantity × Unit net price — fails in rows 3, 7 (2 of 64)", with "go to" focusing the first involved cell of the first failing row
-  - [ ] cells involved in a failed row check get the warning ring in that row, in Table and List views; a List card says "Row fails a check"
-  - [ ] a failed blocking row check joins the Approve problem list; failed warnings and can't-check rows go into "Approve with N warnings?"; no second Approve path
+  - [x] one list entry per row check, not per row: "Net = Quantity × Unit net price — fails in rows 3, 7 (2 of 64)", with "go to" focusing the first involved cell of the first failing row
+  - [x] cells involved in a failed row check get the warning ring in that row, in Table and List views; a List card says "Row fails a check"
+  - [x] a failed blocking row check joins the Approve problem list; failed warnings and can't-check rows go into "Approve with N warnings?"; no second Approve path
 
 ## Backend needs
 Store row actions with the type version; evaluate computed columns and row checks on the server before approval and export, in the same order as the frontend (computed columns → computed fields → checks); computed cells included in exports under their column keys.
@@ -93,6 +93,7 @@ Store row actions with the type version; evaluate computed columns and row check
 - Seed doc-029 fails both the document check "Gross = Net + VAT" and the row check (first line).
 - **Decided (2026-10-27):** a computed column's own column stays in the "This row" picker; choosing it shows the cycle error (as for computed fields).
 - Later: the read-only table of approved documents (`field-table.tsx`) shows computed values without the computed marker.
+- **Decided (2026-10-27):** a row check that reads no cells (only fields or column lists) has no cell to ring; go-to falls back to the table field. Top-level fields a failed row check reads are marked "Involved in a failed check", as for document checks.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -102,3 +103,4 @@ Store row actions with the type version; evaluate computed columns and row check
 | 2026-10-27 | 1 | done | `cell` node, `row_check` / `row_compute`; `evaluate-rows.ts` (`computeRowValues`, `applyComputedCells`, `runRowChecks`), `run-checks.ts` (order: columns → fields → checks; `resolveValues`, `computeValues`, `runChecks`, `runRowChecksOnDocument`); id mapping, describe "This row › …"; extraction skips computed columns; Invoice row check + computed Gross; doc-029 `badLine`; builder lists row actions read-only. `lib/fields/*`, `lib/mock/{types,templates,documents-seed,fake-extract,api}.ts`, `lib/api/builder.ts`, `features/document-types/actions/*`, review/export imports |
 | 2026-10-27 | 2 | done | "Applies to" scope in the action dialog, "This row › column" in the picker, row checks and computed columns saved as `row_check` / `row_compute`, row-scoped validation (cycles, deleted table/column, type, cell scope) through `actionProblems`, row previews ("Fails in N of M rows", first computed values), computed columns marked in the column list and editor. `features/document-types/actions/*` (new: `action-scope`, `row-scope`, `row-action-problems`, `find-cycle`, `scope-select`, `cell-select`, `row-compute-form`, `row-check-preview`, `row-compute-preview`, `preview-box`, `preview-row-list`, `row-count-text`), `selected-editor.tsx`, `column-list.tsx`, `field-list.tsx`, `type-builder.tsx` |
 | 2026-10-27 | 3 | done | computed cells derived each render (`resolveValues`), read-only and focusable in grid and List (calculator marker, "—" with the reason as title and sr text, `readOnlyCols` in grid navigation); tables with stale computed cells stored on the next save, never dirty; validation skips computed cells. `features/documents/review/{use-review-draft,review-workspace,review-form,review-field-row}`, `features/documents/fields/{computed-mark,table-field-view,table-grid,table-grid-row,table-grid-cell,table-list,table-list-card,use-grid-navigation}`, `lib/fields/{evaluate-rows,validate-field-value}.ts` |
+| 2026-10-27 | 4 | done | one entry per row check ("Fails in rows 1, 3 (2 of 64)", max 5 numbers, can't-check grouped by reason), go-to focuses the first involved cell of the first failing row, warning ring + sr text on involved cells in grid and List, "Row fails a check" on List cards; blocking → Approve problems, warnings and can't-check → "Approve with N warnings?". `features/documents/review/{summarize-checks,summarize-row-checks,review-workspace,review-form,review-field-row}`, `features/documents/fields/{row-failures,table-field-view,table-grid,table-grid-row,table-grid-cell,table-list,table-list-card}` |

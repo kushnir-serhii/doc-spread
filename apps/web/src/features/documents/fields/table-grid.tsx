@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import type { ColumnDef, TableValue } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
+import type { RowFailures } from './row-failures'
 import { ComputedMark } from './computed-mark'
 import { TableAddRowButton } from './table-add-row-button'
 import { TableGridRow } from './table-grid-row'
@@ -14,6 +15,7 @@ interface TableGridProps {
   focusId: string
   computedColumnIds?: ReadonlySet<string>
   computedFailure?: (rowId: string, columnId: string) => string | null
+  failedRows?: RowFailures
   /** the editing callbacks are set together, only when the table is editable */
   onCellChange?: CellChange
   onAddRow?: () => void
@@ -28,6 +30,7 @@ export const TableGrid = ({
   focusId,
   computedColumnIds,
   computedFailure,
+  failedRows,
   onCellChange,
   onAddRow,
   onRemoveRow,
@@ -94,6 +97,7 @@ export const TableGrid = ({
                   focusId={focusId}
                   computedColumnIds={computedColumnIds}
                   computedFailure={computedFailure}
+                  failedColumnIds={failedRows?.get(row.id)}
                   nav={nav}
                   onCellChange={onCellChange}
                   onRemove={onRemoveRow && remove}

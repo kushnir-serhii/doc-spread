@@ -11,6 +11,7 @@ import { describeFailure } from '@/lib/fields/describe-failure'
 import type { ComputeOutcome } from '@/lib/fields/evaluate'
 import type { RowComputeOutcome } from '@/lib/fields/evaluate-rows'
 import type { FieldDef, FieldValue } from '@/lib/mock/types'
+import type { RowFailures } from '@/features/documents/fields/row-failures'
 import { cn } from '@/lib/utils'
 import { ReviewPointButton } from './review-point-button'
 import { ReviewPointFeedback } from './review-point-feedback'
@@ -34,6 +35,8 @@ interface ReviewFieldRowProps {
   /** table fields: the outcomes of its computed columns, by row then column */
   rowOutcomes?: Record<string, Record<string, RowComputeOutcome>>
   computedColumnIds?: ReadonlySet<string>
+  /** table fields: the rows a failed row check fails in */
+  failedRows?: RowFailures
 }
 
 /** A table has no confidence of its own: show its weakest cell, or nothing for an empty table. */
@@ -43,7 +46,7 @@ const confidenceOf = (value: FieldValue): number | null => {
   return scores.length === 0 ? null : Math.min(...scores)
 }
 
-export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, pointing, computed, involved, fields, rowOutcomes, computedColumnIds }: ReviewFieldRowProps) => {
+export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, pointing, computed, involved, fields, rowOutcomes, computedColumnIds, failedRows }: ReviewFieldRowProps) => {
   const labelId = useId()
   const inputId = useId()
   const isTable = value.type === 'table'
@@ -103,6 +106,7 @@ export const ReviewFieldRow = ({ field, value, focusId, onChange, onConfirm, poi
           onChange={onChange}
           computedColumnIds={computedColumnIds}
           computedFailure={computedFailure}
+          failedRows={failedRows}
         />
       ) : editing ? (
         <div className="flex items-start gap-2">

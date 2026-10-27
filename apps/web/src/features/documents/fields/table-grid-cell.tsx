@@ -18,12 +18,14 @@ interface TableGridCellProps {
   computed?: boolean
   /** why a computed cell has no value; shown as "—" */
   failure?: string | null
+  /** a failed row check reads this cell in this row */
+  checkFailed?: boolean
   /** set when cells can be edited */
   onChange?: (next: AnyExtractedValue) => void
 }
 
 /** Shows the formatted value; switches to the field's own input on Enter, F2, double-click or typing. */
-export const TableGridCell = ({ column, cell, pos, focusId, nav, computed = false, failure = null, onChange }: TableGridCellProps) => {
+export const TableGridCell = ({ column, cell, pos, focusId, nav, computed = false, failure = null, checkFailed = false, onChange }: TableGridCellProps) => {
   const inputId = useId()
   const ref = useRef<HTMLTableCellElement>(null)
   const isActive = nav.active.row === pos.row && nav.active.col === pos.col
@@ -56,6 +58,7 @@ export const TableGridCell = ({ column, cell, pos, focusId, nav, computed = fals
         'max-w-48 px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
         isEditing && 'min-w-56',
         low && 'bg-confidence-low-bg',
+        checkFailed && 'bg-warning-soft ring-2 ring-warning/50 ring-inset',
       )}
     >
       {isEditing && onChange ? (
@@ -79,6 +82,7 @@ export const TableGridCell = ({ column, cell, pos, focusId, nav, computed = fals
             {text}
           </span>
           {failure && <span className="sr-only">{failure}</span>}
+          {checkFailed && <span className="sr-only"> (fails a check)</span>}
         </span>
       )}
     </td>

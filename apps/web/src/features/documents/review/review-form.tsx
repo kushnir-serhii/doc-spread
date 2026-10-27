@@ -5,6 +5,7 @@ import { getComputedColumnIds } from '@/lib/fields/computed-fields'
 import type { ComputeOutcome } from '@/lib/fields/evaluate'
 import type { RowComputeOutcomes } from '@/lib/fields/evaluate-rows'
 import type { DocumentType, FieldValue } from '@/lib/mock/types'
+import type { RowFailures } from '@/features/documents/fields/row-failures'
 import { ReviewFieldRow } from './review-field-row'
 import type { ReviewPointing } from './use-review-pointing'
 
@@ -23,6 +24,8 @@ interface ReviewFormProps {
   rowOutcomes: RowComputeOutcomes
   /** fields read by a failed check */
   involvedFieldIds: ReadonlySet<string>
+  /** table field id → the rows a failed row check fails in */
+  rowFailures: ReadonlyMap<string, RowFailures>
   /** a field (or table cell) took focus; id as in field-focus-ids.ts */
   onFieldFocus: (id: string) => void
   onFieldHover: (id: string | null) => void
@@ -43,6 +46,7 @@ export const ReviewForm = ({
   computed,
   rowOutcomes,
   involvedFieldIds,
+  rowFailures,
   onFieldFocus,
   onFieldHover,
   ref,
@@ -71,6 +75,7 @@ export const ReviewForm = ({
         pointing={pointing}
         computed={computed[field.id]}
         involved={involvedFieldIds.has(field.id)}
+        failedRows={rowFailures.get(field.id)}
         fields={type.fields}
         rowOutcomes={rowOutcomes[field.id]}
         computedColumnIds={field.type === 'table' ? getComputedColumnIds(type, field.id) : undefined}

@@ -19,6 +19,8 @@ interface TableListCardProps {
   focusId: string
   computedColumnIds?: ReadonlySet<string>
   computedFailure?: (rowId: string, columnId: string) => string | null
+  /** set when a check fails in this row: the columns it reads here */
+  failedColumnIds?: ReadonlySet<string>
   onCellChange?: CellChange
   onRemove?: () => void
 }
@@ -31,6 +33,7 @@ export const TableListCard = ({
   focusId,
   computedColumnIds,
   computedFailure,
+  failedColumnIds,
   onCellChange,
   onRemove,
 }: TableListCardProps) => {
@@ -39,6 +42,12 @@ export const TableListCard = ({
     <li className="flex flex-col gap-2 rounded-md border bg-card p-3">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-medium">Row {index + 1}</h4>
+        {failedColumnIds && (
+          <p className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-warning-soft-foreground">
+            <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
+            Row fails a check
+          </p>
+        )}
         {onRemove && <TableRemoveRowButton number={index + 1} onClick={onRemove} />}
       </div>
       {columns.map((column) => {
@@ -48,6 +57,7 @@ export const TableListCard = ({
         const failure = computed ? (computedFailure?.(row.id, column.id) ?? null) : null
         const edit = onCellChange !== undefined && !computed
         const low = edit && isLowConfidence(cell.confidence)
+        const checkFailed = failedColumnIds?.has(column.id) ?? false
         return (
           <div
             key={column.id}
@@ -56,6 +66,7 @@ export const TableListCard = ({
             className={cn(
               'flex flex-col gap-1 rounded-md p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring',
               low && 'bg-confidence-low-bg [&_input]:bg-card',
+              checkFailed && 'bg-warning-soft ring-2 ring-warning/50 ring-inset [&_input]:bg-card',
             )}
           >
             <Label htmlFor={edit ? inputId : undefined} className="gap-1.5 text-xs text-muted-foreground">
@@ -63,6 +74,7 @@ export const TableListCard = ({
               {column.label}
               {computed && <ComputedMark />}
               {low && <span className="sr-only"> (check this value)</span>}
+              {checkFailed && <span className="sr-only"> (fails a check)</span>}
             </Label>
             {edit ? (
               <FieldValueEdit
