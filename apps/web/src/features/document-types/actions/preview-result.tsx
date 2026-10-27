@@ -5,6 +5,7 @@ import { describeFailure } from '@/lib/fields/describe-failure'
 import { formatFieldValue } from '@/lib/fields/format-field-value'
 import type { Document, FieldAction, FieldDef } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 interface PreviewResultProps {
   /** the action as it is being edited */
@@ -43,6 +44,7 @@ const Box = ({ tone, title, children }: BoxProps) => {
 
 /** The action evaluated on one document, using the draft's fields. */
 export const PreviewResult = ({ action, document, fields, actions }: PreviewResultProps) => {
+  const locale = useFormatLocale()
   const type = { fields, actions }
   if (action.kind === 'check') {
     const outcome = runChecks(type, document).find((o) => o.check.id === action.id)
@@ -56,7 +58,7 @@ export const PreviewResult = ({ action, document, fields, actions }: PreviewResu
     }
     return (
       <Box tone={outcome.status === 'passed' ? 'ok' : 'bad'} title={outcome.status === 'passed' ? 'Passes' : 'Fails'}>
-        {describeCheckSides(outcome, fields)}
+        {describeCheckSides(outcome, fields, locale)}
       </Box>
     )
   }
@@ -73,7 +75,7 @@ export const PreviewResult = ({ action, document, fields, actions }: PreviewResu
   }
   return (
     <Box tone="ok" title="Computed">
-      {`${label} = ${formatFieldValue(outcome.value)}`}
+      {`${label} = ${formatFieldValue(outcome.value, locale)}`}
     </Box>
   )
 }

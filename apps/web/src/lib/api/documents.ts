@@ -10,6 +10,7 @@ import {
   updateDocumentValues,
   uploadDocument,
 } from '@/lib/mock'
+import { planKeys } from './plan'
 import type { Document, FieldValue, ListDocumentsParams } from '@/lib/mock/types'
 import { groupKeys } from './groups'
 
@@ -138,6 +139,9 @@ export const useUploadDocument = () => {
       onProgress?: (fraction: number) => void
     }) => uploadDocument(file, { typeId, onProgress }),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: documentKeys.lists() }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: documentKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: planKeys.all }),
+      ]),
   })
 }

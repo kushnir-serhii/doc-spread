@@ -1,7 +1,7 @@
 import { formatDate, formatMoney } from '@/lib/mock/format'
 import type { EvalValue } from './evaluate'
 
-/** A computed value for display; money always shows its currency. No `locale`: the browser's. */
+/** A computed value for display; money always shows its currency. No `locale`: the browser's. Callers pass `useFormatLocale()`. */
 export const formatEvalValue = (value: EvalValue, locale?: string): string => {
   switch (value.type) {
     case 'text':

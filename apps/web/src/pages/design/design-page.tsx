@@ -11,6 +11,7 @@ import { DOCUMENT_STATUSES } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
 import { FieldTypesSection } from './field-types-section'
 import { ViewerSection } from './viewer-section'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 /* Class strings are written out in full so Tailwind can see them. */
 
@@ -98,6 +99,7 @@ const TokenName = ({ children }: TokenNameProps) => {
 }
 
 const DesignPage = () => {
+  const locale = useFormatLocale()
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <PageHeader
@@ -193,7 +195,7 @@ const DesignPage = () => {
             <div key={`${label}-${currency}`} className="flex items-center justify-between px-3 py-2">
               <span className="text-muted-foreground">{label}</span>
               <span className="amount font-medium">
-                {formatMoney(amount, currency)} <span className="text-muted-foreground">{currency}</span>
+                {formatMoney(amount, currency, locale)} <span className="text-muted-foreground">{currency}</span>
               </span>
             </div>
           ))}

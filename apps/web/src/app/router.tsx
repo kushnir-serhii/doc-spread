@@ -3,12 +3,6 @@ import { AppShell } from '@/components/layout/app-shell'
 import { AuthLayout } from '@/components/layout/auth-layout'
 import { RoutePending } from '@/components/layout/route-pending'
 
-// PlaceholderPage takes props per route, so its lazy route returns an element instead of a Component.
-const placeholder = (title: string, description: string) => () =>
-  import('@/pages/placeholder/placeholder-page').then(({ default: PlaceholderPage }) => ({
-    element: <PlaceholderPage title={title} description={description} />,
-  }))
-
 export const router = createBrowserRouter([
   {
     // Pathless root: shows the pending bar for every navigation and the hydrate fallback on first load
@@ -75,7 +69,10 @@ export const router = createBrowserRouter([
             lazy: () => import('@/pages/groups/group-page').then((m) => ({ Component: m.default })),
           },
           { path: '/export', lazy: () => import('@/pages/export/export-page').then((m) => ({ Component: m.default })) },
-          { path: '/settings', lazy: placeholder('Settings', 'Company, accountant, team and plan.') },
+          {
+            path: '/settings',
+            lazy: () => import('@/pages/settings/settings-page').then((m) => ({ Component: m.default })),
+          },
           { path: '/design', lazy: () => import('@/pages/design/design-page').then((m) => ({ Component: m.default })) },
           {
             path: '*',

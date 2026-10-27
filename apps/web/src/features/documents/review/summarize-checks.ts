@@ -15,7 +15,11 @@ export interface CheckSummary {
 }
 
 /** Sorts the outcomes of `runChecks` into what Review shows and what Approve needs. Passed checks are dropped. */
-export const summarizeChecks = (type: Pick<DocumentType, 'fields'>, outcomes: readonly CheckOutcome[]): CheckSummary => {
+export const summarizeChecks = (
+  type: Pick<DocumentType, 'fields'>,
+  outcomes: readonly CheckOutcome[],
+  locale?: string,
+): CheckSummary => {
   const listed: ValidationIssue[] = []
   const blocking: ValidationIssue[] = []
   const warnings: ValidationIssue[] = []
@@ -36,7 +40,7 @@ export const summarizeChecks = (type: Pick<DocumentType, 'fields'>, outcomes: re
     }
     const ids = [...new Set([...collectFieldIds(check.left), ...collectFieldIds(check.right)])]
     for (const id of ids) involvedFieldIds.add(id)
-    const sides = describeCheckSides(outcome, type.fields)
+    const sides = describeCheckSides(outcome, type.fields, locale)
     const issue = { fieldId: ids[0] ?? '', label: check.label, reason: sides }
     if (check.severity === 'blocking') {
       blocking.push(issue)
