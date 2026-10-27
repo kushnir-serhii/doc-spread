@@ -19,7 +19,7 @@ None (static).
 - **Accept:**
   - [x] gap list recorded; slices below adjusted
 
-### [ ] 2. Hero + CTA
+### [x] 2. Hero + CTA
 - **Files:** `src/pages/landing/landing-page.tsx`, `src/features/landing/` (hero, illustration)
 - **Build:** replace the placeholder hero. Header unchanged (logo, theme toggle, Sign in).
   - H1: "Turn any document into a spreadsheet."
@@ -28,10 +28,10 @@ None (static).
   - CTAs: "Get started" → `/sign-up` (primary, last in the stack at 375px), "I have an account" → `/sign-in` (outline). The "Open the app" → `/inbox` link is removed.
   - Illustration: token-only, `aria-hidden`; a document card → arrow → a few table rows (no real amounts). Beside the text from `md`/`lg`, stacked under it at 375px.
 - **Accept:**
-  - [ ] one `h1`; primary CTA to `/sign-up`; secondary to `/sign-in`; no link to `/inbox`
-  - [ ] copy is horizontal (several niches), as above
-  - [ ] illustration is decorative (`aria-hidden`), uses tokens only
-  - [ ] works at 375px, light and dark
+  - [x] one `h1`; primary CTA to `/sign-up`; secondary to `/sign-in`; no link to `/inbox`
+  - [x] copy is horizontal (several niches), as above
+  - [x] illustration is decorative (`aria-hidden`), uses tokens only
+  - [x] works at 375px, light and dark
 
 ### [ ] 3. How it works (3 steps) + footer
 - **Files:** `src/pages/landing/landing-page.tsx`, `src/features/landing/`
@@ -62,3 +62,4 @@ None.
 | 2026-10-22 | — | rescoped | positioning is horizontal: any document type |
 | 2026-10-27 | — | ready | questions answered; draft → ready |
 | 2026-10-27 | 1 | done | gaps in `landing-page.tsx`: invoice-only copy ("Supplier invoices…"); secondary CTA "Open the app" → `/inbox` instead of `/sign-in`; no "how it works"; no footer; no visual; placeholder doc comment. CTAs and touch targets, header (logo, theme toggle, Sign in) and the single `h1` already fine. Slices 2–3 adjusted with the approved copy |
+| 2026-10-27 | 2 | done | hero with horizontal copy, niche chips, CTAs (`/sign-in`, `/sign-up`), decorative illustration; `/inbox` link removed. `pages/landing/landing-page.tsx`, `features/landing/hero.tsx`, `niche-list.tsx`, `hero-illustration.tsx` |
