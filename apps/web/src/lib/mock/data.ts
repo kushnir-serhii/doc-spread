@@ -1,5 +1,5 @@
 import { defaultExportMapping } from '@/lib/fields/export-mapping'
-import type { Company, Document, ExportJob, TeamMember } from './types'
+import type { Company, Document, ExportJob, Plan, PlanId, TeamMember } from './types'
 import { seedDocumentTypeVersions } from './document-types-seed'
 import { buildSeedDocuments } from './documents-seed'
 import type { SeedSupplier } from './documents-seed'
@@ -24,6 +24,16 @@ export const seedTeam: TeamMember[] = [
   { id: 'u4', name: 'Priya Shah', email: 'priya@northwind-studio.example', role: 'member', status: 'active' },
   { id: 'u5', name: null, email: 'taylor@northwind-studio.example', role: 'member', status: 'invited' },
 ]
+
+// ---------- plans ----------
+export const PLANS: Record<PlanId, Plan> = {
+  free: { id: 'free', name: 'Free', documentsPerMonth: 50, typeLimit: 3 },
+  pro: { id: 'pro', name: 'Pro', documentsPerMonth: 1000, typeLimit: null },
+  business: { id: 'business', name: 'Business', documentsPerMonth: 10000, typeLimit: null },
+}
+
+/** The mock company's plan. */
+export const seedPlanId: PlanId = 'pro'
 
 // private: the seed suppliers of the invoice, receipt and contract documents
 const SEED_SUPPLIERS: SeedSupplier[] = [

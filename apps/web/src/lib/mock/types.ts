@@ -396,3 +396,23 @@ export interface TestExtractInput {
   actions?: FieldAction[]
   documentId: string
 }
+
+// ---------- plan (spec 011) ----------
+export const PLAN_IDS = ['free', 'pro', 'business'] as const
+export type PlanId = (typeof PLAN_IDS)[number]
+
+export interface Plan {
+  id: PlanId
+  name: string
+  documentsPerMonth: number
+  /** `null` = unlimited */
+  typeLimit: number | null
+}
+
+export interface PlanUsage {
+  plan: Plan
+  documentsThisMonth: number
+  types: number
+  /** ISO date, first day of the current month (local time) */
+  periodStart: string
+}

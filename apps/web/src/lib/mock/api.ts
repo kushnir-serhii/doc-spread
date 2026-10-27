@@ -37,10 +37,12 @@
  */
 import {
   findValueMismatches,
+  PLANS,
   seedCompany,
   seedDocuments,
   seedDocumentTypeVersions,
   seedExportJobs,
+  seedPlanId,
   seedTeam,
 } from './data'
 import { DOCUMENT_TEMPLATES } from './templates'
@@ -77,6 +79,7 @@ import type {
   SuggestTableInput,
   TableSuggestion,
   InviteRole,
+  PlanUsage,
   TeamMember,
   TestExtractInput,
   Token,
@@ -97,6 +100,7 @@ const db = {
   exportMappings: {} as Record<string, ExportMapping>,
   company: copy(seedCompany),
   team: copy(seedTeam),
+  planId: seedPlanId,
 }
 
 function delay(): Promise<void> {
@@ -707,4 +711,18 @@ export async function inviteTeamMember(input: { email: string; role: InviteRole 
   }
   db.team.push(member)
   return copy(member)
+}
+
+// ---------- plan ----------
+export async function getPlanUsage(): Promise<PlanUsage> {
+  await delay()
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), 1)
+  const documentsThisMonth = db.documents.filter((doc) => new Date(doc.uploadedAt) >= start).length
+  return {
+    plan: copy(PLANS[db.planId]),
+    documentsThisMonth,
+    types: currentVersions().length,
+    periodStart: start.toISOString(),
+  }
 }

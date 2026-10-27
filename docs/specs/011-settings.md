@@ -50,13 +50,13 @@ The user maintains company data, how dates, numbers and amounts are formatted, t
   - [x] the invite form (email plus role) is a mock that adds a pending row; email validated; an email already on the team is an error; pending and the result are announced
   - [x] loading skeleton, error with retry; cards instead of the table at 375px; long names and emails handled
 
-### [ ] 4. Plan
+### [x] 4. Plan
 - **Build:** `usePlan()` returning the plan and usage (documents uploaded this calendar month, number of types) from the mock.
 - **Files:** `src/features/settings/`, `src/lib/api/`, `src/lib/mock/`
 - **Accept:**
-  - [ ] current plan and usage (documents processed this month, number of types) shown read-only, with limits and progress bars ("Unlimited" without a bar)
-  - [ ] a note that plan changes come with billing later; no checkout
-  - [ ] loading skeleton, error with retry
+  - [x] current plan and usage (documents processed this month, number of types) shown read-only, with limits and progress bars ("Unlimited" without a bar)
+  - [x] a note that plan changes come with billing later; no checkout
+  - [x] loading skeleton, error with retry
 
 ## Backend needs
 Team invites and roles (`TeamMember.status`), plan and usage endpoints; `Company.locale` (nullable: browser default); recipients stored per company.
@@ -68,6 +68,7 @@ Team invites and roles (`TeamMember.status`), plan and usage endpoints; `Company
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-10-27 | 4 | done | Plan/PlanUsage types, PLANS mock (company on Pro), getPlanUsage() + usePlan(); upload and type creation invalidate plan usage; plan card with usage meters (<progress>, warning ≥90%) · features/settings/plan-tab.tsx, usage-meter.tsx; lib/api/plan.ts; mock/ |
 | 2026-10-27 | 3 | done | TeamMember.status + nullable name, inviteTeamMember mock + useInviteMember(); members table (cards below sm), role and Pending badges, invite form · features/settings/team-*, invite-*, role-badge, member-pending-badge; lib/api/team.ts; mock/ |
 | 2026-10-27 | 2 | done | Company.locale; FormatLocaleProvider in AppShell + useFormatLocale(); locale threaded into every formatter call (~25 files; helpers take a locale param); Language and formats card with live preview · lib/format-locale/, features/settings/locale-*.tsx, app-shell.tsx, formatter call sites |
 | 2026-10-27 | 1 | done | settings page + URL tabs, company tab (CompanyForm reused), recipients add/edit/remove; accountantEmail removed; placeholder page deleted · pages/settings/, features/settings/, router.tsx, mock/types.ts, mock/data.ts |

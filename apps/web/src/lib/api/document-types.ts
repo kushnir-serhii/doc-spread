@@ -8,6 +8,7 @@ import {
   updateDocumentType,
 } from '@/lib/mock'
 import { groupKeys } from './groups'
+import { planKeys } from './plan'
 import type { CreateDocumentTypeInput, UpdateDocumentTypeInput } from '@/lib/mock/types'
 
 export const documentTypeKeys = {
@@ -46,6 +47,7 @@ export const useCreateDocumentType = () => {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+        queryClient.invalidateQueries({ queryKey: planKeys.all }),
       ]),
   })
 }
@@ -59,6 +61,7 @@ export const useCreateDocumentTypes = () => {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+        queryClient.invalidateQueries({ queryKey: planKeys.all }),
       ]),
   })
 }
