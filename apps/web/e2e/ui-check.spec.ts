@@ -52,6 +52,10 @@ for (const route of ROUTES) {
 
         await page.goto(route)
         await page.waitForLoadState('networkidle')
+        // mock data arrives after a delay: wait for the skeletons to go (a page that keeps one just gets its screenshot later)
+        await page
+          .waitForFunction(() => document.querySelectorAll('.animate-pulse').length === 0, undefined, { timeout: 5000 })
+          .catch(() => undefined)
 
         await page.screenshot({
           path: `e2e/screenshots/${SPEC}/${fileName(route)}-${viewport.name}-${theme}.png`,

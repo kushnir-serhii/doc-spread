@@ -59,7 +59,7 @@ export const TableGrid = ({
       {rowCount === 0 ? (
         <p className="text-sm text-muted-foreground italic">{onAddRow ? 'No rows yet' : 'Not found'}</p>
       ) : (
-        <div className="max-h-table-scroll overflow-auto rounded-md border">
+        <div className="relative max-h-table-scroll overflow-auto rounded-md border">
           <table
             ref={gridRef}
             role="grid"
