@@ -222,6 +222,15 @@ export async function signUp(input: {
   return { name: input.name, email: input.email }
 }
 
+/**
+ * Magic values: an email containing "limit" (any case) -> AuthError('rate_limited');
+ * anything else resolves the same way whether or not the account exists.
+ */
+export async function requestPasswordReset(input: { email: string }): Promise<void> {
+  await delay()
+  if (input.email.toLowerCase().includes('limit')) throw new AuthError('rate_limited')
+}
+
 // ---------- document types ----------
 export async function listDocumentTypes(): Promise<DocumentType[]> {
   await delay()

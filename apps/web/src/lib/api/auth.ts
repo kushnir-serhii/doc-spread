@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { signIn, signUp } from '@/lib/mock'
+import { requestPasswordReset, signIn, signUp } from '@/lib/mock'
 
 export const useSignIn = () =>
   useMutation({
@@ -9,4 +9,9 @@ export const useSignIn = () =>
 export const useSignUp = () =>
   useMutation({
     mutationFn: (input: { name: string; email: string; password: string }) => signUp(input),
+  })
+
+export const useRequestPasswordReset = () =>
+  useMutation({
+    mutationFn: (input: { email: string }) => requestPasswordReset(input),
   })

@@ -52,14 +52,14 @@ Mock `signIn`, `signUp`, `requestPasswordReset` in `src/lib/mock/api.ts` plus on
   - [x] `email_taken` shows "An account with this email already exists." with a "Sign in instead" link to `/sign-in`, as `role="alert"`; `rate_limited` as in sign-in
   - [x] success navigates to `/onboarding`
 
-### [ ] 4. Reset password
+### [x] 4. Reset password
 - **Model:** sonnet (designer)
 - **Files:** `src/pages/auth/reset-password-page.tsx`, `src/features/auth/reset-password-form.tsx`, `src/lib/mock/api.ts`, `src/lib/api/auth.ts`; delete `src/features/auth/auth-placeholder.tsx`
-- **Build:** h1 "Reset your password", subline "Enter the email you signed up with. We'll send you a link to set a new password." Field: Email. Submit "Send reset link" ("Sending…"). Link: "Back to sign in" → `/sign-in`. State as a discriminated union (`{ step: 'form' } | { step: 'sent'; email: string }`).
+- **Build:** h1 "Reset your password", subline "Enter the email you signed up with. We'll send you a link to set a new password." Field: Email. Submit "Send reset link" ("Sending…"). Link: "Back to sign in" → `/sign-in`. State as a discriminated union (`{ step: 'form'; email: string } | { step: 'sent'; email: string }`; the form step keeps the email so "Use a different email" prefills it).
 - **Accept:**
-  - [ ] after submit: confirmation state ("check your email") that doesn't reveal whether the account exists: h1 "Check your email", "If an account exists for {email}, we've sent a link to reset your password. Check your inbox and spam folder." (long emails wrap), announced via `role="status"`; actions "Back to sign in" and "Use a different email" (back to the form, email kept)
-  - [ ] `rate_limited` shows its `role="alert"` error on the form
-  - [ ] `AuthPlaceholder` is deleted and nothing imports it
+  - [x] after submit: confirmation state ("check your email") that doesn't reveal whether the account exists: h1 "Check your email", "If an account exists for {email}, we've sent a link to reset your password. Check your inbox and spam folder." (long emails wrap), announced via `role="status"`; actions "Back to sign in" and "Use a different email" (back to the form, email kept)
+  - [x] `rate_limited` shows its `role="alert"` error on the form
+  - [x] `AuthPlaceholder` is deleted and nothing imports it
 
 ## Backend needs
 Endpoints for sign-in, sign-up (name, email, password) and reset request; error codes (invalid credentials, email taken, rate limited), the same response for reset whether or not the account exists; password policy (min length) served or documented; session format; the "set a new password" endpoint and page behind the emailed link.
@@ -77,3 +77,4 @@ Endpoints for sign-in, sign-up (name, email, password) and reset request; error 
 | 2026-10-27 | 1 | done | gaps: all three pages render `AuthPlaceholder` ("Form coming…" + "Continue to app" → `/inbox`); no forms, validation, pending or error states; no mock `signIn`/`signUp`/`requestPasswordReset`, no `lib/api/auth.ts`, no `AuthError`. Already fine: `AuthLayout` card (logo, theme toggle), routes in `router.tsx`, landing CTAs and "Sign out" link to `/sign-in`/`/sign-up`. Slices 2–4 detailed with copy, mock rules and shared `PasswordInput` |
 | 2026-10-27 | 2 | done | sign-in form (validation, pending, `role="alert"` errors for `invalid_credentials`/`rate_limited`, generic fallback), → `/inbox`; `AuthError` + `AUTH_ERROR_CODES`, mock `signIn`, `useSignIn`, shared `PasswordInput`. `lib/mock/types.ts`, `lib/mock/api.ts`, `lib/api/auth.ts`, `lib/api/index.ts`, `features/auth/password-input.tsx`, `sign-in-form.tsx`, `pages/auth/sign-in-page.tsx` |
 | 2026-10-27 | 3 | done | sign-up form (name, email, password with hint; `aria-describedby` to hint + errors), `email_taken` alert with "Sign in instead" link, → `/onboarding`; mock `signUp` (team emails + `db.signedUpEmails`), `useSignUp`; email validation and error messages shared with sign-in. `features/auth/sign-up-form.tsx`, `auth-validation.ts`, `auth-error-message.ts`, `sign-in-form.tsx`, `lib/mock/api.ts`, `lib/api/auth.ts`, `pages/auth/sign-up-page.tsx` |
+| 2026-10-27 | 4 | done | reset form → "Check your email" (`role="status"`, long email wraps, heading focused), "Use a different email" keeps the email; `rate_limited` alert; mock `requestPasswordReset`, `useRequestPasswordReset`; `AuthPlaceholder` deleted. `features/auth/reset-password.tsx`, `reset-password-form.tsx`, `reset-password-sent.tsx`, `pages/auth/reset-password-page.tsx`, `lib/mock/api.ts`, `lib/api/auth.ts` |
