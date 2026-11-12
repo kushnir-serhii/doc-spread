@@ -21,7 +21,7 @@ export const DIAGRAMS: DiagramDef[] = [
     label: 'Domain model',
     kind: 'Class diagram',
     description: 'The domain types with their key attributes and multiplicities. The truth lives in types.ts; ownership by the company comes from the mock database.',
-    sources: ['apps/web/src/lib/mock/types.ts', 'apps/web/src/lib/mock/data.ts'],
+    sources: ['apps/web/src/lib/mock/types.ts', 'apps/web/src/lib/mock/api.ts'],
     code: DOMAIN_DIAGRAM,
   },
   {
