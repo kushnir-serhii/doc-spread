@@ -1,4 +1,5 @@
 import { DIAGRAM_IDS, type DiagramDef, type DiagramId } from './diagram-def'
+import { STRUCTURE_DIAGRAM } from './structure'
 
 export const DEFAULT_DIAGRAM_ID: DiagramId = 'structure'
 
@@ -10,7 +11,7 @@ export const DIAGRAMS: DiagramDef[] = [
     description:
       'Workspaces and the layers inside apps/web/src, with the allowed import directions. The rules live in conventions.md.',
     sources: ['pnpm-workspace.yaml', 'docs/conventions.md', 'apps/web/src/'],
-    code: '',
+    code: STRUCTURE_DIAGRAM,
   },
   {
     id: 'domain',

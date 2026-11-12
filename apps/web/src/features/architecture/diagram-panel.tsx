@@ -1,4 +1,6 @@
+import { DiagramSource } from '@/features/architecture/diagram-source'
 import type { DiagramDef } from '@/features/architecture/diagrams/diagram-def'
+import { MermaidDiagram } from '@/features/architecture/mermaid-diagram'
 
 interface DiagramPanelProps {
   diagram: DiagramDef
@@ -21,8 +23,15 @@ export const DiagramPanel = ({ diagram }: DiagramPanelProps) => (
         ))}
       </ul>
     </section>
-    <div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed bg-muted p-6 text-center text-sm text-muted-foreground">
-      The diagram comes in a later slice.
-    </div>
+    {diagram.code ? (
+      <>
+        <MermaidDiagram code={diagram.code} label={diagram.label} description={diagram.description} />
+        <DiagramSource code={diagram.code} />
+      </>
+    ) : (
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed bg-muted p-6 text-center text-sm text-muted-foreground">
+        This diagram comes in a later slice.
+      </div>
+    )}
   </div>
 )

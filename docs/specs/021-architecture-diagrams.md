@@ -49,16 +49,16 @@ Diagrams 5 and 6 describe what 020 will build, not what exists. Each carries a v
   - [x] tabs work from the keyboard (arrow keys, Home/End) and each tab is at least 44px high
   - [x] no horizontal page scroll at 375px
 
-### [ ] 2. Mermaid renderer and the Structure diagram
+### [x] 2. Mermaid renderer and the Structure diagram
 - **Build:** add `mermaid` (see **Open questions**) and load it with a dynamic `import()` from the diagram component only, so it's a separate chunk. `MermaidDiagram` renders a definition to SVG with `securityLevel: 'strict'` and the `base` theme, with `themeVariables` read from the design tokens in `src/styles/index.css`; it renders again when the theme changes. States: skeleton while the library loads and renders; an error message with **Retry** and the raw source when rendering fails. The diagram sits in a focusable container that scrolls in both directions when the diagram is wider than the page; it has `role="img"` and an `aria-label` from the diagram's label and description. Below it, a collapsed "Diagram source" (`details`) with the Mermaid text and a **Copy** button. Write the Structure diagram.
 - **Files:** `apps/web/package.json`, `src/features/architecture/mermaid-diagram.tsx`, `src/features/architecture/use-mermaid.ts`, `src/features/architecture/mermaid-theme.ts`, `src/features/architecture/diagram-source.tsx`, `src/features/architecture/diagram-panel.tsx`, `src/features/architecture/diagrams/structure.ts`
 - **Accept:**
-  - [ ] the Structure tab shows both workspaces, every folder listed in the table above, and the import arrows match [conventions.md](../conventions.md)
-  - [ ] the build shows Mermaid in its own chunk(s); the main chunk and the other pages' chunks don't grow
-  - [ ] switching light / dark redraws the diagram with token colors, and text meets AA contrast in both
-  - [ ] a broken definition shows the error state with Retry and the source, and the rest of the page still works
-  - [ ] at 375px the diagram scrolls inside its container and the page doesn't scroll sideways; the container is reachable and scrollable by keyboard
-  - [ ] Copy puts the definition on the clipboard and announces it (`role="status"`)
+  - [x] the Structure tab shows both workspaces, every folder listed in the table above, and the import arrows match [conventions.md](../conventions.md)
+  - [x] the build shows Mermaid in its own chunk(s); the main chunk and the other pages' chunks don't grow
+  - [x] switching light / dark redraws the diagram with token colors, and text meets AA contrast in both
+  - [x] a broken definition shows the error state with Retry and the source, and the rest of the page still works
+  - [x] at 375px the diagram scrolls inside its container and the page doesn't scroll sideways; the container is reachable and scrollable by keyboard
+  - [x] Copy puts the definition on the clipboard and announces it (`role="status"`)
 
 ### [ ] 3. Domain model, Screens and Document lifecycle
 - **Build:** write diagrams 2, 3 and 4 from the code. Every class, route and status in a diagram must exist in the source named in its `sources`. The domain diagram shows relations and key attributes, not every field.
@@ -104,6 +104,10 @@ None.
   - **Decided (2026-11-12):** out. The diagram scrolls inside its container.
 - **UI check routes?**
   - **Decided (2026-11-12):** all six tabs: `architecture`, `architecture?tab=domain`, `…screens`, `…lifecycle`, `…pipeline`, `…deployment`.
+- **Found in slice 2: the code breaks "only `lib/api` imports `@/lib/mock`".** Many `features` and `components/domain` files import runtime helpers from `@/lib/mock/format` (`formatDate`, `formatMoney`, `confidenceLevel`) and types from `@/lib/mock/templates`. The Structure diagram shows the rule, not the drift. To decide: move the formatters out of `lib/mock` (a small spec), or amend the rule.
+- **Found in slice 2:** `@docspread/shared` is a workspace dependency of the web app but nothing in `src` imports it yet. The diagram labels the arrow "workspace dependency".
+- **Found in slice 2:** the Structure diagram is 1556px wide, so it scrolls sideways even at 1280px. Zoom / fit-to-width was decided out; revisit if scrolling proves annoying.
+- **Found in slice 2:** Vite's 500 kB chunk warning is back, for two of Mermaid's own lazy chunks. They load only on `/architecture`. To silence it, raise `build.chunkSizeWarningLimit` or split with `manualChunks`.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -111,3 +115,4 @@ None.
 | 2026-11-12 | — | draft | written from the request "a page with tabs for UML diagrams, to see the structure of the project" |
 | 2026-11-12 | — | ready | questions answered up front; all recommendations accepted |
 | 2026-11-12 | 1 | done (sonnet, designer) | shadcn `tabs` primitive (the CLI wrote a wrong `cn` import and a bogus `cn` dependency; both fixed, no new dependency). Lazy `/architecture` route, `DEV_NAV` entry, `pages/architecture/architecture-page.tsx`, `features/architecture/{diagram-tabs,diagram-panel}.tsx`, `diagrams/{diagram-def,index}.ts` with metadata for all six diagrams and `code: ''`. Tab in `?tab=` via `setSearchParams` (pushes history); unknown value → Structure. Typecheck, lint, build green; ui-check on `architecture` and `architecture?tab=nope` passed. |
+| 2026-11-12 | 2 | done (sonnet, designer) | `mermaid` ^12.3.0, loaded only through `await import('mermaid')` in `use-mermaid.ts`: main chunk 436.9 kB (was 438.4), `mermaid` absent from it; Mermaid ships as ~180 lazy chunks and Vite warns about two of them over 500 kB (`elk`, one shared chunk). `mermaid-theme.ts` converts the oklch tokens to hex on a canvas and feeds the `base` theme; redraws on theme change. `mermaid-diagram.tsx` (skeleton, error + Retry + source, `role="img"` scroll container), `diagram-source.tsx` (`details`, Copy, `role="status"`), `diagrams/structure.ts`. Checked: broken definition → alert + Retry + source; 375px diagram scrolls in its container by keyboard; Copy fills the clipboard. Not checked: Retry after an error succeeding, the clipboard failure message. Typecheck, lint, build green; ui-check on `architecture` passed, screenshots reviewed. |
