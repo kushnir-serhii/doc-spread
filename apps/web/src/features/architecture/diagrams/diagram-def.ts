@@ -15,4 +15,6 @@ export interface DiagramDef {
   sources: string[]
   /** Mermaid definition. */
   code: string
+  /** Set while the diagram shows something not built yet; `spec` is the spec number that builds it. */
+  planned?: { spec: string }
 }

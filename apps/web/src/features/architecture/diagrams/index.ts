@@ -1,6 +1,8 @@
 import { DIAGRAM_IDS, type DiagramDef, type DiagramId } from './diagram-def'
+import { DEPLOYMENT_DIAGRAM } from './deployment'
 import { DOMAIN_DIAGRAM } from './domain'
 import { LIFECYCLE_DIAGRAM } from './lifecycle'
+import { PIPELINE_DIAGRAM } from './pipeline'
 import { SCREENS_DIAGRAM } from './screens'
 import { STRUCTURE_DIAGRAM } from './structure'
 
@@ -51,17 +53,19 @@ export const DIAGRAMS: DiagramDef[] = [
     id: 'pipeline',
     label: 'Pipeline',
     kind: 'Sequence diagram',
-    description: 'One document from upload to review, across the browser and the cloud services. Planned, not built yet.',
+    description: 'One document from upload to review, across the browser and the cloud services.',
     sources: ['docs/specs/020-cloud-setup.md'],
-    code: '',
+    code: PIPELINE_DIAGRAM,
+    planned: { spec: '020' },
   },
   {
     id: 'deployment',
     label: 'Deployment',
     kind: 'Deployment diagram',
-    description: 'What runs where: web, API, storage, queues, document AI and the database. Planned, not built yet.',
+    description: 'What runs where: web, API, storage, queues, document AI and the database.',
     sources: ['docs/specs/020-cloud-setup.md', 'docs/product.md'],
-    code: '',
+    code: DEPLOYMENT_DIAGRAM,
+    planned: { spec: '020' },
   },
 ]
 

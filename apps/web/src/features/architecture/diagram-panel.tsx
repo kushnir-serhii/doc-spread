@@ -1,3 +1,5 @@
+import { Hourglass } from 'lucide-react'
+
 import { DiagramSource } from '@/features/architecture/diagram-source'
 import type { DiagramDef } from '@/features/architecture/diagrams/diagram-def'
 import { MermaidDiagram } from '@/features/architecture/mermaid-diagram'
@@ -23,6 +25,12 @@ export const DiagramPanel = ({ diagram }: DiagramPanelProps) => (
         ))}
       </ul>
     </section>
+    {diagram.planned && (
+      <p className="flex items-center gap-2 rounded-lg border border-warning bg-warning-soft px-4 py-3 text-sm text-warning-soft-foreground">
+        <Hourglass className="size-4 shrink-0" aria-hidden="true" />
+        Planned (spec {diagram.planned.spec}): not built yet
+      </p>
+    )}
     {diagram.code ? (
       <>
         <MermaidDiagram code={diagram.code} label={diagram.label} description={diagram.description} />
