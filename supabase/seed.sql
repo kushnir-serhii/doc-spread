@@ -1,0 +1,2 @@
+-- Intentionally empty. No country defaults (no PLN, no pl-PL): company currency is required input.
+-- Document templates are loaded by the service, not seeded here.

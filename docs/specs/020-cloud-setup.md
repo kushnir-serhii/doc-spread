@@ -134,15 +134,15 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
   - [x] `git status` shows `.env.example` files as trackable and `.env.local` as ignored
   - [x] changing a `VITE_` value causes a Turbo cache miss
 
-### [ ] 2. Database schema on the local stack
+### [x] 2. Database schema on the local stack
 - **Waits for:** J1, J2
 - **Build:** `supabase init` and migrations for the tables listed in the header of `src/lib/mock/api.ts`: companies, team members, document types (one row per id + version), documents linked to type id and version, values, pages with OCR tokens, export jobs, templates. Row-level security per company on every table, and explicit Data API grants. Money as integer minor units + ISO currency, per [conventions.md](../conventions.md).
 - **Files:** `supabase/config.toml`, `supabase/migrations/*`, `supabase/seed.sql`, `supabase/tests/*`
 - **Accept:**
-  - [ ] `supabase db reset` runs from nothing with no errors
-  - [ ] `supabase db advisors` reports no security issues
-  - [ ] a test proves a member of company A can't read, change or reassign rows of company B
-  - [ ] the seed contains no country defaults (no PLN or `pl-PL`)
+  - [x] `supabase db reset` runs from nothing with no errors
+  - [x] `supabase db advisors` reports no security issues
+  - [x] a test proves a member of company A can't read, change or reassign rows of company B
+  - [x] the seed contains no country defaults (no PLN or `pl-PL`)
 
 ### [ ] 3. AWS infrastructure as code
 - **Waits for:** J1
@@ -228,6 +228,10 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
   - **Decided (2026-11-12):** none yet. CloudFront uses its default domain, and the SES identity and custom domain are optional CDK context, added when J6 is done.
 - **Docker for slice 2?**
   - **Decided (2026-11-12):** Claude starts Docker Desktop when slice 2 begins.
+- From slice 2: who creates a company and its first owner? Clients have no insert on `companies`, so sign-up is assumed to go through the API service with the secret key.
+- From slice 2: owners and admins write document types and versions; any member edits documents and creates export jobs. Does that match the product (011 roles)?
+- From slice 2: type versions can still be updated or deleted by owners and admins. Should a saved version be immutable (012: "every version kept")?
+- From slice 2: ids are `uuid` in the database and strings in the mocks; the spec that replaces the mocks has to map them.
 - From 007: what confidence leaves a document unclassified, and is there a page limit per file? Recommended for the smoke test: 0.7 and 50 pages, revisited with real results.
 
 ## Log
@@ -237,3 +241,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-12 | — | jobs | J1, J2 done. `dev` keys in place and tested: Supabase secret key (200), Anthropic key (200), web publishable key. AWS account waits for verification; prod accounts later (demo). |
 | 2026-11-12 | — | ready | owner approved draft → ready; branch, CDK extras, jsonb values, no domain yet, Docker decided |
 | 2026-11-12 | 1 | done (haiku) | `.env.example` in apps/web and services/api, `lib/env.ts` + `vite-env.d.ts`, startup check in `main.tsx` when mocks are off, Turbo `env`/`inputs` (hash changes on a VITE_ value and on a `.env*` file), workspaces `services/*` and `infra`. Typecheck, lint, build green. The missing-variable error was checked in logic, not in a browser. |
+| 2026-11-12 | 2 | done (sonnet) | `supabase/` with one migration: 8 tables, RLS per company through `private` helpers, explicit grants, composite foreign keys and a trigger that blocks moving rows between companies. `supabase db reset` clean, `supabase test db` 29/29, `supabase db advisors` (security) no issues. Seed empty, no country defaults. |
