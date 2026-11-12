@@ -1,6 +1,6 @@
 # 020 — Cloud setup: AWS, AI, database and env
 
-**Status:** ready · **Depends on:** 012 · **Route(s):** —
+**Status:** in-progress · **Depends on:** 012 · **Route(s):** —
 
 ## Goal
 Every external service the product needs exists in `dev` and `prod`, every setting has one documented place, and one real document can travel from upload through OCR and Claude into the database. Later specs can then replace the mocks screen by screen without touching infrastructure.
@@ -123,16 +123,16 @@ These need your identity, payment details, legal agreement or secrets. Claude ca
 ## Slices
 The loop runs slices in order and stops, with a list of what's missing, at the first slice whose jobs aren't done.
 
-### [ ] 1. Env skeleton
+### [x] 1. Env skeleton
 - **Waits for:** nothing
 - **Build:** both `.env.example` files as above. A typed env reader in `apps/web` that treats every variable as optional while `VITE_USE_MOCKS` isn't `false`, and names the missing variable otherwise. `turbo.json` build gets `"env": ["VITE_*"]` and `.env*` in its inputs, so a production build can't reuse a dev bundle.
 - **Files:** `apps/web/.env.example`, `services/api/.env.example`, `apps/web/src/lib/env.ts`, `apps/web/src/vite-env.d.ts`, `turbo.json`, `pnpm-workspace.yaml`
 - **Model:** haiku
 - **Accept:**
-  - [ ] the app builds and runs as today with no `.env` file
-  - [ ] with `VITE_USE_MOCKS=false` and a variable missing, the error names that variable
-  - [ ] `git status` shows `.env.example` files as trackable and `.env.local` as ignored
-  - [ ] changing a `VITE_` value causes a Turbo cache miss
+  - [x] the app builds and runs as today with no `.env` file
+  - [x] with `VITE_USE_MOCKS=false` and a variable missing, the error names that variable
+  - [x] `git status` shows `.env.example` files as trackable and `.env.local` as ignored
+  - [x] changing a `VITE_` value causes a Turbo cache miss
 
 ### [ ] 2. Database schema on the local stack
 - **Waits for:** J1, J2
@@ -236,3 +236,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-09 | — | draft | written from the backend needs of 002–019; slices split from the jobs only the owner can do |
 | 2026-11-12 | — | jobs | J1, J2 done. `dev` keys in place and tested: Supabase secret key (200), Anthropic key (200), web publishable key. AWS account waits for verification; prod accounts later (demo). |
 | 2026-11-12 | — | ready | owner approved draft → ready; branch, CDK extras, jsonb values, no domain yet, Docker decided |
+| 2026-11-12 | 1 | done (haiku) | `.env.example` in apps/web and services/api, `lib/env.ts` + `vite-env.d.ts`, startup check in `main.tsx` when mocks are off, Turbo `env`/`inputs` (hash changes on a VITE_ value and on a `.env*` file), workspaces `services/*` and `infra`. Typecheck, lint, build green. The missing-variable error was checked in logic, not in a browser. |
