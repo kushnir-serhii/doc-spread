@@ -1,6 +1,6 @@
 # 021 — Architecture page: UML diagrams of the project
 
-**Status:** in-progress · **Depends on:** — · **Route(s):** `/architecture`
+**Status:** done · **Depends on:** — · **Route(s):** `/architecture`
 
 ## Goal
 A developer opens one page and sees how the project is built: one tab per UML diagram (workspaces and layers, domain model, screens, document lifecycle, processing pipeline, deployment). It replaces reading 470 source files to get the picture, and it's the map for the backend work that starts with 020.
@@ -112,6 +112,7 @@ None.
 - **Found in slice 3:** nothing leaves `exported`, and `reassignDocumentType` is allowed from `approved`, `rejected` and `error`; the diagram shows what the mock API allows, not what each screen offers.
 - **Found in slice 3:** the Domain, Screens and Lifecycle diagrams are also larger than the viewport (the same question as the Structure width above).
 - **Found in slice 4:** the Deployment diagram is about 3000px wide with crossing edges; it is the hardest one to read by scrolling.
+- **Found in the UI check:** at 375px a tab opened from the URL (for example `?tab=lifecycle`) is selected but only partly scrolled into view in the tab list.
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -123,3 +124,4 @@ None.
 | 2026-11-12 | 3 | done (sonnet) | `diagrams/{domain,screens,lifecycle}.ts`, wired in `index.ts`. Domain: all 18 types; `FieldAction` and `FieldValue` as `<<union>>`; `Company`–`Document` and `Document`–`DocumentPage` are implicit in the mock database (not properties in `types.ts`), so `api.ts` was added to the sources. Screens: the 18 router paths, links only where a `Link`/`navigate` exists; the spec said "Review → Export" but the real link is Inbox → Export (spec text corrected). Lifecycle: the 8 statuses, every transition labelled with its cause and mock function. Typecheck, lint, build green; ui-check on the three tabs passed (12/12), no error box, screenshots reviewed. |
 | 2026-11-12 | 4 | done (sonnet) | `diagrams/{pipeline,deployment}.ts`; `planned?: { spec }` on `DiagramDef`; the panel shows "Planned (spec 020): not built yet" on those two tabs only. Sequence: presigned URL → S3 → SQS → worker → Textract → SNS → SQS → Claude classify and extract → Postgres, browser polling, failure path to the dead-letter queue and `error`. Deployment: every row of 020's Architecture table, plus SSM and GitHub Actions (in 020, not in the table). No account id, project ref, ARN, bucket name, key or model id in either (grep checked). `autonumber` dropped: its digits were unreadable with the theme. Typecheck, lint, build green; ui-check on both tabs passed. |
 | 2026-11-12 | 5 | done (haiku) | `docs/conventions.md` → new "Architecture diagrams" section (which change updates which diagram; drop the `planned` flag when its spec is `done`); `docs/process.md` → one Definition of Done bullet; `CLAUDE.md` → one Architecture notes bullet. |
+| 2026-11-12 | UI check | passed | `SPEC=021 ROUTES=architecture,architecture?tab=domain,…screens,…lifecycle,…pipeline,…deployment pnpm ui-check`: 24/24 at 375px and 1280px, light and dark; no console errors, no horizontal page scroll, no error box. Screenshots reviewed (`apps/web/e2e/screenshots/021/`): every diagram drawn with token colors in both themes; all six are larger than the viewport and scroll inside their container. |
