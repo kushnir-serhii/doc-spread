@@ -81,3 +81,17 @@ React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 
 
 ## States (every screen)
 Loading (skeleton) · empty (explanation plus next action) · error (message plus retry) · long values (truncate with a title or wrap) · large data (50+ rows or line items).
+
+## Architecture diagrams
+
+The diagrams on `/architecture` are hand-written and live in `src/features/architecture/diagrams/`. A slice that makes one of the changes below updates the matching diagram in the same slice.
+
+| Change | Diagram to update |
+| --- | --- |
+| A new, moved or removed folder under `src/`, a new workspace, or a changed import rule | `structure.ts` |
+| A new, renamed or removed domain type or relation in `lib/mock/types.ts` | `domain.ts` |
+| A route added, removed or renamed in `router.tsx`, or a new link between screens | `screens.ts` |
+| A document status or transition added or changed | `lifecycle.ts` |
+| A pipeline step or a service added, removed or replaced | `pipeline.ts`, `deployment.ts` |
+
+- When a planned diagram's spec is `done`, remove its `planned` flag in `diagrams/index.ts`.

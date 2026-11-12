@@ -33,6 +33,7 @@ There is no test runner configured yet; the root `test` script is a placeholder 
 - `apps/web` TypeScript is strict about unused locals/params and uses `verbatimModuleSyntax` (use `import type` for type-only imports) and `erasableSyntaxOnly` (no enums, namespaces, or parameter properties).
 - TypeScript versions differ: root devDependency is `typescript ^7`, while `apps/web` pins `~6.0.3`. Builds in `apps/web` use its local version.
 - ESLint (flat config, `apps/web/eslint.config.js`) uses typescript-eslint recommended, react-hooks, and react-refresh (Vite) rules.
+- **Architecture diagrams.** The `/architecture` page in `apps/web` (Developer nav group) shows UML diagrams of the project: structure, domain model, screens, document lifecycle, pipeline and deployment. They are hand-written Mermaid text in `apps/web/src/features/architecture/diagrams/` and must be updated with the code (rule in `docs/conventions.md` → Architecture diagrams).
 
 ## Specs and process
 

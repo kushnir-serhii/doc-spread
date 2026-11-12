@@ -78,13 +78,13 @@ Diagrams 5 and 6 describe what 020 will build, not what exists. Each carries a v
   - [x] both tabs show the planned note; the other four don't
   - [x] no secret, account id or project ref from 020 appears in a diagram
 
-### [ ] 5. Keeping the diagrams true
+### [x] 5. Keeping the diagrams true
 - **Build:** add a "keep diagrams current" rule: a slice that adds a route, a domain type, a document status, a `src/` folder or a service updates the matching diagram in the same slice. Mention the page in `CLAUDE.md`.
 - **Files:** `docs/conventions.md`, `docs/process.md`, `CLAUDE.md`
 - **Model:** haiku
 - **Accept:**
-  - [ ] [conventions.md](../conventions.md) names which change updates which diagram
-  - [ ] `CLAUDE.md` points to `/architecture` and the `diagrams/` folder
+  - [x] [conventions.md](../conventions.md) names which change updates which diagram
+  - [x] `CLAUDE.md` points to `/architecture` and the `diagrams/` folder
 
 ## Backend needs
 None.
@@ -122,3 +122,4 @@ None.
 | 2026-11-12 | 2 | done (sonnet, designer) | `mermaid` ^12.3.0, loaded only through `await import('mermaid')` in `use-mermaid.ts`: main chunk 436.9 kB (was 438.4), `mermaid` absent from it; Mermaid ships as ~180 lazy chunks and Vite warns about two of them over 500 kB (`elk`, one shared chunk). `mermaid-theme.ts` converts the oklch tokens to hex on a canvas and feeds the `base` theme; redraws on theme change. `mermaid-diagram.tsx` (skeleton, error + Retry + source, `role="img"` scroll container), `diagram-source.tsx` (`details`, Copy, `role="status"`), `diagrams/structure.ts`. Checked: broken definition → alert + Retry + source; 375px diagram scrolls in its container by keyboard; Copy fills the clipboard. Not checked: Retry after an error succeeding, the clipboard failure message. Typecheck, lint, build green; ui-check on `architecture` passed, screenshots reviewed. |
 | 2026-11-12 | 3 | done (sonnet) | `diagrams/{domain,screens,lifecycle}.ts`, wired in `index.ts`. Domain: all 18 types; `FieldAction` and `FieldValue` as `<<union>>`; `Company`–`Document` and `Document`–`DocumentPage` are implicit in the mock database (not properties in `types.ts`), so `api.ts` was added to the sources. Screens: the 18 router paths, links only where a `Link`/`navigate` exists; the spec said "Review → Export" but the real link is Inbox → Export (spec text corrected). Lifecycle: the 8 statuses, every transition labelled with its cause and mock function. Typecheck, lint, build green; ui-check on the three tabs passed (12/12), no error box, screenshots reviewed. |
 | 2026-11-12 | 4 | done (sonnet) | `diagrams/{pipeline,deployment}.ts`; `planned?: { spec }` on `DiagramDef`; the panel shows "Planned (spec 020): not built yet" on those two tabs only. Sequence: presigned URL → S3 → SQS → worker → Textract → SNS → SQS → Claude classify and extract → Postgres, browser polling, failure path to the dead-letter queue and `error`. Deployment: every row of 020's Architecture table, plus SSM and GitHub Actions (in 020, not in the table). No account id, project ref, ARN, bucket name, key or model id in either (grep checked). `autonumber` dropped: its digits were unreadable with the theme. Typecheck, lint, build green; ui-check on both tabs passed. |
+| 2026-11-12 | 5 | done (haiku) | `docs/conventions.md` → new "Architecture diagrams" section (which change updates which diagram; drop the `planned` flag when its spec is `done`); `docs/process.md` → one Definition of Done bullet; `CLAUDE.md` → one Architecture notes bullet. |
