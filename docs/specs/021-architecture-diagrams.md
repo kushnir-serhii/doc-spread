@@ -1,6 +1,6 @@
 # 021 — Architecture page: UML diagrams of the project
 
-**Status:** ready · **Depends on:** — · **Route(s):** `/architecture`
+**Status:** in-progress · **Depends on:** — · **Route(s):** `/architecture`
 
 ## Goal
 A developer opens one page and sees how the project is built: one tab per UML diagram (workspaces and layers, domain model, screens, document lifecycle, processing pipeline, deployment). It replaces reading 470 source files to get the picture, and it's the map for the backend work that starts with 020.
@@ -40,14 +40,14 @@ Diagrams 5 and 6 describe what 020 will build, not what exists. Each carries a v
 
 ## Slices
 
-### [ ] 1. Page shell with tabs
+### [x] 1. Page shell with tabs
 - **Build:** add the shadcn `tabs` primitive. New `/architecture` route (lazy) inside the app shell and a `DEV_NAV` entry "Architecture". The page has a `PageHeader`, a tab list with the six tabs, and for the selected tab: title, UML type, description and the list of source paths. The selected tab is `?tab=<id>`; a missing or unknown value falls back to `structure`. The diagram area is a placeholder in this slice. At 375px the tab list scrolls sideways inside its own container.
 - **Files:** `src/components/ui/tabs.tsx`, `src/app/router.tsx`, `src/components/layout/nav-items.ts`, `src/pages/architecture/architecture-page.tsx`, `src/features/architecture/diagram-tabs.tsx`, `src/features/architecture/diagram-panel.tsx`, `src/features/architecture/diagrams/index.ts`, `src/features/architecture/diagrams/diagram-def.ts`
 - **Accept:**
-  - [ ] `/architecture` opens from the Developer group in the sidebar and in the mobile nav
-  - [ ] choosing a tab changes `?tab=`; a reload and the Back button restore the tab; `?tab=nope` shows Structure
-  - [ ] tabs work from the keyboard (arrow keys, Home/End) and each tab is at least 44px high
-  - [ ] no horizontal page scroll at 375px
+  - [x] `/architecture` opens from the Developer group in the sidebar and in the mobile nav
+  - [x] choosing a tab changes `?tab=`; a reload and the Back button restore the tab; `?tab=nope` shows Structure
+  - [x] tabs work from the keyboard (arrow keys, Home/End) and each tab is at least 44px high
+  - [x] no horizontal page scroll at 375px
 
 ### [ ] 2. Mermaid renderer and the Structure diagram
 - **Build:** add `mermaid` (see **Open questions**) and load it with a dynamic `import()` from the diagram component only, so it's a separate chunk. `MermaidDiagram` renders a definition to SVG with `securityLevel: 'strict'` and the `base` theme, with `themeVariables` read from the design tokens in `src/styles/index.css`; it renders again when the theme changes. States: skeleton while the library loads and renders; an error message with **Retry** and the raw source when rendering fails. The diagram sits in a focusable container that scrolls in both directions when the diagram is wider than the page; it has `role="img"` and an `aria-label` from the diagram's label and description. Below it, a collapsed "Diagram source" (`details`) with the Mermaid text and a **Copy** button. Write the Structure diagram.
@@ -110,3 +110,4 @@ None.
 | --- | --- | --- | --- |
 | 2026-11-12 | — | draft | written from the request "a page with tabs for UML diagrams, to see the structure of the project" |
 | 2026-11-12 | — | ready | questions answered up front; all recommendations accepted |
+| 2026-11-12 | 1 | done (sonnet, designer) | shadcn `tabs` primitive (the CLI wrote a wrong `cn` import and a bogus `cn` dependency; both fixed, no new dependency). Lazy `/architecture` route, `DEV_NAV` entry, `pages/architecture/architecture-page.tsx`, `features/architecture/{diagram-tabs,diagram-panel}.tsx`, `diagrams/{diagram-def,index}.ts` with metadata for all six diagrams and `code: ''`. Tab in `?tab=` via `setSearchParams` (pushes history); unknown value → Structure. Typecheck, lint, build green; ui-check on `architecture` and `architecture?tab=nope` passed. |

@@ -25,7 +25,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 017 | [Row actions (table rows)](specs/017-row-actions.md) | done | 016 |
 | 018 | [Export: table column mapping](specs/018-export-table-columns.md) | done | 009 |
 | 019 | [Mock data without country defaults](specs/019-mock-without-country-defaults.md) | done | — |
-| 021 | [Architecture page: UML diagrams](specs/021-architecture-diagrams.md) | ready | — |
+| 021 | [Architecture page: UML diagrams](specs/021-architecture-diagrams.md) | in-progress | — |
 
 Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 

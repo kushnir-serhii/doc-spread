@@ -1,0 +1,18 @@
+export const DIAGRAM_IDS = ['structure', 'domain', 'screens', 'lifecycle', 'pipeline', 'deployment'] as const
+
+export type DiagramId = (typeof DIAGRAM_IDS)[number]
+
+export interface DiagramDef {
+  /** Also the `?tab=` value. */
+  id: DiagramId
+  /** Tab label. */
+  label: string
+  /** UML diagram type shown under the title. */
+  kind: string
+  /** What the diagram shows and where the truth lives. */
+  description: string
+  /** Repo paths the diagram was drawn from. */
+  sources: string[]
+  /** Mermaid definition. */
+  code: string
+}

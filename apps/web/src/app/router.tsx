@@ -75,6 +75,10 @@ export const router = createBrowserRouter([
           },
           { path: '/design', lazy: () => import('@/pages/design/design-page').then((m) => ({ Component: m.default })) },
           {
+            path: '/architecture',
+            lazy: () => import('@/pages/architecture/architecture-page').then((m) => ({ Component: m.default })),
+          },
+          {
             path: '*',
             lazy: () => import('@/pages/not-found/not-found-page').then((m) => ({ Component: m.default })),
           },
