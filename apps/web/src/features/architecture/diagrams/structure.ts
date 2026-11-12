@@ -23,6 +23,12 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   subgraph shared["packages/shared (@docspread/shared)"]
     sharedsrc["src (raw TypeScript, no build step)"]
   end
+  subgraph infra["infra (@docspread/infra)"]
+    cdk["CDK app: dev and prod stacks, scripts"]
+  end
+  subgraph supabase["supabase (folder, not a workspace)"]
+    migrations["migrations, seed, tests"]
+  end
 
   main --> app
   app -->|lazy| pages

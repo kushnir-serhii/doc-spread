@@ -144,15 +144,15 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
   - [x] a test proves a member of company A can't read, change or reassign rows of company B
   - [x] the seed contains no country defaults (no PLN or `pl-PL`)
 
-### [ ] 3. AWS infrastructure as code
+### [x] 3. AWS infrastructure as code
 - **Waits for:** J1
 - **Build:** an `infra/` workspace with one CDK app and `dev` / `prod` stages: private document and export buckets with CORS for pdf.js, CloudFront serving `index.html` for unknown paths, SQS queues with dead-letter queues, the Textract SNS topic and role, Lambda placeholders, the SES identity, and the GitHub OIDC role. A script copies the two secrets from `services/api/.env.local` to SSM, so they're never typed into a shell.
 - **Files:** `infra/**`, `pnpm-workspace.yaml`
 - **Accept:**
-  - [ ] `cdk synth` succeeds for both stages with no account credentials
-  - [ ] no bucket allows public access; web files are readable only through CloudFront
-  - [ ] each Lambda role can reach only its own buckets, queues and parameters
-  - [ ] the same synth output differs between stages only in names and sizes
+  - [x] `cdk synth` succeeds for both stages with no account credentials
+  - [x] no bucket allows public access; web files are readable only through CloudFront
+  - [x] each Lambda role can reach only its own buckets, queues and parameters
+  - [x] the same synth output differs between stages only in names and sizes
 
 ### [ ] 4. Deploy `dev`
 - **Waits for:** J3, J6 (DNS), J7, J8 (bootstrap)
@@ -232,6 +232,9 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 - From slice 2: owners and admins write document types and versions; any member edits documents and creates export jobs. Does that match the product (011 roles)?
 - From slice 2: type versions can still be updated or deleted by owners and admins. Should a saved version be immutable (012: "every version kept")?
 - From slice 2: ids are `uuid` in the database and strings in the mocks; the spec that replaces the mocks has to map them.
+- From slice 3: bucket names (`docspread-dev-documents` …) are global across all AWS accounts, so slice 4 may hit a name that is taken. Add a short suffix (for example the account id) if it does.
+- From slice 3: the api role has no SES permission yet; add it with the export email (after J6).
+- From slice 3: `@types/node` was added to `infra` (type definitions only, same range as `apps/web`).
 - From 007: what confidence leaves a document unclassified, and is there a page limit per file? Recommended for the smoke test: 0.7 and 50 pages, revisited with real results.
 
 ## Log
@@ -242,3 +245,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-12 | — | ready | owner approved draft → ready; branch, CDK extras, jsonb values, no domain yet, Docker decided |
 | 2026-11-12 | 1 | done (haiku) | `.env.example` in apps/web and services/api, `lib/env.ts` + `vite-env.d.ts`, startup check in `main.tsx` when mocks are off, Turbo `env`/`inputs` (hash changes on a VITE_ value and on a `.env*` file), workspaces `services/*` and `infra`. Typecheck, lint, build green. The missing-variable error was checked in logic, not in a browser. |
 | 2026-11-12 | 2 | done (sonnet) | `supabase/` with one migration: 8 tables, RLS per company through `private` helpers, explicit grants, composite foreign keys and a trigger that blocks moving rows between companies. `supabase db reset` clean, `supabase test db` 29/29, `supabase db advisors` (security) no issues. Seed empty, no country defaults. |
+| 2026-11-12 | 3 | done (sonnet) | `infra/` (`@docspread/infra`): CDK app with `DocSpread-dev` / `DocSpread-prod`; web bucket + CloudFront (origin access control, SPA fallback), documents and exports buckets, ingest and Textract queues with DLQs, SNS topic + Textract role, 3 placeholder Lambdas with per-role permissions, optional SES identity, GitHub OIDC deploy role, `put-secrets` script (not run). `synth` and `check` pass with no credentials. Diagrams: `structure.ts` (infra, supabase), `deployment.ts` (Function URL). |

@@ -7,7 +7,7 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
   subgraph aws["AWS"]
     cdn["CloudFront"]
     webBucket["S3 web bucket"]
-    api["API (Lambda)"]
+    api["API (Lambda Function URL)"]
     worker["Pipeline Lambdas"]
     docs[("S3 documents bucket, private")]
     exports[("S3 exports bucket, private")]
