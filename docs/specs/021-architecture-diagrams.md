@@ -31,7 +31,7 @@ interface DiagramDef {
 | --- | --- | --- | --- | --- |
 | 1 | Structure (`structure`) | Package diagram (`flowchart` with subgraphs) | Workspaces `apps/web` and `packages/shared`; inside `apps/web/src`: `app`, `pages`, `features`, `components/{ui,layout,domain}`, `lib/{api,mock,fields,theme,format-locale}`, `hooks`; arrows are the allowed import directions (pages → features → components and `lib/api`; only `lib/api` → `lib/mock`) | `pnpm-workspace.yaml`, `conventions.md`, `apps/web/src/` |
 | 2 | Domain model (`domain`) | Class diagram (`classDiagram`) | `Company`, `TeamMember`, `DocumentType`, `FieldDef`, `ColumnDef`, `FieldAction` and its four kinds, `Document`, `DocumentPage`, `Token`, `FieldValue` (`ExtractedValue`, `TableValue`), `ExportJob`, `ExportMapping`, `Plan`; key attributes only, with multiplicities | `src/lib/mock/types.ts` |
-| 3 | Screens (`screens`) | Navigation diagram (`flowchart`) | Every route in the router, grouped as public / auth / app shell, with the links between screens (Inbox → Review, Types → Type → Train, Groups → Group, Review → Export) | `src/app/router.tsx`, `product.md` |
+| 3 | Screens (`screens`) | Navigation diagram (`flowchart`) | Every route in the router, grouped as public / auth / app shell, with the links between screens (Inbox → Review, Types → Type → Train, Groups → Group, Inbox → Export) | `src/app/router.tsx`, `product.md` |
 | 4 | Document lifecycle (`lifecycle`) | State diagram (`stateDiagram-v2`) | Every value of `DOCUMENT_STATUSES` and the transitions between them, each labelled with what causes it (pipeline step or user action) | `src/lib/mock/types.ts`, `src/lib/mock/api.ts`, specs 006–009 |
 | 5 | Pipeline (`pipeline`) | Sequence diagram (`sequenceDiagram`) | One document from upload to review: browser, API, S3, SQS, Textract, SNS, Claude, Postgres, and the browser polling. Marked **planned** | spec 020 |
 | 6 | Deployment (`deployment`) | Deployment diagram (`flowchart` with subgraphs) | Browser, CloudFront + S3 (web), API on Lambda, S3 buckets, SQS, Textract, SES, Supabase (Postgres, auth), Anthropic API; what runs where. Marked **planned** | spec 020, `product.md` |
@@ -60,14 +60,14 @@ Diagrams 5 and 6 describe what 020 will build, not what exists. Each carries a v
   - [x] at 375px the diagram scrolls inside its container and the page doesn't scroll sideways; the container is reachable and scrollable by keyboard
   - [x] Copy puts the definition on the clipboard and announces it (`role="status"`)
 
-### [ ] 3. Domain model, Screens and Document lifecycle
+### [x] 3. Domain model, Screens and Document lifecycle
 - **Build:** write diagrams 2, 3 and 4 from the code. Every class, route and status in a diagram must exist in the source named in its `sources`. The domain diagram shows relations and key attributes, not every field.
 - **Files:** `src/features/architecture/diagrams/domain.ts`, `src/features/architecture/diagrams/screens.ts`, `src/features/architecture/diagrams/lifecycle.ts`, `src/features/architecture/diagrams/index.ts`
 - **Accept:**
-  - [ ] every type named in the Domain row of the table is in the class diagram, with multiplicities on `Company`–`Document`, `DocumentType`–`FieldDef`, `Document`–`DocumentType` (id + version) and `Document`–`DocumentPage`–`Token`
-  - [ ] every path in `router.tsx` except `*` and the `/app` redirect is in the Screens diagram, and no path is in it that isn't in the router
-  - [ ] the lifecycle shows every value of `DOCUMENT_STATUSES` and no other state, and each transition has a label
-  - [ ] all three render with no error in light and dark
+  - [x] every type named in the Domain row of the table is in the class diagram, with multiplicities on `Company`–`Document`, `DocumentType`–`FieldDef`, `Document`–`DocumentType` (id + version) and `Document`–`DocumentPage`–`Token`
+  - [x] every path in `router.tsx` except `*` and the `/app` redirect is in the Screens diagram, and no path is in it that isn't in the router
+  - [x] the lifecycle shows every value of `DOCUMENT_STATUSES` and no other state, and each transition has a label
+  - [x] all three render with no error in light and dark
 
 ### [ ] 4. Pipeline and Deployment (planned)
 - **Build:** write diagrams 5 and 6 from spec 020's **Architecture** table and pipeline line. Add an optional `planned?: { spec: string }` to `DiagramDef`; the panel shows a "Planned (spec 020): not built yet" note above such a diagram.
@@ -108,6 +108,9 @@ None.
 - **Found in slice 2:** `@docspread/shared` is a workspace dependency of the web app but nothing in `src` imports it yet. The diagram labels the arrow "workspace dependency".
 - **Found in slice 2:** the Structure diagram is 1556px wide, so it scrolls sideways even at 1280px. Zoom / fit-to-width was decided out; revisit if scrolling proves annoying.
 - **Found in slice 2:** Vite's 500 kB chunk warning is back, for two of Mermaid's own lazy chunks. They load only on `/architecture`. To silence it, raise `build.chunkSizeWarningLimit` or split with `manualChunks`.
+- **Found in slice 3:** nothing in the mocks ever moves a document into `error`; such documents exist only as seed data, so the lifecycle shows `Error` with no incoming transition. The real pipeline (020) will add it.
+- **Found in slice 3:** nothing leaves `exported`, and `reassignDocumentType` is allowed from `approved`, `rejected` and `error`; the diagram shows what the mock API allows, not what each screen offers.
+- **Found in slice 3:** the Domain, Screens and Lifecycle diagrams are also larger than the viewport (the same question as the Structure width above).
 
 ## Log
 | Date | Slice | Result | Notes / files |
@@ -116,3 +119,4 @@ None.
 | 2026-11-12 | — | ready | questions answered up front; all recommendations accepted |
 | 2026-11-12 | 1 | done (sonnet, designer) | shadcn `tabs` primitive (the CLI wrote a wrong `cn` import and a bogus `cn` dependency; both fixed, no new dependency). Lazy `/architecture` route, `DEV_NAV` entry, `pages/architecture/architecture-page.tsx`, `features/architecture/{diagram-tabs,diagram-panel}.tsx`, `diagrams/{diagram-def,index}.ts` with metadata for all six diagrams and `code: ''`. Tab in `?tab=` via `setSearchParams` (pushes history); unknown value → Structure. Typecheck, lint, build green; ui-check on `architecture` and `architecture?tab=nope` passed. |
 | 2026-11-12 | 2 | done (sonnet, designer) | `mermaid` ^12.3.0, loaded only through `await import('mermaid')` in `use-mermaid.ts`: main chunk 436.9 kB (was 438.4), `mermaid` absent from it; Mermaid ships as ~180 lazy chunks and Vite warns about two of them over 500 kB (`elk`, one shared chunk). `mermaid-theme.ts` converts the oklch tokens to hex on a canvas and feeds the `base` theme; redraws on theme change. `mermaid-diagram.tsx` (skeleton, error + Retry + source, `role="img"` scroll container), `diagram-source.tsx` (`details`, Copy, `role="status"`), `diagrams/structure.ts`. Checked: broken definition → alert + Retry + source; 375px diagram scrolls in its container by keyboard; Copy fills the clipboard. Not checked: Retry after an error succeeding, the clipboard failure message. Typecheck, lint, build green; ui-check on `architecture` passed, screenshots reviewed. |
+| 2026-11-12 | 3 | done (sonnet) | `diagrams/{domain,screens,lifecycle}.ts`, wired in `index.ts`. Domain: all 18 types; `FieldAction` and `FieldValue` as `<<union>>`; `Company`–`Document` and `Document`–`DocumentPage` are implicit in the mock database (not properties in `types.ts`), so `data.ts` was added to the sources. Screens: the 18 router paths, links only where a `Link`/`navigate` exists; the spec said "Review → Export" but the real link is Inbox → Export (spec text corrected). Lifecycle: the 8 statuses, every transition labelled with its cause and mock function. Typecheck, lint, build green; ui-check on the three tabs passed (12/12), no error box, screenshots reviewed. |

@@ -1,4 +1,7 @@
 import { DIAGRAM_IDS, type DiagramDef, type DiagramId } from './diagram-def'
+import { DOMAIN_DIAGRAM } from './domain'
+import { LIFECYCLE_DIAGRAM } from './lifecycle'
+import { SCREENS_DIAGRAM } from './screens'
 import { STRUCTURE_DIAGRAM } from './structure'
 
 export const DEFAULT_DIAGRAM_ID: DiagramId = 'structure'
@@ -17,9 +20,9 @@ export const DIAGRAMS: DiagramDef[] = [
     id: 'domain',
     label: 'Domain model',
     kind: 'Class diagram',
-    description: 'The domain types with their key attributes and multiplicities. The truth lives in types.ts.',
-    sources: ['apps/web/src/lib/mock/types.ts'],
-    code: '',
+    description: 'The domain types with their key attributes and multiplicities. The truth lives in types.ts; ownership by the company comes from the mock database.',
+    sources: ['apps/web/src/lib/mock/types.ts', 'apps/web/src/lib/mock/data.ts'],
+    code: DOMAIN_DIAGRAM,
   },
   {
     id: 'screens',
@@ -27,7 +30,7 @@ export const DIAGRAMS: DiagramDef[] = [
     kind: 'Navigation diagram',
     description: 'Every route, grouped as public, auth and app shell, with the links between screens.',
     sources: ['apps/web/src/app/router.tsx', 'docs/product.md'],
-    code: '',
+    code: SCREENS_DIAGRAM,
   },
   {
     id: 'lifecycle',
@@ -42,7 +45,7 @@ export const DIAGRAMS: DiagramDef[] = [
       'docs/specs/008-review.md',
       'docs/specs/009-export.md',
     ],
-    code: '',
+    code: LIFECYCLE_DIAGRAM,
   },
   {
     id: 'pipeline',
