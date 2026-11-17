@@ -234,9 +234,12 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
   - **Decided (2026-11-12):** the free plan.
 - **Docker for slice 2?**
   - **Decided (2026-11-12):** Claude starts Docker Desktop when slice 2 begins.
-- From slice 2: who creates a company and its first owner? Clients have no insert on `companies`, so sign-up is assumed to go through the API service with the secret key.
-- From slice 2: owners and admins write document types and versions; any member edits documents and creates export jobs. Does that match the product (011 roles)?
-- From slice 2: type versions can still be updated or deleted by owners and admins. Should a saved version be immutable (012: "every version kept")?
+- From slice 2: who creates a company and its first owner?
+  - **Decided (2026-11-17):** the API service, with the secret key, after sign-up. Clients have no insert on `companies` (as built).
+- From slice 2: who may change document types?
+  - **Decided (2026-11-17):** any member of the company. Migration `type_permissions_and_locked_versions`.
+- From slice 2: can a saved type version be edited?
+  - **Decided (2026-11-17):** no, it is locked for everyone (policies plus a trigger); a change is a new version. Starting a new type as a copy of an existing one is a later app feature with its own spec (014 builder, 015 sample).
 - From slice 2: ids are `uuid` in the database and strings in the mocks; the spec that replaces the mocks has to map them.
 - From slice 3: bucket names (`docspread-dev-documents` …) are global across all AWS accounts, so slice 4 may hit a name that is taken. Add a short suffix (for example the account id) if it does.
 - From slice 3: the api role has no SES permission yet; add it with the export email (after J6).
@@ -254,3 +257,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-12 | 2 | done (sonnet) | `supabase/` with one migration: 8 tables, RLS per company through `private` helpers, explicit grants, composite foreign keys and a trigger that blocks moving rows between companies. `supabase db reset` clean, `supabase test db` 29/29, `supabase db advisors` (security) no issues. Seed empty, no country defaults. |
 | 2026-11-12 | 3 | done (sonnet) | `infra/` (`@docspread/infra`): CDK app with `DocSpread-dev` / `DocSpread-prod`; web bucket + CloudFront (origin access control, SPA fallback), documents and exports buckets, ingest and Textract queues with DLQs, SNS topic + Textract role, 3 placeholder Lambdas with per-role permissions, optional SES identity, GitHub OIDC deploy role, `put-secrets` script (not run). `synth` and `check` pass with no credentials. Diagrams: `structure.ts` (infra, supabase), `deployment.ts` (Function URL). |
 | 2026-11-12 | — | UI check | `/architecture?tab=structure` and `?tab=deployment`: 8/8 passed (375px and 1280px, light and dark); screenshots reviewed, both diagrams render with the new infra and supabase nodes. Slices 4–8 wait for the AWS account (J3) and the other owner jobs. |
+| 2026-11-17 | 2 (follow-up) | done | owner answers: company created by the API; any member edits types; saved versions locked (no update/delete grants + trigger). New migration and `type_permissions.test.sql`; `supabase test db` 36/36, advisors no issues. |
