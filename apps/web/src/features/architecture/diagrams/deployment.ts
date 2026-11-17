@@ -42,7 +42,7 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
   api -->|"presign downloads"| exports
   docs -->|"object created event"| sqs
   sqs -->|"trigger"| ocr
-  ocr -->|"read file, write page images"| docs
+  ocr -->|"read file"| docs
   ocr -->|"OCR done"| sqsExtract
   sqsExtract -->|"trigger"| extract
   extract -->|"read file"| docs

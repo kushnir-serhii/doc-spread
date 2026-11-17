@@ -13,7 +13,7 @@ type Source = Record<string, string | undefined>
 
 const REQUIRED = ['SUPABASE_URL', 'SUPABASE_JWKS_URL', 'S3_DOCUMENTS_BUCKET', 'UPLOAD_MAX_BYTES'] as const
 
-const readSecretFromSsm = async (parameterName: string): Promise<string> => {
+export const readSecretFromSsm = async (parameterName: string): Promise<string> => {
   const result = await new SSMClient({}).send(new GetParameterCommand({ Name: parameterName, WithDecryption: true }))
   const value = result.Parameter?.Value
   if (!value) throw new Error(`SSM parameter ${parameterName} is empty`)

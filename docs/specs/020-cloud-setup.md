@@ -182,16 +182,16 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
   - [x] an oversized or disallowed file is refused
   - [x] startup with a missing variable fails and names it, and no log line contains a secret value
 
-### [ ] 6. One document end to end
+### [x] 6. One document end to end
 - **Waits for:** J5, J7
 - **Build:** the pipeline for one document: S3 event, SQS, OCR (the PDF text layer through `pdfjs-dist`, or Tesseract (`tesseract.js`, English and Ukrainian) for scans and photos, with word boxes either way), SQS, then a Claude call through `@anthropic-ai/sdk` that classifies and extracts with structured outputs, and writes the status, values and word boxes to Postgres. Set `effort` explicitly, check `stop_reason` for `refusal`, and enable the server-side fallback on the Opus call (Haiku has none, so a Haiku refusal leaves the document unclassified). Failures land in the dead-letter queue and set the `error` status. Basic prompts only; production quality is a later spec.
 - **Files:** `services/api/**`, `infra/**`
 - **Accept:**
-  - [ ] a multi-page PDF uploaded to `dev` reaches `needs_review` with values and confidence
-  - [ ] OCR tokens are stored with boxes normalized 0..1 to the page after rotation, origin top-left
-  - [ ] a broken file ends in `error` and doesn't block the queue
-  - [ ] a currency the model assumed rather than read stays unverified, never silently filled in
-  - [ ] the token usage and cost of the run are logged
+  - [x] a multi-page PDF uploaded to `dev` reaches `needs_review` with values and confidence
+  - [x] OCR tokens are stored with boxes normalized 0..1 to the page after rotation, origin top-left
+  - [x] a broken file ends in `error` and doesn't block the queue
+  - [x] a currency the model assumed rather than read stays unverified, never silently filled in
+  - [x] the token usage and cost of the run are logged
 
 ### [ ] 7. Deploy automation and `prod`
 - **Waits for:** J4, J7, J8
@@ -263,6 +263,10 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 - From slice 5: a user with several active memberships uploads into the first company (by `created_at`). How a user picks a company is for the auth spec.
 - From slice 5: `prod` needs its `supabaseProjectRef` in `infra/lib/stage-config.ts` before it is deployed; until then its API refuses to start and names `SUPABASE_URL`.
 - From slice 5: `services/api/scripts/invoice-template.json` is a copy of the mock Invoice template used by `seed-demo`; regenerate it if the template changes.
+- From slice 6: the Claude API rejects one structured-output schema for the whole Invoice type ("too many union types", "grammar too large"), so extraction runs in groups: scalar fields 10 per call, each table field alone, and the file is sent with every call (about $0.065 per 3-page invoice). Prompt caching or a per-type call plan belongs to the production-quality spec.
+- From slice 6: an assumed currency is only covered by logic so far (company default, confidence capped at `ASSUMED_CONFIDENCE` 0.5); the sample documents all state theirs. Rendering a scanned PDF page on Lambda and rotated pages were not exercised; EXIF rotation of photos is not applied before OCR.
+- From slice 6: the backend stores any ISO 4217 code the model reads, while the web `Money` type lists 5 currencies. The spec that replaces the mocks reconciles this.
+- From slice 6: model ids and `CLASSIFY_MIN_CONFIDENCE` are set in the stack; OCR language data downloads at runtime into `/tmp`.
 - From 007: what confidence leaves a document unclassified, and is there a page limit per file? Recommended for the smoke test: 0.7 and 50 pages, revisited with real results.
 
 ## Log
@@ -282,3 +286,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-17 | 4 (part) | in progress | `DocSpread-dev` deployed to `eu-north-1` with `cdn=false` (3rd attempt: OIDC provider blocked by the plan, CloudFront blocked by verification, Lambda capped at 512 MB). API Function URL answers 501 (placeholder), all buckets refuse unsigned requests (403), web build synced (187 files). Waiting: CloudFront verification, and the owner's `supabase link` + `db push`. |
 | 2026-11-17 | 4 (part) | 2 of 3 | owner ran `supabase link` + `db push`: both migrations applied to `docspread-dev`, `migration list` in sync; all 8 tables answer through the Data API with the secret key, and the publishable key is refused (42501). J7: both secrets in SSM. J8: `cdk bootstrap` done. Only the CloudFront criterion is left (verification). |
 | 2026-11-17 | 5 | done (sonnet) | `services/api` (`@docspread/api`): Function URL handler with `/health` and `POST /uploads` (Supabase JWT via JWKS, company from `team_members`, `documents` row, presigned POST pinned to `<company>/<document>/<file>`, 20 MB, pdf/jpg/png). api Lambda is now a `NodejsFunction` (esbuild); documents CORS allows POST. `seed-demo` (demo@docspread.dev, Demo Company USD, Invoice v1; password only in `.env.local`), `smoke-api` 15/15 on the deployed dev API (re-run by the orchestrator), `check-env` 7/7, log scan 0 secrets. Diagrams `structure.ts`, `pipeline.ts`; UI check 8/8. |
+| 2026-11-17 | 6 | done (sonnet) | `services/api/src/pipeline/`: OCR handler (pdfjs text layer; `tesseract.js` eng+ukr with `@napi-rs/canvas`, linux-arm64 binary added by `infra/scripts/add-native-binary.mjs`) and extract handler (Haiku classify, Opus extract with server-side fallback, effort set, refusals handled, cost logged). `smoke-pipeline` all PASS on dev: invoice PDF and receipt JPG `needs_review`, 30-page PDF `unclassified` (no matching type), broken PDF `error` with the queue still moving; ~$0.39 of Claude for the run. `smoke-api` 15/15 re-run by the orchestrator; offline synth + check pass. Page indexes are 0-based like `DocumentPage.index`. Diagrams `pipeline.ts`, `deployment.ts`. |
