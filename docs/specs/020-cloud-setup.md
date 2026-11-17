@@ -184,7 +184,7 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
 
 ### [ ] 6. One document end to end
 - **Waits for:** J5, J7
-- **Build:** the pipeline for one document: S3 event, SQS, OCR (the PDF text layer through `pdfjs-dist`, or Tesseract in a Lambda container image for scans and photos, with word boxes either way), SQS, then a Claude call through `@anthropic-ai/sdk` that classifies and extracts with structured outputs, and writes the status, values and word boxes to Postgres. Set `effort` explicitly, check `stop_reason` for `refusal`, and enable the server-side fallback on the Opus call (Haiku has none, so a Haiku refusal leaves the document unclassified). Failures land in the dead-letter queue and set the `error` status. Basic prompts only; production quality is a later spec.
+- **Build:** the pipeline for one document: S3 event, SQS, OCR (the PDF text layer through `pdfjs-dist`, or Tesseract (`tesseract.js`, English and Ukrainian) for scans and photos, with word boxes either way), SQS, then a Claude call through `@anthropic-ai/sdk` that classifies and extracts with structured outputs, and writes the status, values and word boxes to Postgres. Set `effort` explicitly, check `stop_reason` for `refusal`, and enable the server-side fallback on the Opus call (Haiku has none, so a Haiku refusal leaves the document unclassified). Failures land in the dead-letter queue and set the `error` status. Basic prompts only; production quality is a later spec.
 - **Files:** `services/api/**`, `infra/**`
 - **Accept:**
   - [ ] a multi-page PDF uploaded to `dev` reaches `needs_review` with values and confidence
@@ -258,6 +258,8 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 - From slice 4: the free plan's policy forbids creating the GitHub OIDC provider. The deploy role is now behind context `githubDeploy=true` (off by default), so deploys run from the owner's machine with the `docspread` profile. Slice 7 needs another route (or the paid plan).
 - From slice 4: CloudFront refuses new distributions until AWS verifies the account (support case 179448009700290, updated 2026-11-17 with the error). `dev` is deployed with context `cdn=false`; the web build is already in `docspread-dev-web`, so the next deploy without that flag only adds CloudFront.
 - From slice 4: new accounts allow at most 512 MB per Lambda, so the OCR function uses 512 MB until the quota is raised.
+- **Slices 5 and 6: how to build them?**
+  - **Decided (2026-11-17):** Tesseract runs as `tesseract.js` (WebAssembly) in a normal Lambda, not a container image; OCR languages English and Ukrainian. Approved backend packages: `tesseract.js`, `pdfjs-dist`, `@napi-rs/canvas`, `esbuild` (dev), and the `@aws-sdk/*` parts. Demo data stays in `dev`: a test login, "Demo Company" (USD) and an Invoice type; the login's password lives only in `services/api/.env.local`. Slice 5 first; slice 6 waits for the owner's go.
 - From 007: what confidence leaves a document unclassified, and is there a page limit per file? Recommended for the smoke test: 0.7 and 50 pages, revisited with real results.
 
 ## Log
