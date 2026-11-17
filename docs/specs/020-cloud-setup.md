@@ -108,7 +108,7 @@ These need your identity, payment details, legal agreement or secrets. Claude ca
 - Add the GitHub Actions secrets to the `dev` and `prod` environments.
 - Protect the `prod` GitHub environment with a required reviewer (you).
 
-### [ ] J8. Release
+### [ ] J8. Release (bootstrap done 2026-11-17)
 - Run `cdk bootstrap` once in each account.
 - Approve every `prod` deploy and migration. Claude only touches `dev`.
 - Merge the PRs.
@@ -169,8 +169,8 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
 - **Files:** `infra/**`, `docs/specs/020-cloud-setup.md`
 - **Accept:**
   - [ ] the `dev` CloudFront URL serves the app, and a deep link like `/inbox` loads after a reload
-  - [ ] the S3 object URLs are denied without a signature
-  - [ ] `supabase migration list` shows local and remote in sync
+  - [x] the S3 object URLs are denied without a signature
+  - [x] `supabase migration list` shows local and remote in sync
 
 ### [ ] 5. API service: auth and presigned upload
 - **Waits for:** J4, J7
@@ -275,3 +275,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-17 | — | rescoped | AWS project is locked to `eu-north-1`, where Textract doesn't exist. Owner chose option C: free plan, PDF text layer + Tesseract (Lambda container) for OCR. J3 done with the `docspread` CLI profile. Slice 3 gets a follow-up for the region and the new OCR Lambda. |
 | 2026-11-17 | 3a | done (sonnet) | region `eu-north-1`; SNS topic, Textract role and permissions removed; `pipeline-ocr` (ingest queue, 2048/3008 MB, 5 min) and `pipeline-extract` (new `extract` queue + DLQ); `check-synth` forbids `*` resources, SNS, Textract and other regions. `.env.example` updated. Diagrams `pipeline.ts`, `deployment.ts`; UI check 8/8. |
 | 2026-11-17 | 4 (part) | in progress | `DocSpread-dev` deployed to `eu-north-1` with `cdn=false` (3rd attempt: OIDC provider blocked by the plan, CloudFront blocked by verification, Lambda capped at 512 MB). API Function URL answers 501 (placeholder), all buckets refuse unsigned requests (403), web build synced (187 files). Waiting: CloudFront verification, and the owner's `supabase link` + `db push`. |
+| 2026-11-17 | 4 (part) | 2 of 3 | owner ran `supabase link` + `db push`: both migrations applied to `docspread-dev`, `migration list` in sync; all 8 tables answer through the Data API with the secret key, and the publishable key is refused (42501). J7: both secrets in SSM. J8: `cdk bootstrap` done. Only the CloudFront criterion is left (verification). |
