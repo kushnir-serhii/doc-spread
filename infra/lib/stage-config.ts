@@ -15,7 +15,10 @@ export interface StageConfig {
   /** Memory of the api and extract Lambdas, in MB. */
   lambdaMemoryMb: number
   lambdaTimeout: Duration
-  /** Memory of the OCR Lambda, in MB (Tesseract and page rendering are heavy). */
+  /**
+   * Memory of the OCR Lambda, in MB (Tesseract and page rendering are heavy). New AWS accounts are
+   * capped at 512 MB per function until the Lambda quota is raised; go higher once it is.
+   */
   ocrMemoryMb: number
   /** Timeout of the pipeline Lambdas; their queues use at least 6x this as visibility timeout. */
   workerTimeout: Duration
@@ -34,7 +37,7 @@ export const STAGES: Record<StageName, StageConfig> = {
     namePrefix: 'docspread-dev',
     lambdaMemoryMb: 256,
     lambdaTimeout: Duration.seconds(60),
-    ocrMemoryMb: 2048,
+    ocrMemoryMb: 512,
     workerTimeout: Duration.minutes(5),
     logRetention: RetentionDays.TWO_WEEKS,
     removalPolicy: RemovalPolicy.DESTROY,
@@ -45,7 +48,7 @@ export const STAGES: Record<StageName, StageConfig> = {
     namePrefix: 'docspread-prod',
     lambdaMemoryMb: 512,
     lambdaTimeout: Duration.seconds(60),
-    ocrMemoryMb: 3008,
+    ocrMemoryMb: 512,
     workerTimeout: Duration.minutes(5),
     logRetention: RetentionDays.ONE_YEAR,
     removalPolicy: RemovalPolicy.RETAIN,

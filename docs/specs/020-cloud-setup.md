@@ -255,6 +255,9 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 - From slice 3: the api role has no SES permission yet; add it with the export email (after J6).
 - From slice 3: `@types/node` was added to `infra` (type definitions only, same range as `apps/web`).
 - From slice 3a: mock code in `apps/web` (`lib/mock/*`, `lib/api/builder.ts`, `features/document-types/sample/*`) still mentions Textract in names or comments. Rename when those mocks are replaced by the real API.
+- From slice 4: the free plan's policy forbids creating the GitHub OIDC provider. The deploy role is now behind context `githubDeploy=true` (off by default), so deploys run from the owner's machine with the `docspread` profile. Slice 7 needs another route (or the paid plan).
+- From slice 4: CloudFront refuses new distributions until AWS verifies the account (support case 179448009700290, updated 2026-11-17 with the error). `dev` is deployed with context `cdn=false`; the web build is already in `docspread-dev-web`, so the next deploy without that flag only adds CloudFront.
+- From slice 4: new accounts allow at most 512 MB per Lambda, so the OCR function uses 512 MB until the quota is raised.
 - From 007: what confidence leaves a document unclassified, and is there a page limit per file? Recommended for the smoke test: 0.7 and 50 pages, revisited with real results.
 
 ## Log
@@ -271,3 +274,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-17 | 2 (follow-up) | done | owner answers: company created by the API; any member edits types; saved versions locked (no update/delete grants + trigger). New migration and `type_permissions.test.sql`; `supabase test db` 36/36, advisors no issues. |
 | 2026-11-17 | — | rescoped | AWS project is locked to `eu-north-1`, where Textract doesn't exist. Owner chose option C: free plan, PDF text layer + Tesseract (Lambda container) for OCR. J3 done with the `docspread` CLI profile. Slice 3 gets a follow-up for the region and the new OCR Lambda. |
 | 2026-11-17 | 3a | done (sonnet) | region `eu-north-1`; SNS topic, Textract role and permissions removed; `pipeline-ocr` (ingest queue, 2048/3008 MB, 5 min) and `pipeline-extract` (new `extract` queue + DLQ); `check-synth` forbids `*` resources, SNS, Textract and other regions. `.env.example` updated. Diagrams `pipeline.ts`, `deployment.ts`; UI check 8/8. |
+| 2026-11-17 | 4 (part) | in progress | `DocSpread-dev` deployed to `eu-north-1` with `cdn=false` (3rd attempt: OIDC provider blocked by the plan, CloudFront blocked by verification, Lambda capped at 512 MB). API Function URL answers 501 (placeholder), all buckets refuse unsigned requests (403), web build synced (187 files). Waiting: CloudFront verification, and the owner's `supabase link` + `db push`. |

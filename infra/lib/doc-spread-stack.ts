@@ -38,6 +38,10 @@ export class DocSpreadStack extends Stack {
     // Optional context, set when J6 (domain and email) is done. Nothing is created without it.
     const domain: unknown = this.node.tryGetContext('domain')
     const githubOidcProviderArn: unknown = this.node.tryGetContext('githubOidcProviderArn')
+    // Off by default: the AWS free plan's policy forbids creating an OIDC provider, so deploys run from
+    // the owner's machine. Pass context githubDeploy=true on an account that allows it (slice 7).
+    const githubDeploy: unknown = this.node.tryGetContext('githubDeploy')
+    const withGithubDeploy = githubDeploy === true || githubDeploy === 'true'
 
     const privateBucket = (bucketId: string, suffix: string, extra: Partial<BucketProps> = {}) =>
       new Bucket(this, bucketId, {
@@ -51,8 +55,11 @@ export class DocSpreadStack extends Stack {
       })
 
     // ---- Web: private bucket, only CloudFront (origin access control) can read it ----
+    // Context cdn=false skips CloudFront: AWS refuses new distributions until the account is verified.
+    const cdn: unknown = this.node.tryGetContext('cdn')
+    const withCdn = cdn !== false && cdn !== 'false'
     const webBucket = privateBucket('WebBucket', 'web')
-    const distribution = new Distribution(this, 'WebDistribution', {
+    const distribution = withCdn ? new Distribution(this, 'WebDistribution', {
       defaultRootObject: 'index.html',
       defaultBehavior: {
         origin: S3BucketOrigin.withOriginAccessControl(webBucket),
@@ -65,9 +72,9 @@ export class DocSpreadStack extends Stack {
         responsePagePath: '/index.html',
         ttl: Duration.seconds(0),
       })),
-    })
-    const webOrigin = `https://${distribution.distributionDomainName}`
-    const allowedOrigins = [webOrigin, ...config.extraAllowedOrigins]
+    }) : undefined
+    const webOrigin = distribution ? `https://${distribution.distributionDomainName}` : undefined
+    const allowedOrigins = [...(webOrigin ? [webOrigin] : []), ...config.extraAllowedOrigins]
 
     // ---- Files: objects are keyed <company-id>/... ----
     const documentsBucket = privateBucket('DocumentsBucket', 'documents', {
@@ -208,64 +215,70 @@ export class DocSpreadStack extends Stack {
       new EmailIdentity(this, 'EmailIdentity', { identity: Identity.domain(domain) })
     }
 
-    // ---- GitHub OIDC deploy role ----
-    // Only one provider can exist per account: pass context githubOidcProviderArn to reuse an existing one.
-    const provider: IOidcProvider =
-      typeof githubOidcProviderArn === 'string' && githubOidcProviderArn !== ''
-        ? OidcProviderNative.fromOidcProviderArn(this, 'GithubOidcProvider', githubOidcProviderArn)
-        : new OidcProviderNative(this, 'GithubOidcProvider', {
-            url: `https://${GITHUB_OIDC_HOST}`,
-            clientIds: ['sts.amazonaws.com'],
-          })
-    const deployRole = new Role(this, 'DeployRole', {
-      assumedBy: new WebIdentityPrincipal(provider.oidcProviderArn, {
-        StringEquals: {
-          [`${GITHUB_OIDC_HOST}:aud`]: 'sts.amazonaws.com',
-          [`${GITHUB_OIDC_HOST}:sub`]: `repo:${GITHUB_REPO}:environment:${stage}`,
-        },
-      }),
-      maxSessionDuration: Duration.hours(1),
-    })
-    deployRole.addToPolicy(
-      new PolicyStatement({
-        actions: ['sts:AssumeRole'],
-        resources: [`arn:${Aws.PARTITION}:iam::${this.account}:role/cdk-*`],
-      }),
-    )
-    deployRole.addToPolicy(
-      new PolicyStatement({ actions: ['s3:ListBucket', 's3:GetBucketLocation'], resources: [webBucket.bucketArn] }),
-    )
-    deployRole.addToPolicy(
-      new PolicyStatement({
-        actions: ['s3:PutObject', 's3:DeleteObject', 's3:GetObject'],
-        resources: [objectsIn(webBucket)],
-      }),
-    )
-    deployRole.addToPolicy(
-      new PolicyStatement({
-        actions: ['cloudfront:CreateInvalidation'],
-        resources: [
-          this.formatArn({
-            service: 'cloudfront',
-            region: '',
-            resource: 'distribution',
-            resourceName: distribution.distributionId,
+    // ---- GitHub OIDC deploy role (optional, see githubDeploy above) ----
+    let deployRoleArn: string | undefined
+    if (withGithubDeploy) {
+      // Only one provider can exist per account: pass context githubOidcProviderArn to reuse an existing one.
+      const provider: IOidcProvider =
+        typeof githubOidcProviderArn === 'string' && githubOidcProviderArn !== ''
+          ? OidcProviderNative.fromOidcProviderArn(this, 'GithubOidcProvider', githubOidcProviderArn)
+          : new OidcProviderNative(this, 'GithubOidcProvider', {
+              url: `https://${GITHUB_OIDC_HOST}`,
+              clientIds: ['sts.amazonaws.com'],
+            })
+      const deployRole = new Role(this, 'DeployRole', {
+        assumedBy: new WebIdentityPrincipal(provider.oidcProviderArn, {
+          StringEquals: {
+            [`${GITHUB_OIDC_HOST}:aud`]: 'sts.amazonaws.com',
+            [`${GITHUB_OIDC_HOST}:sub`]: `repo:${GITHUB_REPO}:environment:${stage}`,
+          },
+        }),
+        maxSessionDuration: Duration.hours(1),
+      })
+      deployRole.addToPolicy(
+        new PolicyStatement({
+          actions: ['sts:AssumeRole'],
+          resources: [`arn:${Aws.PARTITION}:iam::${this.account}:role/cdk-*`],
+        }),
+      )
+      deployRole.addToPolicy(
+        new PolicyStatement({ actions: ['s3:ListBucket', 's3:GetBucketLocation'], resources: [webBucket.bucketArn] }),
+      )
+      deployRole.addToPolicy(
+        new PolicyStatement({
+          actions: ['s3:PutObject', 's3:DeleteObject', 's3:GetObject'],
+          resources: [objectsIn(webBucket)],
+        }),
+      )
+      if (distribution) {
+        deployRole.addToPolicy(
+          new PolicyStatement({
+            actions: ['cloudfront:CreateInvalidation'],
+            resources: [
+              this.formatArn({
+                service: 'cloudfront',
+                region: '',
+                resource: 'distribution',
+                resourceName: distribution.distributionId,
+              }),
+            ],
           }),
-        ],
-      }),
-    )
+        )
+      }
+      deployRoleArn = deployRole.roleArn
+    }
 
     // ---- Outputs ----
     const outputs: Record<string, string> = {
-      WebUrl: webOrigin,
       WebBucketName: webBucket.bucketName,
       DocumentsBucketName: documentsBucket.bucketName,
       ExportsBucketName: exportsBucket.bucketName,
       IngestQueueUrl: ingestQueue.queueUrl,
       ExtractQueueUrl: extractQueue.queueUrl,
       ApiUrl: apiUrl.url,
-      DeployRoleArn: deployRole.roleArn,
     }
+    if (webOrigin !== undefined) outputs.WebUrl = webOrigin
+    if (deployRoleArn !== undefined) outputs.DeployRoleArn = deployRoleArn
     for (const [key, value] of Object.entries(outputs)) new CfnOutput(this, key, { value })
   }
 }
