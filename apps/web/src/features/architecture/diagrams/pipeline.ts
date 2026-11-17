@@ -12,7 +12,8 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
 
   B->>A: ask for an upload URL
   A->>A: verify token, scope to the caller's company
-  A-->>B: presigned upload URL
+  A->>DB: create the document row (status uploaded)
+  A-->>B: document id and presigned upload (key, size and type pinned)
   B->>S3: upload the file
   S3->>Q: object created event
   Q->>O: start job

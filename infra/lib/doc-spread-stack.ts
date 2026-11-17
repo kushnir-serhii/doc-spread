@@ -10,13 +10,15 @@ import {
 } from 'aws-cdk-lib/aws-iam'
 import { Architecture, Code, Function as LambdaFunction, FunctionUrlAuthType, HttpMethod, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
+import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import { BlockPublicAccess, Bucket, BucketEncryption, EventType, HttpMethods, type BucketProps } from 'aws-cdk-lib/aws-s3'
 import { SqsDestination } from 'aws-cdk-lib/aws-s3-notifications'
 import { EmailIdentity, Identity } from 'aws-cdk-lib/aws-ses'
 import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs'
 import type { Construct } from 'constructs'
-import { API_PLACEHOLDER, WORKER_PLACEHOLDER } from './placeholder-code.ts'
+import { fileURLToPath } from 'node:url'
+import { WORKER_PLACEHOLDER } from './placeholder-code.ts'
 import { GITHUB_REPO, type StageConfig } from './stage-config.ts'
 
 interface DocSpreadStackProps extends StackProps {
@@ -24,6 +26,8 @@ interface DocSpreadStackProps extends StackProps {
 }
 
 const GITHUB_OIDC_HOST = 'token.actions.githubusercontent.com'
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url))
+const UPLOAD_MAX_BYTES = 20 * 1024 * 1024 // 20 MB, spec 007
 
 export class DocSpreadStack extends Stack {
   constructor(scope: Construct, id: string, props: DocSpreadStackProps) {
@@ -80,7 +84,7 @@ export class DocSpreadStack extends Stack {
     const documentsBucket = privateBucket('DocumentsBucket', 'documents', {
       cors: [
         {
-          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD, HttpMethods.PUT],
+          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD, HttpMethods.PUT, HttpMethods.POST], // POST: presigned POST uploads
           allowedOrigins,
           allowedHeaders: ['*'],
           exposedHeaders: ['ETag'],
@@ -128,19 +132,21 @@ export class DocSpreadStack extends Stack {
       })
     const objectsIn = (bucket: Bucket) => `${bucket.bucketArn}/*`
 
+    const logGroupFor = (fnId: string, name: string) =>
+      new LogGroup(this, `${fnId}Logs`, {
+        logGroupName: `/aws/lambda/${namePrefix}-${name}`,
+        retention: config.logRetention,
+        removalPolicy: config.removalPolicy,
+      })
+
     const makeFunction = (
       fnId: string,
       name: string,
       code: string,
       environment: Record<string, string>,
       sizing: { memorySize: number; timeout: Duration } = { memorySize: config.lambdaMemoryMb, timeout: config.lambdaTimeout },
-    ) => {
-      const logGroup = new LogGroup(this, `${fnId}Logs`, {
-        logGroupName: `/aws/lambda/${namePrefix}-${name}`,
-        retention: config.logRetention,
-        removalPolicy: config.removalPolicy,
-      })
-      return new LambdaFunction(this, fnId, {
+    ) =>
+      new LambdaFunction(this, fnId, {
         functionName: `${namePrefix}-${name}`,
         runtime: Runtime.NODEJS_22_X,
         architecture: Architecture.ARM_64,
@@ -148,15 +154,46 @@ export class DocSpreadStack extends Stack {
         code: Code.fromInline(code),
         memorySize: sizing.memorySize,
         timeout: sizing.timeout,
-        logGroup,
+        logGroup: logGroupFor(fnId, name),
         environment: { STAGE: stage, ...environment },
       })
-    }
 
-    const apiFn = makeFunction('ApiFunction', 'api', API_PLACEHOLDER, {
-      S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
-      S3_EXPORTS_BUCKET: exportsBucket.bucketName,
-      ...secretParams,
+    // Supabase URL and JWKS URL come from the stage's project ref. prod has none yet: it still synthesizes,
+    // and the function then refuses to start and names the missing SUPABASE_URL.
+    const supabaseUrl = config.supabaseProjectRef ? `https://${config.supabaseProjectRef}.supabase.co` : undefined
+    // Built locally with esbuild (no Docker) from services/api; everything is bundled into one ESM file.
+    const apiFn = new NodejsFunction(this, 'ApiFunction', {
+      functionName: `${namePrefix}-api`,
+      runtime: Runtime.NODEJS_22_X,
+      architecture: Architecture.ARM_64,
+      entry: fileURLToPath(new URL('../../services/api/src/handler.ts', import.meta.url)),
+      handler: 'handler',
+      projectRoot: REPO_ROOT,
+      depsLockFilePath: fileURLToPath(new URL('../../pnpm-lock.yaml', import.meta.url)),
+      memorySize: config.lambdaMemoryMb,
+      timeout: config.lambdaTimeout,
+      logGroup: logGroupFor('ApiFunction', 'api'),
+      bundling: {
+        format: OutputFormat.ESM,
+        target: 'node22',
+        minify: false,
+        sourceMap: false,
+        externalModules: [], // bundle the AWS SDK too: it is not all in the Node 22 runtime
+        // CommonJS dependencies inside an ESM bundle need require().
+        banner: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
+        mainFields: ['module', 'main'],
+      },
+      environment: {
+        STAGE: stage,
+        ...(supabaseUrl && {
+          SUPABASE_URL: supabaseUrl,
+          SUPABASE_JWKS_URL: `${supabaseUrl}/auth/v1/.well-known/jwks.json`,
+        }),
+        S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
+        S3_EXPORTS_BUCKET: exportsBucket.bucketName,
+        UPLOAD_MAX_BYTES: String(UPLOAD_MAX_BYTES),
+        ...secretParams,
+      },
     })
     apiFn.addToRolePolicy(
       new PolicyStatement({ actions: ['s3:PutObject', 's3:GetObject'], resources: [objectsIn(documentsBucket)] }),

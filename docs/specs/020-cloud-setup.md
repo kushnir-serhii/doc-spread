@@ -172,15 +172,15 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
   - [x] the S3 object URLs are denied without a signature
   - [x] `supabase migration list` shows local and remote in sync
 
-### [ ] 5. API service: auth and presigned upload
+### [x] 5. API service: auth and presigned upload
 - **Waits for:** J4, J7
 - **Build:** a `services/api` workspace with a required-env check at startup, Supabase token verification against the JWKS URL, a health route, and a presigned upload route scoped to the caller's company, enforcing the file types and size limit from 007.
 - **Files:** `services/api/**`, `infra/**`
 - **Accept:**
-  - [ ] a request with no token or a bad token gets 401
-  - [ ] a valid user gets a URL that can only write under that user's company prefix
-  - [ ] an oversized or disallowed file is refused
-  - [ ] startup with a missing variable fails and names it, and no log line contains a secret value
+  - [x] a request with no token or a bad token gets 401
+  - [x] a valid user gets a URL that can only write under that user's company prefix
+  - [x] an oversized or disallowed file is refused
+  - [x] startup with a missing variable fails and names it, and no log line contains a secret value
 
 ### [ ] 6. One document end to end
 - **Waits for:** J5, J7
@@ -260,6 +260,9 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 - From slice 4: new accounts allow at most 512 MB per Lambda, so the OCR function uses 512 MB until the quota is raised.
 - **Slices 5 and 6: how to build them?**
   - **Decided (2026-11-17):** Tesseract runs as `tesseract.js` (WebAssembly) in a normal Lambda, not a container image; OCR languages English and Ukrainian. Approved backend packages: `tesseract.js`, `pdfjs-dist`, `@napi-rs/canvas`, `esbuild` (dev), and the `@aws-sdk/*` parts. Demo data stays in `dev`: a test login, "Demo Company" (USD) and an Invoice type; the login's password lives only in `services/api/.env.local`. Slice 5 first; slice 6 waits for the owner's go.
+- From slice 5: a user with several active memberships uploads into the first company (by `created_at`). How a user picks a company is for the auth spec.
+- From slice 5: `prod` needs its `supabaseProjectRef` in `infra/lib/stage-config.ts` before it is deployed; until then its API refuses to start and names `SUPABASE_URL`.
+- From slice 5: `services/api/scripts/invoice-template.json` is a copy of the mock Invoice template used by `seed-demo`; regenerate it if the template changes.
 - From 007: what confidence leaves a document unclassified, and is there a page limit per file? Recommended for the smoke test: 0.7 and 50 pages, revisited with real results.
 
 ## Log
@@ -278,3 +281,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-17 | 3a | done (sonnet) | region `eu-north-1`; SNS topic, Textract role and permissions removed; `pipeline-ocr` (ingest queue, 2048/3008 MB, 5 min) and `pipeline-extract` (new `extract` queue + DLQ); `check-synth` forbids `*` resources, SNS, Textract and other regions. `.env.example` updated. Diagrams `pipeline.ts`, `deployment.ts`; UI check 8/8. |
 | 2026-11-17 | 4 (part) | in progress | `DocSpread-dev` deployed to `eu-north-1` with `cdn=false` (3rd attempt: OIDC provider blocked by the plan, CloudFront blocked by verification, Lambda capped at 512 MB). API Function URL answers 501 (placeholder), all buckets refuse unsigned requests (403), web build synced (187 files). Waiting: CloudFront verification, and the owner's `supabase link` + `db push`. |
 | 2026-11-17 | 4 (part) | 2 of 3 | owner ran `supabase link` + `db push`: both migrations applied to `docspread-dev`, `migration list` in sync; all 8 tables answer through the Data API with the secret key, and the publishable key is refused (42501). J7: both secrets in SSM. J8: `cdk bootstrap` done. Only the CloudFront criterion is left (verification). |
+| 2026-11-17 | 5 | done (sonnet) | `services/api` (`@docspread/api`): Function URL handler with `/health` and `POST /uploads` (Supabase JWT via JWKS, company from `team_members`, `documents` row, presigned POST pinned to `<company>/<document>/<file>`, 20 MB, pdf/jpg/png). api Lambda is now a `NodejsFunction` (esbuild); documents CORS allows POST. `seed-demo` (demo@docspread.dev, Demo Company USD, Invoice v1; password only in `.env.local`), `smoke-api` 15/15 on the deployed dev API (re-run by the orchestrator), `check-env` 7/7, log scan 0 secrets. Diagrams `structure.ts`, `pipeline.ts`; UI check 8/8. |
