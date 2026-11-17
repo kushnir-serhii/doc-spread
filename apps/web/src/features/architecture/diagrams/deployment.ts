@@ -4,16 +4,16 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
     browser["Browser (web app)"]
   end
 
-  subgraph aws["AWS"]
+  subgraph aws["AWS (eu-north-1, Stockholm)"]
     cdn["CloudFront"]
     webBucket["S3 web bucket"]
     api["API (Lambda Function URL)"]
-    worker["Pipeline Lambdas"]
+    ocr["OCR Lambda (PDF text layer + Tesseract)"]
+    extract["Extract Lambda"]
     docs[("S3 documents bucket, private")]
     exports[("S3 exports bucket, private")]
-    sqs["SQS queues + dead-letter queues"]
-    sns["SNS topic"]
-    textract["Textract (OCR)"]
+    sqs["SQS ingest queue + dead-letter queue"]
+    sqsExtract["SQS extract queue + dead-letter queue"]
     ses["SES (email, on hold)"]
     ssm["SSM Parameter Store (secrets)"]
   end
@@ -39,19 +39,21 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
   api -->|"verify token (JWKS)"| auth
   api -->|"SQL"| pg
   api -->|"presign"| docs
+  api -->|"presign downloads"| exports
   docs -->|"object created event"| sqs
-  sqs -->|"trigger"| worker
-  worker -->|"start job"| textract
-  textract -->|"read file"| docs
-  textract -->|"job completed"| sns
-  sns -->|"message"| sqs
-  worker -->|"HTTPS: classify, extract"| claude
-  worker -->|"SQL"| pg
-  worker -->|"write files"| exports
+  sqs -->|"trigger"| ocr
+  ocr -->|"read file, write page images"| docs
+  ocr -->|"OCR done"| sqsExtract
+  sqsExtract -->|"trigger"| extract
+  extract -->|"read file"| docs
+  extract -->|"HTTPS: classify, extract"| claude
+  ocr -->|"SQL: words with boxes"| pg
+  extract -->|"SQL: status, values"| pg
   api -->|"send export mail"| ses
   auth -->|"SMTP for auth email"| ses
   api -.->|"read secrets"| ssm
-  worker -.->|"read secrets"| ssm
+  ocr -.->|"read secrets"| ssm
+  extract -.->|"read secrets"| ssm
   deploy -->|"OIDC role"| aws
   deploy -->|"migrations"| pg
 `

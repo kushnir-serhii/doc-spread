@@ -15,13 +15,13 @@ Every external service the product needs exists in `dev` and `prod`, every setti
 | --- | --- | --- |
 | Database, auth, row-level security | Supabase (Postgres) | Planned in [product.md](../product.md) |
 | Web hosting | S3 + CloudFront | Planned in [product.md](../product.md) |
-| Document and export files | S3 (private buckets) | Textract reads multi-page PDFs directly from S3 |
-| OCR with a box per word | AWS Textract | Review (008) and pointing (013, 015) need word boxes |
-| Classification and extraction | Claude API | Works from the Textract tokens and the page image |
+| Document and export files | S3 (private buckets) | One place for uploads, page images and exports |
+| OCR with a box per word | PDF text layer (pdf.js) for digital PDFs, Tesseract in a Lambda container for scans and photos | Review (008) and pointing (013, 015) need word boxes; Textract isn't offered in the project's region |
+| Classification and extraction | Claude API | Works from the OCR tokens and the page image |
 | Pipeline, exports, API | AWS Lambda + SQS | No Edge Functions, so AWS access uses IAM roles and no AWS keys are stored |
 | Email (auth and export delivery) | AWS SES, also as Supabase custom SMTP — **on hold** (J6) | One sender, one domain |
 
-Pipeline: upload to S3 → SQS → Textract → SNS → SQS → classify and extract with Claude → status and values written to Postgres. The web app keeps polling (002).
+Pipeline: upload to S3 → SQS → OCR Lambda (PDF text layer, or Tesseract for scans) → SQS → classify and extract with Claude → status and values written to Postgres. The web app keeps polling (002).
 
 ## Data
 
@@ -52,12 +52,10 @@ ANTHROPIC_MODEL_CLASSIFY=claude-haiku-5-5
 ANTHROPIC_MODEL_EXTRACT=claude-opus-5-5
 
 # AWS (local only: Lambda sets the region and uses its role)
-AWS_PROFILE=docspread-dev
-AWS_REGION=<region>
+AWS_PROFILE=docspread
+AWS_REGION=eu-north-1
 S3_DOCUMENTS_BUCKET=docspread-dev-documents
 S3_EXPORTS_BUCKET=docspread-dev-exports
-TEXTRACT_SNS_TOPIC_ARN=arn:aws:sns:...
-TEXTRACT_ROLE_ARN=arn:aws:iam::...
 SES_FROM_ADDRESS=no-reply@<domain>
 
 # App
@@ -84,12 +82,10 @@ These need your identity, payment details, legal agreement or secrets. Claude ca
 ### [x] J2. Local tools
 - Install Docker Desktop, the Supabase CLI and the AWS CLI v2.
 
-### [ ] J3. AWS accounts
-- Check that MFA is on for the root user of the management account.
-- Create the `docspread-dev` account under AWS Organizations (`docspread-prod` before the first real customer).
-- Turn on IAM Identity Center and give yourself admin access to both.
-- Run `aws configure sso` with profiles `docspread-dev` and `docspread-prod`.
-- Set a monthly AWS Budgets alert.
+### [x] J3. AWS access
+- The project "Caffeine Driven Development" (account `672502664494`, free plan, region `eu-north-1`) holds DocSpread; only one project is allowed on this plan.
+- The CLI profile `docspread` is signed in with `aws login --profile docspread` (renew it the same way when it expires).
+- The free plan's spend limit protects against surprise bills; it ends on 2027-04-21 or when the credits run out.
 
 ### [ ] J4. Supabase projects
 - Create the organization and the `docspread-dev` and `docspread-prod` projects, in the chosen region, and save the database passwords in your password manager.
@@ -148,13 +144,24 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
 
 ### [x] 3. AWS infrastructure as code
 - **Waits for:** J1
-- **Build:** an `infra/` workspace with one CDK app and `dev` / `prod` stages: private document and export buckets with CORS for pdf.js, CloudFront serving `index.html` for unknown paths, SQS queues with dead-letter queues, the Textract SNS topic and role, Lambda placeholders, the SES identity, and the GitHub OIDC role. A script copies the two secrets from `services/api/.env.local` to SSM, so they're never typed into a shell.
+- **Build:** an `infra/` workspace with one CDK app and `dev` / `prod` stages: private document and export buckets with CORS for pdf.js, CloudFront serving `index.html` for unknown paths, SQS queues with dead-letter queues, Lambda placeholders, the SES identity, and the GitHub OIDC role. A script copies the two secrets from `services/api/.env.local` to SSM, so they're never typed into a shell.
 - **Files:** `infra/**`, `pnpm-workspace.yaml`
 - **Accept:**
   - [x] `cdk synth` succeeds for both stages with no account credentials
   - [x] no bucket allows public access; web files are readable only through CloudFront
   - [x] each Lambda role can reach only its own buckets, queues and parameters
   - [x] the same synth output differs between stages only in names and sizes
+
+### [x] 3a. Stockholm and the OCR Lambda
+- **Waits for:** nothing (offline, like slice 3)
+- **Build:** the AWS region becomes `eu-north-1` everywhere (stage config, `services/api/.env.example`, the secrets script). The Textract SNS topic, role and permissions go away. The pipeline becomes two steps: `pipeline-ocr` (ingest queue; reads the file, will write words with boxes and page images) and `pipeline-extract` (a new `extract` queue with its DLQ; calls Claude). Both stay placeholders: the real OCR code and the Tesseract container image come in slice 6. Update `check-synth` and the pipeline and deployment diagrams.
+- **Files:** `infra/**`, `services/api/.env.example`, `apps/web/src/features/architecture/diagrams/{pipeline,deployment}.ts`
+- **Model:** sonnet
+- **Accept:**
+  - [x] `synth` and `check` pass with no credentials for both stages, and every regional resource is in `eu-north-1`
+  - [x] no Textract or SNS resource or permission is left
+  - [x] each Lambda role still reaches only its own buckets, queues and parameters
+  - [x] the pipeline and deployment diagrams show the OCR step instead of Textract
 
 ### [ ] 4. Deploy `dev`
 - **Waits for:** J3, J7, J8 (bootstrap)
@@ -177,7 +184,7 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
 
 ### [ ] 6. One document end to end
 - **Waits for:** J5, J7
-- **Build:** the pipeline for one document: S3 event, SQS, Textract, SNS, then a Claude call through `@anthropic-ai/sdk` that classifies and extracts with structured outputs, and writes the status, values and word boxes to Postgres. Set `effort` explicitly, check `stop_reason` for `refusal`, and enable the server-side fallback on the Opus call (Haiku has none, so a Haiku refusal leaves the document unclassified). Failures land in the dead-letter queue and set the `error` status. Basic prompts only; production quality is a later spec.
+- **Build:** the pipeline for one document: S3 event, SQS, OCR (the PDF text layer through `pdfjs-dist`, or Tesseract in a Lambda container image for scans and photos, with word boxes either way), SQS, then a Claude call through `@anthropic-ai/sdk` that classifies and extracts with structured outputs, and writes the status, values and word boxes to Postgres. Set `effort` explicitly, check `stop_reason` for `refusal`, and enable the server-side fallback on the Opus call (Haiku has none, so a Haiku refusal leaves the document unclassified). Failures land in the dead-letter queue and set the `error` status. Basic prompts only; production quality is a later spec.
 - **Files:** `services/api/**`, `infra/**`
 - **Accept:**
   - [ ] a multi-page PDF uploaded to `dev` reaches `needs_review` with values and confidence
@@ -210,6 +217,9 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 ## Open questions
 - **Region?** One region for Supabase and AWS, close to your customers; the buckets and Textract must share it.
   - **Decided (2026-11-10):** `eu-central-1` (Frankfurt) for Supabase and AWS.
+  - **Changed (2026-11-17):** AWS runs in `eu-north-1` (Stockholm). The project is on AWS's new free plan, which fixes one region from the contact address; changing it needs the paid plan plus "advanced features" (irreversible). Supabase stays in Frankfurt.
+- **OCR without Textract?**
+  - **Decided (2026-11-17):** option C, to stay on the free plan: read the text layer of digital PDFs with `pdfjs-dist` (exact words and boxes), and run Tesseract in a Lambda container image (ECR works on the plan) for scans and photos. Claude still sees the page image. Switching to Textract later means the paid plan, "advanced features" and `eu-central-1`.
 - **EU-only processing?**
   - **Decided (2026-11-10):** not promised. Claude runs through the standard Anthropic API, and the privacy policy (J9) must say documents are processed by Anthropic, possibly outside the EU.
 - **Models?**
@@ -217,7 +227,7 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 - **New libraries?**
   - **Decided (2026-11-10):** approved: `aws-cdk-lib`, `@aws-sdk/*`, `@anthropic-ai/sdk`, `@supabase/supabase-js` (in `services/api` only) and `jose`.
 - **Which AWS accounts?**
-  - **Decided (2026-11-10):** the owner's existing organization (management account `264013447959`). It's a demo for now, so a new `docspread-dev` account is created first and `prod` is added before the first real customer. Account `672502664494` is left untouched.
+  - **Changed (2026-11-17):** the project "Caffeine Driven Development" itself (account `672502664494`). What looked like a verification block was the region lock: calls outside `eu-north-1` are denied by the plan's policy. The plan allows one project, so `dev` and `prod` would share it; for the demo only `dev` is deployed.
 - **Supabase project?**
   - **Decided (2026-11-10):** `docspread-dev`, project ref `zjfzdqojkuoqzksdnyjs`, Frankfurt. `prod` is added with the AWS `prod` account.
 - **Branch?**
@@ -244,6 +254,7 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 - From slice 3: bucket names (`docspread-dev-documents` …) are global across all AWS accounts, so slice 4 may hit a name that is taken. Add a short suffix (for example the account id) if it does.
 - From slice 3: the api role has no SES permission yet; add it with the export email (after J6).
 - From slice 3: `@types/node` was added to `infra` (type definitions only, same range as `apps/web`).
+- From slice 3a: mock code in `apps/web` (`lib/mock/*`, `lib/api/builder.ts`, `features/document-types/sample/*`) still mentions Textract in names or comments. Rename when those mocks are replaced by the real API.
 - From 007: what confidence leaves a document unclassified, and is there a page limit per file? Recommended for the smoke test: 0.7 and 50 pages, revisited with real results.
 
 ## Log
@@ -258,3 +269,5 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-12 | 3 | done (sonnet) | `infra/` (`@docspread/infra`): CDK app with `DocSpread-dev` / `DocSpread-prod`; web bucket + CloudFront (origin access control, SPA fallback), documents and exports buckets, ingest and Textract queues with DLQs, SNS topic + Textract role, 3 placeholder Lambdas with per-role permissions, optional SES identity, GitHub OIDC deploy role, `put-secrets` script (not run). `synth` and `check` pass with no credentials. Diagrams: `structure.ts` (infra, supabase), `deployment.ts` (Function URL). |
 | 2026-11-12 | — | UI check | `/architecture?tab=structure` and `?tab=deployment`: 8/8 passed (375px and 1280px, light and dark); screenshots reviewed, both diagrams render with the new infra and supabase nodes. Slices 4–8 wait for the AWS account (J3) and the other owner jobs. |
 | 2026-11-17 | 2 (follow-up) | done | owner answers: company created by the API; any member edits types; saved versions locked (no update/delete grants + trigger). New migration and `type_permissions.test.sql`; `supabase test db` 36/36, advisors no issues. |
+| 2026-11-17 | — | rescoped | AWS project is locked to `eu-north-1`, where Textract doesn't exist. Owner chose option C: free plan, PDF text layer + Tesseract (Lambda container) for OCR. J3 done with the `docspread` CLI profile. Slice 3 gets a follow-up for the region and the new OCR Lambda. |
+| 2026-11-17 | 3a | done (sonnet) | region `eu-north-1`; SNS topic, Textract role and permissions removed; `pipeline-ocr` (ingest queue, 2048/3008 MB, 5 min) and `pipeline-extract` (new `extract` queue + DLQ); `check-synth` forbids `*` resources, SNS, Textract and other regions. `.env.example` updated. Diagrams `pipeline.ts`, `deployment.ts`; UI check 8/8. |

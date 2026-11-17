@@ -5,7 +5,6 @@ import {
   OidcProviderNative,
   PolicyStatement,
   Role,
-  ServicePrincipal,
   WebIdentityPrincipal,
   type IOidcProvider,
 } from 'aws-cdk-lib/aws-iam'
@@ -15,8 +14,6 @@ import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import { BlockPublicAccess, Bucket, BucketEncryption, EventType, HttpMethods, type BucketProps } from 'aws-cdk-lib/aws-s3'
 import { SqsDestination } from 'aws-cdk-lib/aws-s3-notifications'
 import { EmailIdentity, Identity } from 'aws-cdk-lib/aws-ses'
-import { Topic } from 'aws-cdk-lib/aws-sns'
-import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions'
 import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs'
 import type { Construct } from 'constructs'
 import { API_PLACEHOLDER, WORKER_PLACEHOLDER } from './placeholder-code.ts'
@@ -89,7 +86,7 @@ export class DocSpreadStack extends Stack {
     })
 
     // ---- Queues ----
-    const queueWithDlq = (queueId: string, suffix: string) => {
+    const queueWithDlq = (queueId: string, suffix: string, consumerTimeout: Duration) => {
       const dlq = new Queue(this, `${queueId}Dlq`, {
         queueName: `${namePrefix}-${suffix}-dlq`,
         encryption: QueueEncryption.SQS_MANAGED,
@@ -100,24 +97,13 @@ export class DocSpreadStack extends Stack {
         queueName: `${namePrefix}-${suffix}`,
         encryption: QueueEncryption.SQS_MANAGED,
         enforceSSL: true,
-        visibilityTimeout: Duration.seconds(config.lambdaTimeout.toSeconds() * 6),
+        visibilityTimeout: Duration.seconds(consumerTimeout.toSeconds() * 6),
         deadLetterQueue: { queue: dlq, maxReceiveCount: 3 },
       })
     }
-    const ingestQueue = queueWithDlq('IngestQueue', 'ingest')
-    const resultsQueue = queueWithDlq('TextractResultsQueue', 'textract-results')
+    const ingestQueue = queueWithDlq('IngestQueue', 'ingest', config.workerTimeout)
+    const extractQueue = queueWithDlq('ExtractQueue', 'extract', config.workerTimeout)
     documentsBucket.addEventNotification(EventType.OBJECT_CREATED, new SqsDestination(ingestQueue))
-
-    // ---- Textract: topic name must start with AmazonTextract; the role may only publish to it ----
-    const textractTopic = new Topic(this, 'TextractTopic', {
-      topicName: `AmazonTextract-${namePrefix}-results`,
-      enforceSSL: true,
-    })
-    textractTopic.addSubscription(new SqsSubscription(resultsQueue))
-    const textractRole = new Role(this, 'TextractRole', {
-      assumedBy: new ServicePrincipal('textract.amazonaws.com'),
-    })
-    textractRole.addToPolicy(new PolicyStatement({ actions: ['sns:Publish'], resources: [textractTopic.topicArn] }))
 
     // ---- Lambdas ----
     const ssmPrefix = `/docspread/${stage}`
@@ -135,7 +121,13 @@ export class DocSpreadStack extends Stack {
       })
     const objectsIn = (bucket: Bucket) => `${bucket.bucketArn}/*`
 
-    const makeFunction = (fnId: string, name: string, code: string, environment: Record<string, string>) => {
+    const makeFunction = (
+      fnId: string,
+      name: string,
+      code: string,
+      environment: Record<string, string>,
+      sizing: { memorySize: number; timeout: Duration } = { memorySize: config.lambdaMemoryMb, timeout: config.lambdaTimeout },
+    ) => {
       const logGroup = new LogGroup(this, `${fnId}Logs`, {
         logGroupName: `/aws/lambda/${namePrefix}-${name}`,
         retention: config.logRetention,
@@ -147,8 +139,8 @@ export class DocSpreadStack extends Stack {
         architecture: Architecture.ARM_64,
         handler: 'index.handler',
         code: Code.fromInline(code),
-        memorySize: config.lambdaMemoryMb,
-        timeout: config.lambdaTimeout,
+        memorySize: sizing.memorySize,
+        timeout: sizing.timeout,
         logGroup,
         environment: { STAGE: stage, ...environment },
       })
@@ -175,41 +167,41 @@ export class DocSpreadStack extends Stack {
       },
     })
 
-    const ingestFn = makeFunction('PipelineIngestFunction', 'pipeline-ingest', WORKER_PLACEHOLDER, {
-      S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
-      TEXTRACT_SNS_TOPIC_ARN: textractTopic.topicArn,
-      TEXTRACT_ROLE_ARN: textractRole.roleArn,
-      ...secretParams,
-    })
-    ingestFn.addToRolePolicy(new PolicyStatement({ actions: ['s3:GetObject'], resources: [objectsIn(documentsBucket)] }))
-    ingestFn.addToRolePolicy(
-      new PolicyStatement({
-        // The Textract start actions do not support resource-level permissions, so "*" is the only option.
-        actions: ['textract:StartDocumentTextDetection', 'textract:StartDocumentAnalysis'],
-        resources: ['*'],
-      }),
+    // OCR: reads the PDF text layer, or runs Tesseract for scans and photos; writes words with boxes
+    // to Supabase and page images next to the file (same <company-id>/ prefix).
+    // TODO (slice 6): switch this to a DockerImageFunction (Tesseract container image from ECR).
+    const ocrFn = makeFunction(
+      'PipelineOcrFunction',
+      'pipeline-ocr',
+      WORKER_PLACEHOLDER,
+      {
+        S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
+        EXTRACT_QUEUE_URL: extractQueue.queueUrl,
+        ...secretParams,
+      },
+      { memorySize: config.ocrMemoryMb, timeout: config.workerTimeout },
     )
-    ingestFn.addToRolePolicy(new PolicyStatement({ actions: ['iam:PassRole'], resources: [textractRole.roleArn] }))
-    ingestFn.addToRolePolicy(ssmReadStatement())
-    ingestFn.addEventSource(new SqsEventSource(ingestQueue, { batchSize: 1 }))
+    ocrFn.addToRolePolicy(
+      new PolicyStatement({ actions: ['s3:GetObject', 's3:PutObject'], resources: [objectsIn(documentsBucket)] }),
+    )
+    extractQueue.grantSendMessages(ocrFn)
+    ocrFn.addToRolePolicy(ssmReadStatement())
+    ocrFn.addEventSource(new SqsEventSource(ingestQueue, { batchSize: 1 }))
 
-    const resultsFn = makeFunction('PipelineResultsFunction', 'pipeline-results', WORKER_PLACEHOLDER, {
-      S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
-      S3_EXPORTS_BUCKET: exportsBucket.bucketName,
-      TEXTRACT_SNS_TOPIC_ARN: textractTopic.topicArn,
-      ...secretParams,
-    })
-    resultsFn.addToRolePolicy(new PolicyStatement({ actions: ['s3:GetObject'], resources: [objectsIn(documentsBucket)] }))
-    resultsFn.addToRolePolicy(
-      new PolicyStatement({
-        // The Textract result actions do not support resource-level permissions, so "*" is the only option.
-        actions: ['textract:GetDocumentTextDetection', 'textract:GetDocumentAnalysis'],
-        resources: ['*'],
-      }),
+    // Extract: classifies and extracts with Claude, from the OCR words and page images.
+    const extractFn = makeFunction(
+      'PipelineExtractFunction',
+      'pipeline-extract',
+      WORKER_PLACEHOLDER,
+      {
+        S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
+        ...secretParams,
+      },
+      { memorySize: config.lambdaMemoryMb, timeout: config.workerTimeout },
     )
-    resultsFn.addToRolePolicy(new PolicyStatement({ actions: ['s3:PutObject'], resources: [objectsIn(exportsBucket)] }))
-    resultsFn.addToRolePolicy(ssmReadStatement())
-    resultsFn.addEventSource(new SqsEventSource(resultsQueue, { batchSize: 1 }))
+    extractFn.addToRolePolicy(new PolicyStatement({ actions: ['s3:GetObject'], resources: [objectsIn(documentsBucket)] }))
+    extractFn.addToRolePolicy(ssmReadStatement())
+    extractFn.addEventSource(new SqsEventSource(extractQueue, { batchSize: 1 }))
 
     // ---- SES: only once a domain is chosen (J6) ----
     if (typeof domain === 'string' && domain !== '') {
@@ -270,9 +262,7 @@ export class DocSpreadStack extends Stack {
       DocumentsBucketName: documentsBucket.bucketName,
       ExportsBucketName: exportsBucket.bucketName,
       IngestQueueUrl: ingestQueue.queueUrl,
-      TextractResultsQueueUrl: resultsQueue.queueUrl,
-      TextractTopicArn: textractTopic.topicArn,
-      TextractRoleArn: textractRole.roleArn,
+      ExtractQueueUrl: extractQueue.queueUrl,
       ApiUrl: apiUrl.url,
       DeployRoleArn: deployRole.roleArn,
     }

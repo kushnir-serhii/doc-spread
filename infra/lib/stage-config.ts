@@ -3,7 +3,8 @@ import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 
 export type StageName = 'dev' | 'prod'
 
-export const REGION = 'eu-central-1'
+/** The AWS project is locked to Stockholm (free plan); Textract does not exist there. */
+export const REGION = 'eu-north-1'
 export const GITHUB_REPO = 'kushnir-serhii/doc-spread'
 
 /** Everything that differs between stages. Nothing else in the stack may branch on the stage. */
@@ -11,9 +12,13 @@ export interface StageConfig {
   stage: StageName
   /** Prefix of the explicit resource names (bucket names are global, so they carry the project name). */
   namePrefix: string
-  /** Memory of every Lambda, in MB. */
+  /** Memory of the api and extract Lambdas, in MB. */
   lambdaMemoryMb: number
   lambdaTimeout: Duration
+  /** Memory of the OCR Lambda, in MB (Tesseract and page rendering are heavy). */
+  ocrMemoryMb: number
+  /** Timeout of the pipeline Lambdas; their queues use at least 6x this as visibility timeout. */
+  workerTimeout: Duration
   logRetention: RetentionDays
   /** dev: DESTROY (+ autoDeleteObjects on buckets); prod: RETAIN. */
   removalPolicy: RemovalPolicy
@@ -29,6 +34,8 @@ export const STAGES: Record<StageName, StageConfig> = {
     namePrefix: 'docspread-dev',
     lambdaMemoryMb: 256,
     lambdaTimeout: Duration.seconds(60),
+    ocrMemoryMb: 2048,
+    workerTimeout: Duration.minutes(5),
     logRetention: RetentionDays.TWO_WEEKS,
     removalPolicy: RemovalPolicy.DESTROY,
     extraAllowedOrigins: ['http://localhost:5173'],
@@ -38,6 +45,8 @@ export const STAGES: Record<StageName, StageConfig> = {
     namePrefix: 'docspread-prod',
     lambdaMemoryMb: 512,
     lambdaTimeout: Duration.seconds(60),
+    ocrMemoryMb: 3008,
+    workerTimeout: Duration.minutes(5),
     logRetention: RetentionDays.ONE_YEAR,
     removalPolicy: RemovalPolicy.RETAIN,
     extraAllowedOrigins: [],

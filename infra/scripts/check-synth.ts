@@ -1,7 +1,7 @@
 import { Template } from 'aws-cdk-lib/assertions'
 import { Stack } from 'aws-cdk-lib'
 import { createApp } from '../lib/app.ts'
-import { STAGES, type StageName } from '../lib/stage-config.ts'
+import { REGION, STAGES, type StageName } from '../lib/stage-config.ts'
 
 interface Statement {
   Effect: string
@@ -25,9 +25,11 @@ const statementsOf = (document: unknown): Statement[] =>
 const app = createApp()
 const stages = Object.keys(STAGES) as StageName[]
 const resourcesByStage = new Map<StageName, Record<string, Resource>>()
+const stacks = new Map<StageName, Stack>()
 for (const stage of stages) {
   const stack = app.node.findChild(`DocSpread-${stage}`)
   if (!(stack instanceof Stack)) throw new Error(`stack DocSpread-${stage} not found`)
+  stacks.set(stage, stack)
   // The template JSON always has a Resources map for a stack with resources.
   const json = Template.fromStack(stack).toJSON() as { Resources: Record<string, Resource> }
   resourcesByStage.set(stage, json.Resources)
@@ -91,28 +93,31 @@ for (const stage of stages) {
   )
   if (cloudFrontReads.length === 0) fail(`${label} web bucket has no CloudFront-only read policy`)
 
+  // Regional resources live in the stack's region; no SNS; no Textract action anywhere.
+  if (stacks.get(stage)?.region !== REGION) fail(`${label} stack region is ${stacks.get(stage)?.region}, expected ${REGION}`)
+  for (const [id, resource] of Object.entries(resources)) {
+    if (resource.Type.startsWith('AWS::SNS::')) fail(`${label} ${id}: SNS resource ${resource.Type}`)
+    const text = JSON.stringify(resource.Properties ?? {})
+    if (/textract/i.test(text)) fail(`${label} ${id}: mentions Textract`)
+    if (/eu-central-1|us-east-1/.test(text)) fail(`${label} ${id}: hard-coded foreign region`)
+  }
+  // Only CDK's standard managed policy (log delivery etc.) may use "*" as a resource; custom statements may not.
+  for (const [id, resource] of Object.entries(resources).filter(([, r]) => r.Type === 'AWS::IAM::Policy')) {
+    for (const statement of statementsOf(resource.Properties?.PolicyDocument)) {
+      if (JSON.stringify(statement.Resource).includes('"*"')) fail(`${label} policy ${id} uses a "*" resource`)
+    }
+  }
+
   // Criterion 3: each Lambda role reaches only its own buckets, queues and parameters.
   const documents = idByName('AWS::S3::Bucket', 'BucketName', `${prefix}-documents`)
   const exportsBucket = idByName('AWS::S3::Bucket', 'BucketName', `${prefix}-exports`)
   const ingestQueue = idByName('AWS::SQS::Queue', 'QueueName', `${prefix}-ingest`)
-  const resultsQueue = idByName('AWS::SQS::Queue', 'QueueName', `${prefix}-textract-results`)
-  const textractRole =
-    Object.entries(resources).find(
-      ([, r]) => r.Type === 'AWS::IAM::Role' && JSON.stringify(r.Properties?.AssumeRolePolicyDocument).includes('textract.amazonaws.com'),
-    )?.[0] ?? 'missing:textract-role'
+  const extractQueue = idByName('AWS::SQS::Queue', 'QueueName', `${prefix}-extract`)
 
-  const lambdas: Record<string, { allowed: string[]; textract: string[]; queues: string[] }> = {
-    [`${prefix}-api`]: { allowed: [documents, exportsBucket], textract: [], queues: [] },
-    [`${prefix}-pipeline-ingest`]: {
-      allowed: [documents, ingestQueue, textractRole],
-      textract: ['textract:StartDocumentTextDetection', 'textract:StartDocumentAnalysis'],
-      queues: [ingestQueue],
-    },
-    [`${prefix}-pipeline-results`]: {
-      allowed: [documents, exportsBucket, resultsQueue],
-      textract: ['textract:GetDocumentTextDetection', 'textract:GetDocumentAnalysis'],
-      queues: [resultsQueue],
-    },
+  const lambdas: Record<string, { allowed: string[]; queues: string[] }> = {
+    [`${prefix}-api`]: { allowed: [documents, exportsBucket], queues: [] },
+    [`${prefix}-pipeline-ocr`]: { allowed: [documents, ingestQueue, extractQueue], queues: [ingestQueue, extractQueue] },
+    [`${prefix}-pipeline-extract`]: { allowed: [documents, extractQueue], queues: [extractQueue] },
   }
   const policies = Object.values(resources).filter((r) => r.Type === 'AWS::IAM::Policy')
   for (const [name, spec] of Object.entries(lambdas)) {
@@ -124,8 +129,8 @@ for (const stage of stages) {
     for (const statement of statements) {
       const actions = asArray(statement.Action)
       const text = JSON.stringify(statement.Resource)
-      if (text === '"*"' || text === '["*"]') {
-        if (!actions.every((action) => spec.textract.includes(action))) fail(`${label} ${name}: "*" resource on ${actions.join(',')}`)
+      if (text.includes('"*"')) {
+        fail(`${label} ${name}: "*" resource on ${actions.join(',')}`)
         continue
       }
       const ids = referencedIds(statement.Resource)
