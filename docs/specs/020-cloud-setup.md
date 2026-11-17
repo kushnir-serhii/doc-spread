@@ -19,7 +19,7 @@ Every external service the product needs exists in `dev` and `prod`, every setti
 | OCR with a box per word | AWS Textract | Review (008) and pointing (013, 015) need word boxes |
 | Classification and extraction | Claude API | Works from the Textract tokens and the page image |
 | Pipeline, exports, API | AWS Lambda + SQS | No Edge Functions, so AWS access uses IAM roles and no AWS keys are stored |
-| Email (auth and export delivery) | AWS SES, also as Supabase custom SMTP | One sender, one domain |
+| Email (auth and export delivery) | AWS SES, also as Supabase custom SMTP — **on hold** (J6) | One sender, one domain |
 
 Pipeline: upload to S3 → SQS → Textract → SNS → SQS → classify and extract with Claude → status and values written to Postgres. The web app keeps polling (002).
 
@@ -100,7 +100,8 @@ These need your identity, payment details, legal agreement or secrets. Claude ca
 - Create the Console account, add billing, and accept the commercial terms.
 - Create a `dev` and a `prod` workspace, one API key each, with a spend limit.
 
-### [ ] J6. Domain and email
+### [ ] J6. Domain and email — on hold
+**On hold (2026-11-12):** not needed for the portfolio demo, and no slice waits for it. The steps stay here for when the project gets a domain.
 - Buy or choose the domain, and add the DNS records for SES (DKIM) and the CloudFront certificate.
 - Request SES production access in the AWS console. AWS reviews it, and it can take a day or more.
 - In Supabase, enter the SES SMTP credentials under Auth settings.
@@ -116,7 +117,8 @@ These need your identity, payment details, legal agreement or secrets. Claude ca
 - Approve every `prod` deploy and migration. Claude only touches `dev`.
 - Merge the PRs.
 
-### [ ] J9. Before real customer documents
+### [ ] J9. Before real customer documents — on hold
+**On hold (2026-11-12):** the project is a portfolio demo and takes no real customer documents. These steps come back before it does.
 - Accept the data processing terms of AWS, Supabase and Anthropic.
 - Publish a privacy policy that names them as processors. Documents contain personal data.
 
@@ -155,7 +157,7 @@ The loop runs slices in order and stops, with a list of what's missing, at the f
   - [x] the same synth output differs between stages only in names and sizes
 
 ### [ ] 4. Deploy `dev`
-- **Waits for:** J3, J6 (DNS), J7, J8 (bootstrap)
+- **Waits for:** J3, J7, J8 (bootstrap)
 - **Build:** deploy the `dev` stack, push the migrations to the `dev` Supabase project, and fill the real output values into `.env.example` comments where they aren't secret.
 - **Files:** `infra/**`, `docs/specs/020-cloud-setup.md`
 - **Accept:**
@@ -226,6 +228,10 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
   - **Decided (2026-11-12):** one `jsonb` column `values` on `documents`, keyed by field id, in the shape of `FieldValueMap`. Type versions keep `fields` and `actions` as `jsonb` on `document_type_versions`; the export mapping sits on `document_types` (not versioned, 009).
 - **Domain before J6?**
   - **Decided (2026-11-12):** none yet. CloudFront uses its default domain, and the SES identity and custom domain are optional CDK context, added when J6 is done.
+- **What is on hold for the demo?**
+  - **Decided (2026-11-12):** the project is a portfolio demo for now, so J6 (custom domain, SES, production email access) and J9 (data processing terms, privacy policy) are on hold, not removed. The web app uses the default CloudFront domain, the SES identity stays optional CDK context and is not deployed, and no slice waits for either job.
+- **Supabase plan?**
+  - **Decided (2026-11-12):** the free plan.
 - **Docker for slice 2?**
   - **Decided (2026-11-12):** Claude starts Docker Desktop when slice 2 begins.
 - From slice 2: who creates a company and its first owner? Clients have no insert on `companies`, so sign-up is assumed to go through the API service with the secret key.
@@ -243,6 +249,7 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-09 | — | draft | written from the backend needs of 002–019; slices split from the jobs only the owner can do |
 | 2026-11-12 | — | jobs | J1, J2 done. `dev` keys in place and tested: Supabase secret key (200), Anthropic key (200), web publishable key. AWS account waits for verification; prod accounts later (demo). |
 | 2026-11-12 | — | ready | owner approved draft → ready; branch, CDK extras, jsonb values, no domain yet, Docker decided |
+| 2026-11-12 | — | on hold | portfolio demo: J6 and J9 on hold, slice 4 no longer waits for J6; Supabase on the free plan |
 | 2026-11-12 | 1 | done (haiku) | `.env.example` in apps/web and services/api, `lib/env.ts` + `vite-env.d.ts`, startup check in `main.tsx` when mocks are off, Turbo `env`/`inputs` (hash changes on a VITE_ value and on a `.env*` file), workspaces `services/*` and `infra`. Typecheck, lint, build green. The missing-variable error was checked in logic, not in a browser. |
 | 2026-11-12 | 2 | done (sonnet) | `supabase/` with one migration: 8 tables, RLS per company through `private` helpers, explicit grants, composite foreign keys and a trigger that blocks moving rows between companies. `supabase db reset` clean, `supabase test db` 29/29, `supabase db advisors` (security) no issues. Seed empty, no country defaults. |
 | 2026-11-12 | 3 | done (sonnet) | `infra/` (`@docspread/infra`): CDK app with `DocSpread-dev` / `DocSpread-prod`; web bucket + CloudFront (origin access control, SPA fallback), documents and exports buckets, ingest and Textract queues with DLQs, SNS topic + Textract role, 3 placeholder Lambdas with per-role permissions, optional SES identity, GitHub OIDC deploy role, `put-secrets` script (not run). `synth` and `check` pass with no credentials. Diagrams: `structure.ts` (infra, supabase), `deployment.ts` (Function URL). |

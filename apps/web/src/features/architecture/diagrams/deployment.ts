@@ -14,7 +14,7 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
     sqs["SQS queues + dead-letter queues"]
     sns["SNS topic"]
     textract["Textract (OCR)"]
-    ses["SES (email)"]
+    ses["SES (email, on hold)"]
     ssm["SSM Parameter Store (secrets)"]
   end
 
