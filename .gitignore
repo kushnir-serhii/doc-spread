@@ -22,3 +22,5 @@ Thumbs.db
 # supabase local
 supabase/.temp/
 supabase/.branches/
+# personal Claude Code instructions
+CLAUDE.local.md

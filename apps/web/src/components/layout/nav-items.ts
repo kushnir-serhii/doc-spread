@@ -1,4 +1,4 @@
-import { FileOutput, Inbox, Layers, Palette, Settings, Shapes, Upload, type LucideIcon } from 'lucide-react'
+import { FileOutput, Inbox, Layers, Network, Palette, Settings, Shapes, Upload, type LucideIcon } from 'lucide-react'
 
 export interface NavItem {
   to: string
@@ -15,4 +15,7 @@ export const MAIN_NAV: NavItem[] = [
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
-export const DEV_NAV: NavItem[] = [{ to: '/design', label: 'Design tokens', icon: Palette }]
+export const DEV_NAV: NavItem[] = [
+  { to: '/design', label: 'Design tokens', icon: Palette },
+  { to: '/architecture', label: 'Architecture', icon: Network },
+]

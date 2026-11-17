@@ -84,6 +84,7 @@ Scope changes go into the spec first, then into the code.
 - Typecheck, lint and build are green.
 - The Playwright UI check (step 8) passes for the spec's routes, and its screenshots were reviewed.
 - Follows [conventions.md](conventions.md).
+- The diagrams on `/architecture` still match the code (see [conventions.md](conventions.md#architecture-diagrams)).
 - Every UI state is designed: loading (skeleton), empty, error with retry, long values.
 - WCAG 2.1 AA: labels, visible focus, contrast, 44px touch targets.
 - Mock-only data. Whatever the backend must provide is listed under **Backend needs**.
