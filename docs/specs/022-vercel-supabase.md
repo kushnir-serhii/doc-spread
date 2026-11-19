@@ -123,17 +123,17 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
   - [x] a test proves a member of company A can't read company B's objects
   - [x] the migration is pushed to `docspread-dev` and `migration list` is in sync
 
-### [ ] 3. API as a Vercel Function
+### [x] 3. API as a Vercel Function
 - **Waits for:** slice 1, slice 2
 - **Build:** `services/api` handlers take a web `Request` and return a `Response` (no Lambda event types). `apps/web/api/router.ts` (every `/api/*` path without its own file is rewritten to it in `vercel.json`) forwards to them. `POST /api/uploads` keeps every 020 rule (JWT via JWKS, company from `team_members`, `documents` row, 007 type and size rules) but returns a Storage signed upload URL for `<company>/<document>/<file>`. New `POST /api/uploads/:id/complete` checks the object exists and the caller owns it, moves the document from `uploaded` to `processing` (conditional, so a second call is refused) and enqueues `ocr`. A migration enables `pgmq`, creates queues `ocr` and `extract`, and adds service-only queue functions (`queue_send`, `queue_read`, `queue_delete`, `queue_archive`; `service_role` only). Env comes from `process.env` only: `readSecretFromSsm` and the `SSM_*` fallbacks go. `smoke-api` and `check-env` move to the new contract.
 - **Files:** `services/api/src/{handler,env,auth,upload-rules}.ts`, `services/api/scripts/{smoke-api,check-env}.ts`, `services/api/.env.example`, `services/api/package.json`, `apps/web/api/router.ts`, `apps/web/vercel.json`, `supabase/migrations/*`, `supabase/tests/*`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] no token or a bad token gets 401; an oversized or disallowed file is refused
-  - [ ] the signed URL writes only that one path; an upload under another company's prefix is refused
-  - [ ] `complete` for a missing object or another company's document is refused
-  - [ ] `smoke-api` passes against the Vercel production URL; startup with a missing variable names it; the log scan finds no secret
-  - [ ] no client role can read, send to or archive a queue (pgTAP)
+  - [x] no token or a bad token gets 401; an oversized or disallowed file is refused
+  - [x] the signed URL writes only that one path; an upload under another company's prefix is refused
+  - [x] `complete` for a missing object or another company's document is refused
+  - [x] `smoke-api` passes against the Vercel production URL; startup with a missing variable names it; the log scan finds no secret
+  - [x] no client role can read, send to or archive a queue (pgTAP)
 
 ### [ ] 4. Cron trigger
 - **Waits for:** slice 3, J3
@@ -227,3 +227,4 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | 2026-11-19 | 2 | 2 of 3 (sonnet) | migration `storage_buckets`: private `documents` (20 MB, pdf/jpeg/png) and `exports` (20 MB); `private.can_read_company_object` (uuid-guarded first segment → `is_company_member`); one SELECT policy, no client writes. `storage_buckets.test.sql` 13 tests; suite 49/49; advisors no issues. Push to `docspread-dev` waits for the owner: the CLI needs the database password (403 on the login role without it). |
 | 2026-11-19 | 2 | done | owner ran `supabase db push` (the CLI token gets 403 on the login role, so the password goes in with `--password`); the Storage API on `docspread-dev` shows `documents` and `exports` private, 20 MB, MIME list on `documents` only. |
 | 2026-11-19 | 1 | 2 of 3 (sonnet) | `apps/web/vercel.json` (`fra1`, rewrite of every non-`/api/` path to `/index.html`), `api/health.ts` (Web `GET` handler), `tsconfig.api.json` (Node types, referenced from `tsconfig.json`), ESLint block for `api/`, `.env.example` `VITE_API_BASE_URL=/api`; root `.vercelignore` keeps `.env*` and build output out of CLI uploads; `.gitignore` gets `.vercel` (the CLI also added `.env*`, removed: it hid `.env.example`). Deployed with `vercel deploy --prod`: `/`, `/inbox`, `/types/type-invoice` 200 HTML, `/api/health` 200 `{"ok":true}` from `fra1`. Typecheck, lint, build green; `pnpm dev` serves. `vercel dev` fails on Windows with EPERM on symlink until Developer Mode is on. |
+| 2026-11-19 | 3 | done (sonnet) | `services/api/src/handler.ts` is a Web `handle(Request)` router (optional `/api` prefix; env, JWKS verifier and client built on the first request, no top-level await; `.js` import specifiers so Vercel's per-file compile resolves). `POST /uploads` returns a Storage signed upload URL; `POST /uploads/:id/complete` (404 for missing or foreign ids, 409 before the upload or twice, conditional `uploaded` → `processing`, `queue_send` to `ocr`, rollback on failure). Migrations `queues` (pgmq, `ocr` + `extract`, SECURITY DEFINER `queue_*` wrappers for `service_role` only, client revokes on `pgmq`) and `service_role_grants` (fresh stacks no longer grant it table access); `queues.test.sql` 17, suite 66/66, advisors clean; owner pushed both. `apps/web/api/router.ts` behind a `vercel.json` rewrite (`[...path].ts` matched one segment only). `env.ts` without SSM; `smoke-api` (HTTP or in-process), `check-env` 22 PASS, `scan-logs` reads stdin. Production: smoke-api 25/25 PASS, log scan 0 secrets. `@aws-sdk/s3-presigned-post` removed. |
