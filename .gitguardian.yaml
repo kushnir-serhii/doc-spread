@@ -1,0 +1,6 @@
+version: 2
+secret:
+  ignored_paths:
+    # Smoke scripts only read DEMO_USER_PASSWORD from the git-ignored .env.local;
+    # the `grant_type=password` request shape is a false positive.
+    - services/api/scripts/smoke-*.ts
