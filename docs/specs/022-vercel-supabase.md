@@ -84,11 +84,12 @@ SUPABASE_PROJECT_REF
 
 Claude guides each job one step at a time when a slice first needs it. Order: J1 → slice 2 → J2 → slices 1, 3 → J3 → slices 4, 5 → slice 6 → J5 → J4 → slice 7.
 
-### [ ] J2. Vercel
+### [x] J2. Vercel
 - Create a Vercel account (Hobby is enough for the demo, see Open questions) and import the GitHub repo with Root Directory `apps/web`, "Include files outside the root directory" on.
 - Add the variables above to the Production and Preview environments. The secret values (`SUPABASE_SECRET_KEY`, `ANTHROPIC_API_KEY`, `PIPELINE_SECRET`) are typed by you only.
 - Install the Vercel CLI (`npm i -g vercel`; pnpm has no global bin folder here) and run `vercel link` in `apps/web` for local `vercel dev`. Done 2026-11-19: project `doc-spread`, https://doc-spread.vercel.app, link stored at the repo root (`.vercel/repo.json`). Claude added the non-secret variables with the CLI.
-- Turn on Windows Developer Mode, so `vercel dev` can create the symlinks its builders need.
+- Turn on Windows Developer Mode, so `vercel dev` can create the symlinks its builders need (open: slice 1's `vercel dev` criterion waits for it).
+- Done 2026-11-19: the three secrets are in Production only; add them to Preview too when preview deployments are used.
 
 ### [ ] J3. Supabase secrets
 - Generate `PIPELINE_SECRET` and store it, with the production function URL, in Supabase Vault through the SQL editor (slice 4 gives the exact statements). Claude never sees the value.
