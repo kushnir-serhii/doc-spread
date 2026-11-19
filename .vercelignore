@@ -5,7 +5,6 @@
 **/node_modules
 **/dist
 **/.turbo
-infra/cdk.out
 supabase/.temp
 supabase/.branches
 apps/web/e2e/screenshots

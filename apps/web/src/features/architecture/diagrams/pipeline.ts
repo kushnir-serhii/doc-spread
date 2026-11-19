@@ -1,31 +1,34 @@
-/** Sequence diagram: one document from upload to review (spec 020, slice 6). */
+/** Sequence diagram: one document from upload to review (spec 022: Vercel Functions, Supabase). */
 export const PIPELINE_DIAGRAM = `sequenceDiagram
   participant B as Browser (web app)
-  participant A as API (Lambda)
-  participant S3 as S3 documents bucket
-  participant Q as SQS ingest queue
-  participant O as OCR worker (Lambda)
-  participant QE as SQS extract queue
-  participant X as Extract worker (Lambda)
+  participant A as Vercel Function /api
+  participant ST as Supabase Storage (documents)
+  participant DB as Postgres (Supabase, pgmq)
+  participant CR as pg_cron + pg_net
+  participant O as Vercel Function /api/pipeline/ocr
+  participant X as Vercel Function /api/pipeline/extract
   participant C as Claude API
-  participant DB as Postgres (Supabase)
 
-  B->>A: ask for an upload URL
+  B->>A: POST /api/uploads
   A->>A: verify token, scope to the caller's company
   A->>DB: create the document row (status uploaded)
-  A-->>B: document id and presigned upload (key, size and type pinned)
-  B->>S3: upload the file
-  S3->>Q: object created event
-  Q->>O: start job
-  O->>DB: status processing
-  O->>S3: read the file
-  O->>O: read the PDF text layer, or Tesseract for scans and photos
-  O->>DB: write words with boxes
-  O->>QE: OCR done
-  QE->>X: start extraction
+  A-->>B: document id and signed upload URL
+  B->>ST: upload the file
+  B->>A: POST /api/uploads/:id/complete
+  A->>DB: status processing, enqueue in pgmq queue ocr
+  loop every 30 s
+    CR->>O: POST with x-pipeline-secret
+  end
+  O->>DB: read a message from queue ocr
+  O->>ST: read the file
+  O->>O: read the PDF text layer (pdfjs), or tesseract.js for scans and photos
+  O->>DB: write pages and word boxes
+  O->>DB: enqueue in queue extract
+  CR->>X: POST with x-pipeline-secret
+  X->>DB: read a message from queue extract
   X->>C: classify (Claude Haiku)
   C-->>X: document type and confidence
-  X->>S3: read the file
+  X->>ST: read the file
   X->>C: extract fields (Claude Opus, file and words)
   C-->>X: values, confidence, cited words
   X->>DB: write status (needs_review, or unclassified when unsure), values
@@ -36,8 +39,8 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
   end
 
   alt a step fails
-    Q-->>Q: retries, then dead-letter queue
-    O->>DB: status error (unreadable file)
-    X->>DB: status error
+    Note over O,X: the message stays and is read again after its visibility timeout
+    O->>DB: after 3 failed reads archive the message, status error
+    X->>DB: after 3 failed reads archive the message, status error
   end
 `

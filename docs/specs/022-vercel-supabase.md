@@ -98,7 +98,10 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 - Add the three Supabase secrets to the `dev` environment.
 
 ### [ ] J5. Retire AWS
-- Run `cdk destroy DocSpread-dev --profile docspread` once slice 6 says so (it deletes the buckets and their test files, the queues and the Lambdas).
+- `infra/` is gone after slice 6, so the stack is deleted with CloudFormation directly (`dev` buckets have `autoDeleteObjects`, so their files go too). Sign in with `aws login --profile docspread`, then, one at a time:
+  - `aws cloudformation delete-stack --stack-name DocSpread-dev --profile docspread --region eu-north-1` and `aws cloudformation wait stack-delete-complete --stack-name DocSpread-dev --profile docspread --region eu-north-1`
+  - the two SSM parameters `put-secrets` created outside the stack: `aws ssm delete-parameters --names /docspread/dev/supabase-secret-key /docspread/dev/anthropic-api-key --profile docspread --region eu-north-1`
+  - the CDK bootstrap stack `CDKToolkit` (its staging bucket is retained, so empty and delete it after the stack); Claude gives the exact commands at that step.
 - The AWS project itself stays idle (decided 2026-11-19); the free plan ends 2027-04-21. Your two old test Lambdas are not part of the stack and stay.
 - Delete the AWS lines from your `services/api/.env.local` (slice 6 lists them).
 
@@ -143,8 +146,8 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 - **Model:** sonnet
 - **Accept:**
   - [ ] a message put on `ocr` triggers exactly one call to `/api/pipeline/ocr` within a minute
-  - [ ] no client role can call the cron job's function or read the Vault secrets
-  - [ ] the migration contains no secret or URL; advisors report no security issues
+  - [x] no client role can call the cron job's function or read the Vault secrets
+  - [x] the migration contains no secret or URL; advisors report no security issues
 
 ### [ ] 5. Pipeline on Vercel Functions
 - **Waits for:** slice 4
@@ -155,18 +158,18 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
   - [ ] a multi-page PDF uploaded through the Vercel production URL reaches `needs_review` with values and confidence
   - [ ] a scanned JPG goes through Tesseract and reaches `needs_review`; OCR boxes stay normalized 0..1, origin top-left
   - [ ] a broken file ends in `error` and the queue keeps moving
-  - [ ] a call without the right secret gets 401 and touches no queue
+  - [x] a call without the right secret gets 401 and touches no queue
   - [ ] token usage and cost are still logged; the 30-page PDF from 020's smoke test fits in the function's duration, or the report says how long it took
 
-### [ ] 6. Remove AWS
+### [x] 6. Remove AWS
 - **Waits for:** slice 5
 - **Build:** delete `infra/` and its workspace entry, every `@aws-sdk/*` dependency, `infra/scripts/put-secrets.ts` and `add-native-binary.mjs`, AWS lines in `.env.example` files and `.gitignore`, and `cdk.out/`. Then tell the owner to run J5. Update `structure.ts`, `pipeline.ts`, `deployment.ts` and `diagrams/index.ts`.
 - **Files:** `infra/**`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `services/api/package.json`, `.gitignore`, `apps/web/src/features/architecture/diagrams/*`
 - **Model:** haiku (deletions); sonnet for the diagrams
 - **Accept:**
-  - [ ] `grep -ri "aws-sdk\|cdk\|sqs\|ssm" --exclude-dir=node_modules` finds nothing outside docs history and spec logs
-  - [ ] `pnpm install`, typecheck, lint and build are green
-  - [ ] the three diagrams show Vercel and Supabase only; the UI check passes for `/architecture?tab=structure`, `?tab=pipeline` and `?tab=deployment`
+  - [x] `grep -ri "aws-sdk\|cdk\|sqs\|ssm" --exclude-dir=node_modules` finds nothing outside docs history and spec logs
+  - [x] `pnpm install`, typecheck, lint and build are green
+  - [x] the three diagrams show Vercel and Supabase only; the UI check passes for `/architecture?tab=structure`, `?tab=pipeline` and `?tab=deployment`
 
 ### [ ] 7. Deploys and docs
 - **Waits for:** slice 6, J4
@@ -229,3 +232,6 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | 2026-11-19 | 2 | done | owner ran `supabase db push` (the CLI token gets 403 on the login role, so the password goes in with `--password`); the Storage API on `docspread-dev` shows `documents` and `exports` private, 20 MB, MIME list on `documents` only. |
 | 2026-11-19 | 1 | 2 of 3 (sonnet) | `apps/web/vercel.json` (`fra1`, rewrite of every non-`/api/` path to `/index.html`), `api/health.ts` (Web `GET` handler), `tsconfig.api.json` (Node types, referenced from `tsconfig.json`), ESLint block for `api/`, `.env.example` `VITE_API_BASE_URL=/api`; root `.vercelignore` keeps `.env*` and build output out of CLI uploads; `.gitignore` gets `.vercel` (the CLI also added `.env*`, removed: it hid `.env.example`). Deployed with `vercel deploy --prod`: `/`, `/inbox`, `/types/type-invoice` 200 HTML, `/api/health` 200 `{"ok":true}` from `fra1`. Typecheck, lint, build green; `pnpm dev` serves. `vercel dev` fails on Windows with EPERM on symlink until Developer Mode is on. |
 | 2026-11-19 | 3 | done (sonnet) | `services/api/src/handler.ts` is a Web `handle(Request)` router (optional `/api` prefix; env, JWKS verifier and client built on the first request, no top-level await; `.js` import specifiers so Vercel's per-file compile resolves). `POST /uploads` returns a Storage signed upload URL; `POST /uploads/:id/complete` (404 for missing or foreign ids, 409 before the upload or twice, conditional `uploaded` → `processing`, `queue_send` to `ocr`, rollback on failure). Migrations `queues` (pgmq, `ocr` + `extract`, SECURITY DEFINER `queue_*` wrappers for `service_role` only, client revokes on `pgmq`) and `service_role_grants` (fresh stacks no longer grant it table access); `queues.test.sql` 17, suite 66/66, advisors clean; owner pushed both. `apps/web/api/router.ts` behind a `vercel.json` rewrite (`[...path].ts` matched one segment only). `env.ts` without SSM; `smoke-api` (HTTP or in-process), `check-env` 22 PASS, `scan-logs` reads stdin. Production: smoke-api 25/25 PASS, log scan 0 secrets. `@aws-sdk/s3-presigned-post` removed. |
+| 2026-11-19 | 4 | 2 of 3 (sonnet) | migration `pipeline_cron`: `pg_cron` + `pg_net`; `private.trigger_pipeline()` reads Vault `pipeline_base_url` / `pipeline_secret` (missing → notice, no call) and POSTs `{}` with `x-pipeline-secret` to `/api/pipeline/<queue>` once per tick for each queue with a visible message (`vt <= clock_timestamp()`); execute revoked from every API role; job `pipeline-trigger` every 30 s; daily `cron-history-cleanup` keeps one day of `cron.job_run_details`; pg_net timeout 310 s because the functions work inside the request. `pipeline_cron.test.sql` 11, suite 77/77, advisors clean, no URL or secret in the migration. The live "exactly one call" criterion is checked with slice 5 on dev. |
+| 2026-11-19 | 5 | 1 of 5 (sonnet) | `apps/web/api/pipeline/{ocr,extract}.ts` → `services/api/src/pipeline/*` (`pipeline-auth.ts`: sha-256 + `timingSafeEqual` on `x-pipeline-secret`; `pipeline-http.ts`: lazy env, drain one message at a time, vt 330 s, no new message after 150 s; `queue.ts` over `queue_*` RPCs replaces `sqs.ts`; archive + `error` at `read_ct >= 3`, orphan messages archived). Files come from Storage; `@aws-sdk/*` gone from `services/api`. `vercel.json`: `maxDuration` 300 for both, `includeFiles` for pdfjs / tesseract / canvas on OCR (unverified). `smoke-pipeline` uploads through the production API and polls. Deployed: both functions answer 401 without or with a wrong secret. The run itself waits for J3 and the slice 4 push. |
+| 2026-11-19 | 6 | done (sonnet) | `infra/` deleted and removed from `pnpm-workspace.yaml` (lockfile −29 packages), `.vercelignore` line, stale SQS comment in `claude.ts`. Diagrams `structure.ts` (Vercel Functions under `apps/web/api`, no infra), `pipeline.ts` (signed upload → `complete` → pgmq → pg_cron/pg_net → OCR → extract), `deployment.ts` (Vercel `fra1`, Supabase Frankfurt, Anthropic, GitHub), `index.ts` (sources → 022; `planned` flags removed, 020 is done). Grep for `aws-sdk|aws-cdk|cdk|sqs|ssm` outside `docs/` is empty (only `supabase/config.toml` CLI template comments and a mock vendor mention AWS). Typecheck, lint, build green. UI check 12/12 for the three tabs; screenshots reviewed by the orchestrator: diagrams render in both themes at 375 and 1280 px (the panel scrolls inside, as before). J5 rewritten for the CLI, since `cdk destroy` needs the deleted app. |
