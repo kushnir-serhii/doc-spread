@@ -87,7 +87,8 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 ### [ ] J2. Vercel
 - Create a Vercel account (Hobby is enough for the demo, see Open questions) and import the GitHub repo with Root Directory `apps/web`, "Include files outside the root directory" on.
 - Add the variables above to the Production and Preview environments. The secret values (`SUPABASE_SECRET_KEY`, `ANTHROPIC_API_KEY`, `PIPELINE_SECRET`) are typed by you only.
-- Install the Vercel CLI (`pnpm add -g vercel`) and run `vercel link` in `apps/web` for local `vercel dev`.
+- Install the Vercel CLI (`npm i -g vercel`; pnpm has no global bin folder here) and run `vercel link` in `apps/web` for local `vercel dev`. Done 2026-11-19: project `doc-spread`, https://doc-spread.vercel.app, link stored at the repo root (`.vercel/repo.json`). Claude added the non-secret variables with the CLI.
+- Turn on Windows Developer Mode, so `vercel dev` can create the symlinks its builders need.
 
 ### [ ] J3. Supabase secrets
 - Generate `PIPELINE_SECRET` and store it, with the production function URL, in Supabase Vault through the SQL editor (slice 4 gives the exact statements). Claude never sees the value.
@@ -108,9 +109,9 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 - **Files:** `apps/web/vercel.json`, `apps/web/api/health.ts`, `apps/web/.env.example`, `apps/web/tsconfig*.json` (if `api/` needs its own config), `turbo.json`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] the Vercel production URL serves the app, and `/inbox` loads after a reload (020 slice 4's last criterion)
-  - [ ] `GET /api/health` answers 200 on the Vercel URL and under `vercel dev`
-  - [ ] typecheck, lint and build stay green; `pnpm dev` still works without the Vercel CLI
+  - [x] the Vercel production URL serves the app, and `/inbox` loads after a reload (020 slice 4's last criterion)
+  - [ ] `GET /api/health` answers 200 on the Vercel URL and under `vercel dev` (Vercel URL: done; `vercel dev` needs Windows Developer Mode)
+  - [x] typecheck, lint and build stay green; `pnpm dev` still works without the Vercel CLI
 
 ### [x] 2. Storage buckets and policies
 - **Waits for:** J1
@@ -220,3 +221,4 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | 2026-11-19 | — | ready | owner approved every recommendation and the move to `ready`; deploys through `vercel deploy --prod` (production URL for smoke tests and Vault), Hobby limits (300 s, 2 GB), Claude pushes `dev` migrations; 020 closed as `done` |
 | 2026-11-19 | 2 | 2 of 3 (sonnet) | migration `storage_buckets`: private `documents` (20 MB, pdf/jpeg/png) and `exports` (20 MB); `private.can_read_company_object` (uuid-guarded first segment → `is_company_member`); one SELECT policy, no client writes. `storage_buckets.test.sql` 13 tests; suite 49/49; advisors no issues. Push to `docspread-dev` waits for the owner: the CLI needs the database password (403 on the login role without it). |
 | 2026-11-19 | 2 | done | owner ran `supabase db push` (the CLI token gets 403 on the login role, so the password goes in with `--password`); the Storage API on `docspread-dev` shows `documents` and `exports` private, 20 MB, MIME list on `documents` only. |
+| 2026-11-19 | 1 | 2 of 3 (sonnet) | `apps/web/vercel.json` (`fra1`, rewrite of every non-`/api/` path to `/index.html`), `api/health.ts` (Web `GET` handler), `tsconfig.api.json` (Node types, referenced from `tsconfig.json`), ESLint block for `api/`, `.env.example` `VITE_API_BASE_URL=/api`; root `.vercelignore` keeps `.env*` and build output out of CLI uploads; `.gitignore` gets `.vercel` (the CLI also added `.env*`, removed: it hid `.env.example`). Deployed with `vercel deploy --prod`: `/`, `/inbox`, `/types/type-invoice` 200 HTML, `/api/health` 200 `{"ok":true}` from `fra1`. Typecheck, lint, build green; `pnpm dev` serves. `vercel dev` fails on Windows with EPERM on symlink until Developer Mode is on. |
