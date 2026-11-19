@@ -1,4 +1,12 @@
-import { readSecretFromSsm } from '../env.ts'
+import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
+
+// Moved here from env.ts in 022 slice 3: the pipeline still reads its secrets from SSM until slice 5.
+const readSecretFromSsm = async (parameterName: string): Promise<string> => {
+  const result = await new SSMClient({}).send(new GetParameterCommand({ Name: parameterName, WithDecryption: true }))
+  const value = result.Parameter?.Value
+  if (!value) throw new Error(`SSM parameter ${parameterName} is empty`)
+  return value
+}
 
 export interface PipelineEnv {
   supabaseUrl: string

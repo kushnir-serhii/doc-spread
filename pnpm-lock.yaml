@@ -147,9 +147,6 @@ importers:
       '@aws-sdk/client-ssm':
         specifier: 3.1167.0
         version: 3.1167.0
-      '@aws-sdk/s3-presigned-post':
-        specifier: 3.1170.0
-        version: 3.1170.0
       '@napi-rs/canvas':
         specifier: 1.1.1
         version: 1.1.1
@@ -265,10 +262,6 @@ packages:
 
   '@aws-sdk/nested-clients@3.998.3':
     resolution: {integrity: sha512-acHTTzMB13CU6dU4sxABYExMI3PQM2zStWH2MiUwJp/7QKTrLg2f7mbzSXoegW2kYOk2tdqQYagsZrWB8Xv7eA==}
-    engines: {node: '>=20.0.0'}
-
-  '@aws-sdk/s3-presigned-post@3.1170.0':
-    resolution: {integrity: sha512-ydlZWcAA8QF7nKoc3JNVP29M7ttcMkyPWAzaGY0ZOxMVZDdosEnGh/uchzUCahcucyVtqOIIRno8SyBMQfpAzQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/signature-v4-multi-region@3.996.52':
@@ -3362,16 +3355,6 @@ snapshots:
       '@smithy/core': 3.40.0
       '@smithy/fetch-http-handler': 5.8.1
       '@smithy/node-http-handler': 4.14.2
-      '@smithy/types': 4.20.0
-      tslib: 2.8.1
-
-  '@aws-sdk/s3-presigned-post@3.1170.0':
-    dependencies:
-      '@aws-sdk/client-s3': 3.1170.0
-      '@aws-sdk/core': 3.981.0
-      '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
-      '@smithy/signature-v4': 5.7.5
       '@smithy/types': 4.20.0
       tslib: 2.8.1
 
