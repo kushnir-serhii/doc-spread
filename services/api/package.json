@@ -1,0 +1,31 @@
+{
+  "name": "@docspread/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "seed-demo": "tsx scripts/seed-demo.ts",
+    "smoke": "tsx scripts/smoke-api.ts",
+    "smoke-pipeline": "tsx scripts/smoke-pipeline.ts",
+    "check-env": "tsx scripts/check-env.ts",
+    "scan-logs": "tsx scripts/scan-logs.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.9.0",
+    "@aws-sdk/client-s3": "3.1170.0",
+    "@aws-sdk/client-sqs": "3.1170.0",
+    "@aws-sdk/client-ssm": "3.1167.0",
+    "@aws-sdk/s3-presigned-post": "3.1170.0",
+    "@napi-rs/canvas": "1.1.1",
+    "@supabase/supabase-js": "2.119.0",
+    "jose": "6.2.17",
+    "pdfjs-dist": "6.4.299",
+    "tesseract.js": "7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "tsx": "4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

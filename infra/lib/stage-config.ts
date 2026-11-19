@@ -25,6 +25,8 @@ export interface StageConfig {
   logRetention: RetentionDays
   /** dev: DESTROY (+ autoDeleteObjects on buckets); prod: RETAIN. */
   removalPolicy: RemovalPolicy
+  /** Supabase project ref of this stage; undefined until the project exists (prod). */
+  supabaseProjectRef?: string
   /** Origins allowed besides the CloudFront domain. */
   extraAllowedOrigins: string[]
   /** TODO (J6): custom domain for CloudFront, taken from context `domain` and `certificateArn`. Not wired yet. */
@@ -41,6 +43,7 @@ export const STAGES: Record<StageName, StageConfig> = {
     workerTimeout: Duration.minutes(5),
     logRetention: RetentionDays.TWO_WEEKS,
     removalPolicy: RemovalPolicy.DESTROY,
+    supabaseProjectRef: 'zjfzdqojkuoqzksdnyjs',
     extraAllowedOrigins: ['http://localhost:5173'],
   },
   prod: {

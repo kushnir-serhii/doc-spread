@@ -8,15 +8,16 @@ import {
   WebIdentityPrincipal,
   type IOidcProvider,
 } from 'aws-cdk-lib/aws-iam'
-import { Architecture, Code, Function as LambdaFunction, FunctionUrlAuthType, HttpMethod, Runtime } from 'aws-cdk-lib/aws-lambda'
+import { Architecture, FunctionUrlAuthType, HttpMethod, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
+import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import { BlockPublicAccess, Bucket, BucketEncryption, EventType, HttpMethods, type BucketProps } from 'aws-cdk-lib/aws-s3'
 import { SqsDestination } from 'aws-cdk-lib/aws-s3-notifications'
 import { EmailIdentity, Identity } from 'aws-cdk-lib/aws-ses'
 import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs'
 import type { Construct } from 'constructs'
-import { API_PLACEHOLDER, WORKER_PLACEHOLDER } from './placeholder-code.ts'
+import { fileURLToPath } from 'node:url'
 import { GITHUB_REPO, type StageConfig } from './stage-config.ts'
 
 interface DocSpreadStackProps extends StackProps {
@@ -24,6 +25,9 @@ interface DocSpreadStackProps extends StackProps {
 }
 
 const GITHUB_OIDC_HOST = 'token.actions.githubusercontent.com'
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url))
+const UPLOAD_MAX_BYTES = 20 * 1024 * 1024 // 20 MB, spec 007
+const NATIVE_BINARY_SCRIPT = fileURLToPath(new URL('../scripts/add-native-binary.mjs', import.meta.url))
 
 export class DocSpreadStack extends Stack {
   constructor(scope: Construct, id: string, props: DocSpreadStackProps) {
@@ -80,7 +84,7 @@ export class DocSpreadStack extends Stack {
     const documentsBucket = privateBucket('DocumentsBucket', 'documents', {
       cors: [
         {
-          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD, HttpMethods.PUT],
+          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD, HttpMethods.PUT, HttpMethods.POST], // POST: presigned POST uploads
           allowedOrigins,
           allowedHeaders: ['*'],
           exposedHeaders: ['ETag'],
@@ -128,35 +132,67 @@ export class DocSpreadStack extends Stack {
       })
     const objectsIn = (bucket: Bucket) => `${bucket.bucketArn}/*`
 
-    const makeFunction = (
-      fnId: string,
-      name: string,
-      code: string,
-      environment: Record<string, string>,
-      sizing: { memorySize: number; timeout: Duration } = { memorySize: config.lambdaMemoryMb, timeout: config.lambdaTimeout },
-    ) => {
-      const logGroup = new LogGroup(this, `${fnId}Logs`, {
+    const logGroupFor = (fnId: string, name: string) =>
+      new LogGroup(this, `${fnId}Logs`, {
         logGroupName: `/aws/lambda/${namePrefix}-${name}`,
         retention: config.logRetention,
         removalPolicy: config.removalPolicy,
       })
-      return new LambdaFunction(this, fnId, {
+
+    // Supabase URL and JWKS URL come from the stage's project ref. prod has none yet: it still synthesizes,
+    // and the function then refuses to start and names the missing SUPABASE_URL.
+    const supabaseUrl = config.supabaseProjectRef ? `https://${config.supabaseProjectRef}.supabase.co` : undefined
+    const supabaseEnv: Record<string, string> = supabaseUrl
+      ? { SUPABASE_URL: supabaseUrl, SUPABASE_JWKS_URL: `${supabaseUrl}/auth/v1/.well-known/jwks.json` }
+      : {}
+    // Built locally with esbuild (no Docker) from services/api; everything is bundled into one ESM file,
+    // except `nodeModules`: packages that load worker, wasm or native files by path stay as real node_modules.
+    const bundlingFor = (nodeModules: string[] = [], nativeBinaries: string[] = []) => ({
+      format: OutputFormat.ESM,
+      target: 'node22',
+      minify: false,
+      sourceMap: false,
+      externalModules: [], // bundle the AWS SDK too: it is not all in the Node 22 runtime
+      // CommonJS dependencies inside an ESM bundle need require().
+      banner: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
+      mainFields: ['module', 'main'],
+      ...(nodeModules.length > 0 && { nodeModules }),
+      // The install runs on the build machine; a native package then lacks the binary for the Lambda (linux arm64).
+      ...(nativeBinaries.length > 0 && {
+        commandHooks: {
+          beforeBundling: () => [],
+          beforeInstall: () => [],
+          afterBundling: (_inputDir: string, outputDir: string) =>
+            nativeBinaries.map((spec) => `node "${NATIVE_BINARY_SCRIPT}" "${outputDir}" "${spec}"`),
+        },
+      }),
+    })
+    const nodeFunction = (fnId: string, name: string, entry: string, props: { memorySize: number; timeout: Duration; environment: Record<string, string>; nodeModules?: string[]; nativeBinaries?: string[] }) =>
+      new NodejsFunction(this, fnId, {
         functionName: `${namePrefix}-${name}`,
         runtime: Runtime.NODEJS_22_X,
         architecture: Architecture.ARM_64,
-        handler: 'index.handler',
-        code: Code.fromInline(code),
-        memorySize: sizing.memorySize,
-        timeout: sizing.timeout,
-        logGroup,
-        environment: { STAGE: stage, ...environment },
+        entry: fileURLToPath(new URL(`../../services/api/src/${entry}`, import.meta.url)),
+        handler: 'handler',
+        projectRoot: REPO_ROOT,
+        depsLockFilePath: fileURLToPath(new URL('../../pnpm-lock.yaml', import.meta.url)),
+        memorySize: props.memorySize,
+        timeout: props.timeout,
+        logGroup: logGroupFor(fnId, name),
+        bundling: bundlingFor(props.nodeModules, props.nativeBinaries),
+        environment: { STAGE: stage, ...props.environment },
       })
-    }
-
-    const apiFn = makeFunction('ApiFunction', 'api', API_PLACEHOLDER, {
-      S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
-      S3_EXPORTS_BUCKET: exportsBucket.bucketName,
-      ...secretParams,
+    // Built locally with esbuild (no Docker) from services/api; everything is bundled into one ESM file.
+    const apiFn = nodeFunction('ApiFunction', 'api', 'handler.ts', {
+      memorySize: config.lambdaMemoryMb,
+      timeout: config.lambdaTimeout,
+      environment: {
+        ...supabaseEnv,
+        S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
+        S3_EXPORTS_BUCKET: exportsBucket.bucketName,
+        UPLOAD_MAX_BYTES: String(UPLOAD_MAX_BYTES),
+        ...secretParams,
+      },
     })
     apiFn.addToRolePolicy(
       new PolicyStatement({ actions: ['s3:PutObject', 's3:GetObject'], resources: [objectsIn(documentsBucket)] }),
@@ -174,41 +210,41 @@ export class DocSpreadStack extends Stack {
       },
     })
 
-    // OCR: reads the PDF text layer, or runs Tesseract for scans and photos; writes words with boxes
-    // to Supabase and page images next to the file (same <company-id>/ prefix).
-    // TODO (slice 6): switch this to a DockerImageFunction (Tesseract container image from ECR).
-    const ocrFn = makeFunction(
-      'PipelineOcrFunction',
-      'pipeline-ocr',
-      WORKER_PLACEHOLDER,
-      {
+    // OCR: reads the PDF text layer (pdfjs-dist) or runs Tesseract (tesseract.js, WebAssembly) for scans and
+    // photos, and writes pages with word boxes to Supabase. Scans are rendered with @napi-rs/canvas.
+    const ocrFn = nodeFunction('PipelineOcrFunction', 'pipeline-ocr', 'pipeline/ocr-handler.ts', {
+      memorySize: config.ocrMemoryMb,
+      timeout: config.workerTimeout,
+      nodeModules: ['tesseract.js', 'pdfjs-dist', '@napi-rs/canvas'],
+      nativeBinaries: ['@napi-rs/canvas-linux-arm64-gnu'],
+      environment: {
+        ...supabaseEnv,
         S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
         EXTRACT_QUEUE_URL: extractQueue.queueUrl,
-        ...secretParams,
+        SSM_SUPABASE_SECRET_KEY_PARAM: secretParams.SSM_SUPABASE_SECRET_KEY_PARAM,
       },
-      { memorySize: config.ocrMemoryMb, timeout: config.workerTimeout },
-    )
-    ocrFn.addToRolePolicy(
-      new PolicyStatement({ actions: ['s3:GetObject', 's3:PutObject'], resources: [objectsIn(documentsBucket)] }),
-    )
+    })
+    ocrFn.addToRolePolicy(new PolicyStatement({ actions: ['s3:GetObject'], resources: [objectsIn(documentsBucket)] }))
     extractQueue.grantSendMessages(ocrFn)
     ocrFn.addToRolePolicy(ssmReadStatement())
-    ocrFn.addEventSource(new SqsEventSource(ingestQueue, { batchSize: 1 }))
+    ocrFn.addEventSource(new SqsEventSource(ingestQueue, { batchSize: 1, reportBatchItemFailures: true }))
 
-    // Extract: classifies and extracts with Claude, from the OCR words and page images.
-    const extractFn = makeFunction(
-      'PipelineExtractFunction',
-      'pipeline-extract',
-      WORKER_PLACEHOLDER,
-      {
+    // Extract: classifies (Haiku) and extracts (Opus) with Claude, from the file and the OCR words.
+    const extractFn = nodeFunction('PipelineExtractFunction', 'pipeline-extract', 'pipeline/extract-handler.ts', {
+      memorySize: config.lambdaMemoryMb,
+      timeout: config.workerTimeout,
+      environment: {
+        ...supabaseEnv,
         S3_DOCUMENTS_BUCKET: documentsBucket.bucketName,
         ...secretParams,
+        ANTHROPIC_MODEL_CLASSIFY: 'claude-haiku-5-5',
+        ANTHROPIC_MODEL_EXTRACT: 'claude-opus-5-5',
+        CLASSIFY_MIN_CONFIDENCE: '0.7',
       },
-      { memorySize: config.lambdaMemoryMb, timeout: config.workerTimeout },
-    )
+    })
     extractFn.addToRolePolicy(new PolicyStatement({ actions: ['s3:GetObject'], resources: [objectsIn(documentsBucket)] }))
     extractFn.addToRolePolicy(ssmReadStatement())
-    extractFn.addEventSource(new SqsEventSource(extractQueue, { batchSize: 1 }))
+    extractFn.addEventSource(new SqsEventSource(extractQueue, { batchSize: 1, reportBatchItemFailures: true }))
 
     // ---- SES: only once a domain is chosen (J6) ----
     if (typeof domain === 'string' && domain !== '') {

@@ -23,6 +23,9 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   subgraph shared["packages/shared (@docspread/shared)"]
     sharedsrc["src (raw TypeScript, no build step)"]
   end
+  subgraph apisvc["services/api (@docspread/api)"]
+    apisrc["Lambda handler: token check, presigned upload; seed and smoke scripts"]
+  end
   subgraph infra["infra (@docspread/infra)"]
     cdk["CDK app: dev and prod stacks, scripts"]
   end
@@ -46,4 +49,6 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   domain --> ui
   api -->|"only importer of mock functions"| mock
   web -->|workspace dependency| shared
+  infra -->|"bundles handler (esbuild)"| apisvc
+  apisvc -->|"secret key, SQL"| supabase
 `
