@@ -4,10 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-`doc-spread` is an early-stage pnpm + Turborepo monorepo. Workspaces are declared in `pnpm-workspace.yaml` as `apps/*` and `packages/*`.
+`doc-spread` is an early-stage pnpm + Turborepo monorepo. Workspaces are declared in `pnpm-workspace.yaml` as `apps/*`, `packages/*` and `services/*`. The product runs on Vercel (web and functions), Supabase (database, auth, storage, queues) and Anthropic. Setup from a fresh clone: `docs/setup.md`.
 
-- `apps/web` — React 19 + Vite 8 SPA (package name `@docspread/web`). Product and layout: `docs/product.md`.
+- `apps/web` — React 19 + Vite 8 SPA (package name `@docspread/web`), plus the Vercel Functions in `apps/web/api/` (thin wrappers). Product and layout: `docs/product.md`.
 - `packages/shared` — `@docspread/shared`, code shared across apps.
+- `services/api` — `@docspread/api`: the API router and the OCR/extract pipeline. The functions import it by relative path.
+- `supabase/` — migrations, pgTAP tests (`supabase/tests/`), `config.toml`.
 
 ## Commands
 
@@ -19,6 +21,22 @@ pnpm dev      # turbo run dev   (persistent, uncached)
 pnpm build    # turbo run build (dependencies built first via ^build; outputs dist/**)
 pnpm lint     # turbo run lint
 ```
+
+Backend and database (Docker Desktop must be running; full steps in `docs/setup.md`):
+
+```sh
+supabase start                                      # local stack (Postgres, Auth, Storage)
+supabase db reset                                   # apply migrations + seed to the local DB
+supabase test db                                    # pgTAP tests in supabase/tests/
+supabase db advisors --local --type security        # must report no issues
+pnpm --filter @docspread/api smoke                  # API smoke test, in-process ("direct" mode)
+SMOKE_API_URL=https://doc-spread.vercel.app/api pnpm --filter @docspread/api smoke   # same, over HTTP
+pnpm --filter @docspread/api smoke-pipeline         # upload -> OCR -> Claude; SMOKE_MODE=direct runs in-process
+pnpm --filter @docspread/api check-env              # checks the variables in services/api/.env.local
+vercel deploy --prod                                # deploy from apps/web (Claude deploys this way before a merge; Git deploys after)
+```
+
+Migrations reach `docspread-dev` through GitHub Actions (`.github/workflows/migrate.yml`) on merge to `main`; the owner can also run `supabase db push --password ...`.
 
 Scope to one workspace with a filter, e.g. `pnpm --filter @docspread/web dev` or `pnpm turbo run build --filter=@docspread/web`.
 
@@ -33,6 +51,9 @@ There is no test runner configured yet; the root `test` script is a placeholder 
 - `apps/web` TypeScript is strict about unused locals/params and uses `verbatimModuleSyntax` (use `import type` for type-only imports) and `erasableSyntaxOnly` (no enums, namespaces, or parameter properties).
 - TypeScript versions differ: root devDependency is `typescript ^7`, while `apps/web` pins `~6.0.3`. Builds in `apps/web` use its local version.
 - ESLint (flat config, `apps/web/eslint.config.js`) uses typescript-eslint recommended, react-hooks, and react-refresh (Vite) rules.
+- **`services/api` is compiled per file by Vercel.** Use `.js` import specifiers for relative imports (`import { x } from './env.js'`) and no top-level `await` in anything a function imports; read env and build clients on the first request.
+- **Functions live in `apps/web/api/`** (`router.ts`, `health.ts`, `pipeline/ocr.ts`, `pipeline/extract.ts`) with their own `tsconfig.api.json`. `apps/web/vercel.json` rewrites `/api/*` to `api/router` (every other non-`/api` path to `index.html`) and sets region and `maxDuration`.
+- **Env variables:** `VITE_*` ships to the browser; everything else is a secret in Vercel env or `services/api/.env.local`. Adding one: `docs/setup.md`.
 - **Architecture diagrams.** The `/architecture` page in `apps/web` (Developer nav group) shows UML diagrams of the project: structure, domain model, screens, document lifecycle, pipeline and deployment. They are hand-written Mermaid text in `apps/web/src/features/architecture/diagrams/` and must be updated with the code (rule in `docs/conventions.md` → Architecture diagrams).
 
 ## Specs and process
