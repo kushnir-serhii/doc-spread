@@ -1,6 +1,6 @@
 # 022 — Off AWS: Vercel and Supabase only
 
-**Status:** draft · **Depends on:** 020 · **Route(s):** — (all routes are served from Vercel)
+**Status:** ready · **Depends on:** 020 · **Route(s):** — (all routes are served from Vercel)
 
 ## Goal
 The whole product runs on two platforms, Vercel (web app and backend functions) and Supabase (database, auth, files, queues), with no AWS. Everything 020 delivered keeps working: an upload goes through OCR and Claude into the database. The web app gets a public URL today instead of waiting for CloudFront verification, and the stack drops the free plan's limits (one region, no Textract, 512 MB Lambdas, no GitHub OIDC provider).
@@ -79,12 +79,14 @@ SUPABASE_PROJECT_REF
 
 ## Your jobs (only you can do these)
 
-### [ ] J1. Decide
-- Answer the questions under **Open questions** and approve moving this spec to `ready`.
+### [x] J1. Decide
+- Answer the questions under **Open questions** and approve moving this spec to `ready`. Done 2026-11-19.
+
+Claude guides each job one step at a time when a slice first needs it. Order: J1 → slice 2 → J2 → slices 1, 3 → J3 → slices 4, 5 → slice 6 → J5 → J4 → slice 7.
 
 ### [ ] J2. Vercel
 - Create a Vercel account (Hobby is enough for the demo, see Open questions) and import the GitHub repo with Root Directory `apps/web`, "Include files outside the root directory" on.
-- Add the variables above to the Production and Preview environments.
+- Add the variables above to the Production and Preview environments. The secret values (`SUPABASE_SECRET_KEY`, `ANTHROPIC_API_KEY`, `PIPELINE_SECRET`) are typed by you only.
 - Install the Vercel CLI (`pnpm add -g vercel`) and run `vercel link` in `apps/web` for local `vercel dev`.
 
 ### [ ] J3. Supabase secrets
@@ -95,7 +97,8 @@ SUPABASE_PROJECT_REF
 
 ### [ ] J5. Retire AWS
 - Run `cdk destroy DocSpread-dev --profile docspread` once slice 6 says so (it deletes the buckets and their test files, the queues and the Lambdas).
-- Decide what happens to the AWS project itself: keep it idle (the free plan ends 2027-04-21) or close it. Your two old test Lambdas are not part of the stack and stay either way.
+- The AWS project itself stays idle (decided 2026-11-19); the free plan ends 2027-04-21. Your two old test Lambdas are not part of the stack and stay.
+- Delete the AWS lines from your `services/api/.env.local` (slice 6 lists them).
 
 ## Slices
 
@@ -128,7 +131,7 @@ SUPABASE_PROJECT_REF
   - [ ] no token or a bad token gets 401; an oversized or disallowed file is refused
   - [ ] the signed URL writes only that one path; an upload under another company's prefix is refused
   - [ ] `complete` for a missing object or another company's document is refused
-  - [ ] `smoke-api` passes against the Vercel preview URL; startup with a missing variable names it; the log scan finds no secret
+  - [ ] `smoke-api` passes against the Vercel production URL; startup with a missing variable names it; the log scan finds no secret
 
 ### [ ] 4. Queues and the cron trigger
 - **Waits for:** slice 3, J3
@@ -142,11 +145,11 @@ SUPABASE_PROJECT_REF
 
 ### [ ] 5. Pipeline on Vercel Functions
 - **Waits for:** slice 4
-- **Build:** `apps/web/api/pipeline/{ocr,extract}.ts` check the `PIPELINE_SECRET` header, read a batch from their queue with a visibility timeout longer than the function's duration, process each message, delete it on success, archive it and set the document to `error` after the third read. OCR reads the file from Storage and enqueues `extract`; extract reads the file from Storage and calls Claude as today. `sqs.ts` becomes a small queue module over `pgmq`; the S3 event parsing goes. `vercel.json` gives OCR more memory and the longest duration the plan allows. `smoke-pipeline` moves to Storage and the new trigger.
+- **Build:** `apps/web/api/pipeline/{ocr,extract}.ts` check the `PIPELINE_SECRET` header, read a batch from their queue with a visibility timeout longer than the function's duration, process each message, delete it on success, archive it and set the document to `error` after the third read. OCR reads the file from Storage and enqueues `extract`; extract reads the file from Storage and calls Claude as today. `sqs.ts` becomes a small queue module over `pgmq`; the S3 event parsing goes. `vercel.json` gives both functions `maxDuration: 300` (the Hobby maximum; memory is fixed at 2 GB on Hobby), and the queue visibility timeout is about 330 s. `smoke-pipeline` moves to Storage and the new trigger.
 - **Files:** `services/api/src/pipeline/**`, `services/api/scripts/smoke-pipeline.ts`, `apps/web/api/pipeline/*`, `apps/web/vercel.json`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] a multi-page PDF uploaded on the Vercel preview reaches `needs_review` with values and confidence
+  - [ ] a multi-page PDF uploaded through the Vercel production URL reaches `needs_review` with values and confidence
   - [ ] a scanned JPG goes through Tesseract and reaches `needs_review`; OCR boxes stay normalized 0..1, origin top-left
   - [ ] a broken file ends in `error` and the queue keeps moving
   - [ ] a call without the right secret gets 401 and touches no queue
@@ -176,25 +179,41 @@ SUPABASE_PROJECT_REF
 Same as 020: this spec moves the foundation, it adds no screen endpoints. The new `complete` route is the one contract change the upload spec (007) must use when it replaces its mock.
 
 ## Open questions
-- **Vercel plan?** Hobby is free but for non-commercial use and has a shorter function duration; Pro removes both limits for a monthly fee.
-  - Recommended: Hobby for the portfolio demo. Upgrade only if slice 5's 30-page PDF doesn't fit.
-- **Long OCR runs?** Tesseract on a long scanned file may exceed the function's duration.
-  - Recommended: keep 020's page limit (50 pages) and process one batch per call; split a file into page ranges (re-enqueue with an offset) only if slice 5 shows it's needed.
-- **What starts the pipeline?** (a) `pgmq` + `pg_cron` + `pg_net` (retries and dead letters built in, up to 30 s delay), (b) a Database Webhook that calls the function right after the insert (instant, but no retry queue), (c) Vercel Queues.
-  - Recommended: (a).
-- **How does the browser upload?** (a) a signed upload URL from the API, (b) a direct upload with storage RLS insert policies.
-  - Recommended: (a), so the 007 rules and the `documents` row stay on the server, plus bucket limits as a second guard.
-- **Functions region?** Recommended: `fra1`, next to the Supabase project in Frankfurt.
-- **Where do functions live?** (a) `apps/web/api/` in the same Vercel project, (b) a second Vercel project rooted at `services/api`.
-  - Recommended: (a): one domain, no CORS; memory and duration are set per function anyway.
-- **New packages?** Recommended: none at runtime. Functions use web `Request`/`Response`; the Vercel CLI is installed globally by the owner (J2), not added to the repo. `@aws-sdk/*`, `aws-cdk-lib`, `aws-cdk`, `constructs` and `esbuild` go.
+All answered by the owner on 2026-11-19 ("all recommended").
+- **Vercel plan?**
+  - **Decided:** Hobby for the portfolio demo (2 GB memory, 300 s max duration). Upgrade to Pro only if slice 5's 30-page PDF doesn't fit.
+- **Long OCR runs?**
+  - **Decided:** keep 020's page limit (50 pages) and process one batch per call; split a file into page ranges (re-enqueue with an offset) only if slice 5 shows it's needed.
+- **What starts the pipeline?**
+  - **Decided:** `pgmq` + `pg_cron` + `pg_net` (retries and dead letters built in, up to 30 s delay), not a Database Webhook or Vercel Queues.
+- **How does the browser upload?**
+  - **Decided:** a signed upload URL from the API, so the 007 rules and the `documents` row stay on the server, plus bucket limits as a second guard.
+- **Functions region?**
+  - **Decided:** `fra1`, next to the Supabase project in Frankfurt.
+- **Where do functions live?**
+  - **Decided:** `apps/web/api/` in the same Vercel project: one domain, no CORS. Whether `/api/*` is a catch-all file or a rewrite to one function is up to slice 3, whichever Vercel supports for a non-Next project.
+- **New packages?**
+  - **Decided:** none at runtime. Functions use web `Request`/`Response`; the Vercel CLI is installed globally by the owner (J2), not added to the repo. `@aws-sdk/*`, `aws-cdk-lib`, `aws-cdk`, `constructs` and `esbuild` go.
 - **Native `@napi-rs/canvas` on Vercel?** Vercel builds on linux x64, so pnpm installs the matching binary and `add-native-binary.mjs` (arm64 for Lambda) goes. If the binary is missing at runtime, slice 5 reports it before any workaround.
-- **`dev` and `prod`?** Recommended: Vercel Production and Preview both point at `docspread-dev` for the demo; a `prod` Supabase project comes with real customers.
-- **What happens to `infra/`?** Recommended: delete it (git history keeps it) and destroy the stack (J5).
-- **020's open slices?** Recommended: 4, 7 and 8 move here as described in Scope; 020 becomes `done`.
-- **Branch?** `vercel-supabase-022`, stacked on `cloud-setup-020` (020 slices 5 and 6 aren't merged yet). Merge the 020 PR first.
+- **`dev` and `prod`?**
+  - **Decided:** Vercel Production and Preview both point at `docspread-dev` for the demo; a `prod` Supabase project comes with real customers.
+- **How does code reach Vercel before the merge?**
+  - **Decided:** Claude never pushes. After the owner's `vercel link` (J2), Claude deploys with `vercel deploy --prod` from the CLI. Vercel Production is the `docspread-dev` demo; preview URLs sit behind Deployment Protection, so `pg_net` and the smoke scripts use the production URL, and Vault stores that URL. After the merge, Git deploys take over.
+- **Who pushes migrations?**
+  - **Decided:** Claude runs `supabase db push` to `docspread-dev` only (the CLI is linked). The owner runs the Vault statements (J3) because they hold the secret.
+- **Free-plan pausing?**
+  - **Decided:** accepted. Supabase pauses a free project after about a week without activity; the cron job doesn't count, so the owner wakes a paused demo from the dashboard.
+- **What happens to `infra/`?**
+  - **Decided:** delete it (git history keeps it) and destroy the stack (J5). The AWS project stays idle until the free plan ends.
+- **The owner's local `services/api/.env.local`?**
+  - **Decided:** Claude doesn't edit it; slice 6 lists the AWS lines for the owner to delete.
+- **020's open slices?**
+  - **Decided:** 4, 7 and 8 move here as described in Scope; 020 is `done` (2026-11-19).
+- **Branch?**
+  - **Decided:** `vercel-supabase-022`, stacked on `cloud-setup-020` (merged in, not rebased, since the branch is on origin). Merge the 020 PR first.
 
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-11-19 | — | draft | written after the owner asked to drop AWS: Textract is unavailable in the project's region, CloudFront waits for verification, and the free plan blocks GitHub OIDC and caps Lambda memory |
+| 2026-11-19 | — | ready | owner approved every recommendation and the move to `ready`; deploys through `vercel deploy --prod` (production URL for smoke tests and Vault), Hobby limits (300 s, 2 GB), Claude pushes `dev` migrations; 020 closed as `done` |
