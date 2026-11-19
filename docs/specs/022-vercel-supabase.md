@@ -31,7 +31,7 @@ Repo layout after this spec:
 ```
 apps/web/
   api/                  # Vercel Functions, thin wrappers only
-    [...path].ts        # /api/* → services/api router (health, uploads)
+    router.ts           # /api/* (rewrite) → services/api router (uploads)
     pipeline/ocr.ts     # /api/pipeline/ocr
     pipeline/extract.ts # /api/pipeline/extract
   vercel.json           # rewrites, function memory and duration, region
@@ -125,8 +125,8 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 
 ### [ ] 3. API as a Vercel Function
 - **Waits for:** slice 1, slice 2
-- **Build:** `services/api` handlers take a web `Request` and return a `Response` (no Lambda event types). `apps/web/api/[...path].ts` forwards to them. `POST /api/uploads` keeps every 020 rule (JWT via JWKS, company from `team_members`, `documents` row, 007 type and size rules) but returns a Storage signed upload URL for `<company>/<document>/<file>`. New `POST /api/uploads/:id/complete` checks the object exists and the caller owns it, moves the document from `uploaded` to `processing` (conditional, so a second call is refused) and enqueues `ocr`. A migration enables `pgmq`, creates queues `ocr` and `extract`, and adds service-only queue functions (`queue_send`, `queue_read`, `queue_delete`, `queue_archive`; `service_role` only). Env comes from `process.env` only: `readSecretFromSsm` and the `SSM_*` fallbacks go. `smoke-api` and `check-env` move to the new contract.
-- **Files:** `services/api/src/{handler,env,auth,upload-rules}.ts`, `services/api/scripts/{smoke-api,check-env}.ts`, `services/api/.env.example`, `services/api/package.json`, `apps/web/api/[...path].ts`, `apps/web/package.json`, `supabase/migrations/*`, `supabase/tests/*`
+- **Build:** `services/api` handlers take a web `Request` and return a `Response` (no Lambda event types). `apps/web/api/router.ts` (every `/api/*` path without its own file is rewritten to it in `vercel.json`) forwards to them. `POST /api/uploads` keeps every 020 rule (JWT via JWKS, company from `team_members`, `documents` row, 007 type and size rules) but returns a Storage signed upload URL for `<company>/<document>/<file>`. New `POST /api/uploads/:id/complete` checks the object exists and the caller owns it, moves the document from `uploaded` to `processing` (conditional, so a second call is refused) and enqueues `ocr`. A migration enables `pgmq`, creates queues `ocr` and `extract`, and adds service-only queue functions (`queue_send`, `queue_read`, `queue_delete`, `queue_archive`; `service_role` only). Env comes from `process.env` only: `readSecretFromSsm` and the `SSM_*` fallbacks go. `smoke-api` and `check-env` move to the new contract.
+- **Files:** `services/api/src/{handler,env,auth,upload-rules}.ts`, `services/api/scripts/{smoke-api,check-env}.ts`, `services/api/.env.example`, `services/api/package.json`, `apps/web/api/router.ts`, `apps/web/vercel.json`, `supabase/migrations/*`, `supabase/tests/*`
 - **Model:** sonnet
 - **Accept:**
   - [ ] no token or a bad token gets 401; an oversized or disallowed file is refused
