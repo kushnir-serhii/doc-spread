@@ -1,6 +1,6 @@
 # 022 — Off AWS: Vercel and Supabase only
 
-**Status:** ready · **Depends on:** 020 · **Route(s):** — (all routes are served from Vercel)
+**Status:** in-progress · **Depends on:** 020 · **Route(s):** — (all routes are served from Vercel)
 
 ## Goal
 The whole product runs on two platforms, Vercel (web app and backend functions) and Supabase (database, auth, files, queues), with no AWS. Everything 020 delivered keeps working: an upload goes through OCR and Claude into the database. The web app gets a public URL today instead of waiting for CloudFront verification, and the stack drops the free plan's limits (one region, no Textract, 512 MB Lambdas, no GitHub OIDC provider).
@@ -118,8 +118,8 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 - **Files:** `supabase/migrations/*`, `supabase/tests/*`, `supabase/config.toml`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] `supabase db reset` and `supabase test db` pass; `supabase db advisors` reports no security issues
-  - [ ] a test proves a member of company A can't read company B's objects
+  - [x] `supabase db reset` and `supabase test db` pass; `supabase db advisors` reports no security issues
+  - [x] a test proves a member of company A can't read company B's objects
   - [ ] the migration is pushed to `docspread-dev` and `migration list` is in sync
 
 ### [ ] 3. API as a Vercel Function
@@ -201,6 +201,7 @@ All answered by the owner on 2026-11-19 ("all recommended").
   - **Decided:** Claude never pushes. After the owner's `vercel link` (J2), Claude deploys with `vercel deploy --prod` from the CLI. Vercel Production is the `docspread-dev` demo; preview URLs sit behind Deployment Protection, so `pg_net` and the smoke scripts use the production URL, and Vault stores that URL. After the merge, Git deploys take over.
 - **Who pushes migrations?**
   - **Decided:** Claude runs `supabase db push` to `docspread-dev` only (the CLI is linked). The owner runs the Vault statements (J3) because they hold the secret.
+  - **Changed (slice 2):** the push needs the database password, which Claude must not see, so the owner runs `supabase db push` (it prompts for the password) and Claude checks `supabase migration list` afterwards. From slice 7 on, GitHub Actions pushes.
 - **Free-plan pausing?**
   - **Decided:** accepted. Supabase pauses a free project after about a week without activity; the cron job doesn't count, so the owner wakes a paused demo from the dashboard.
 - **What happens to `infra/`?**
@@ -217,3 +218,4 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | --- | --- | --- | --- |
 | 2026-11-19 | — | draft | written after the owner asked to drop AWS: Textract is unavailable in the project's region, CloudFront waits for verification, and the free plan blocks GitHub OIDC and caps Lambda memory |
 | 2026-11-19 | — | ready | owner approved every recommendation and the move to `ready`; deploys through `vercel deploy --prod` (production URL for smoke tests and Vault), Hobby limits (300 s, 2 GB), Claude pushes `dev` migrations; 020 closed as `done` |
+| 2026-11-19 | 2 | 2 of 3 (sonnet) | migration `storage_buckets`: private `documents` (20 MB, pdf/jpeg/png) and `exports` (20 MB); `private.can_read_company_object` (uuid-guarded first segment → `is_company_member`); one SELECT policy, no client writes. `storage_buckets.test.sql` 13 tests; suite 49/49; advisors no issues. Push to `docspread-dev` waits for the owner: the CLI needs the database password (403 on the login role without it). |
