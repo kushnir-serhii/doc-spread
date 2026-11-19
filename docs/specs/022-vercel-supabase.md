@@ -125,23 +125,24 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 
 ### [ ] 3. API as a Vercel Function
 - **Waits for:** slice 1, slice 2
-- **Build:** `services/api` handlers take a web `Request` and return a `Response` (no Lambda event types). `apps/web/api/[...path].ts` forwards to them. `POST /api/uploads` keeps every 020 rule (JWT via JWKS, company from `team_members`, `documents` row, 007 type and size rules) but returns a Storage signed upload URL for `<company>/<document>/<file>`. New `POST /api/uploads/:id/complete` checks the object exists and the caller owns it, sets `uploaded` and enqueues `ocr`. Env comes from `process.env` only: `readSecretFromSsm` and the `SSM_*` fallbacks go. `smoke-api` and `check-env` move to the new contract.
-- **Files:** `services/api/src/{handler,env,auth,upload-rules}.ts`, `services/api/scripts/{smoke-api,check-env}.ts`, `services/api/.env.example`, `services/api/package.json`, `apps/web/api/[...path].ts`
+- **Build:** `services/api` handlers take a web `Request` and return a `Response` (no Lambda event types). `apps/web/api/[...path].ts` forwards to them. `POST /api/uploads` keeps every 020 rule (JWT via JWKS, company from `team_members`, `documents` row, 007 type and size rules) but returns a Storage signed upload URL for `<company>/<document>/<file>`. New `POST /api/uploads/:id/complete` checks the object exists and the caller owns it, moves the document from `uploaded` to `processing` (conditional, so a second call is refused) and enqueues `ocr`. A migration enables `pgmq`, creates queues `ocr` and `extract`, and adds service-only queue functions (`queue_send`, `queue_read`, `queue_delete`, `queue_archive`; `service_role` only). Env comes from `process.env` only: `readSecretFromSsm` and the `SSM_*` fallbacks go. `smoke-api` and `check-env` move to the new contract.
+- **Files:** `services/api/src/{handler,env,auth,upload-rules}.ts`, `services/api/scripts/{smoke-api,check-env}.ts`, `services/api/.env.example`, `services/api/package.json`, `apps/web/api/[...path].ts`, `apps/web/package.json`, `supabase/migrations/*`, `supabase/tests/*`
 - **Model:** sonnet
 - **Accept:**
   - [ ] no token or a bad token gets 401; an oversized or disallowed file is refused
   - [ ] the signed URL writes only that one path; an upload under another company's prefix is refused
   - [ ] `complete` for a missing object or another company's document is refused
   - [ ] `smoke-api` passes against the Vercel production URL; startup with a missing variable names it; the log scan finds no secret
+  - [ ] no client role can read, send to or archive a queue (pgTAP)
 
-### [ ] 4. Queues and the cron trigger
+### [ ] 4. Cron trigger
 - **Waits for:** slice 3, J3
-- **Build:** a migration enabling `pgmq`, `pg_cron` and `pg_net`; queues `ocr` and `extract`; a `private.enqueue_*` function used by the API (secret key only, no client grant); a `pg_cron` job every 30 seconds that, when a queue has visible messages, POSTs to the matching function with the `PIPELINE_SECRET` header read from Vault. The function URL and secret are read from Vault, never stored in a migration. Document the Vault statements for J3 in the slice report.
+- **Build:** a migration enabling `pg_cron` and `pg_net` (the queues come from slice 3); a `pg_cron` job every 30 seconds that, when a queue has visible messages, POSTs to the matching function with the `PIPELINE_SECRET` header read from Vault. The function URL and secret are read from Vault, never stored in a migration. Document the Vault statements for J3 in the slice report.
 - **Files:** `supabase/migrations/*`, `supabase/tests/*`
 - **Model:** sonnet
 - **Accept:**
   - [ ] a message put on `ocr` triggers exactly one call to `/api/pipeline/ocr` within a minute
-  - [ ] no client role can read, send to or archive a queue
+  - [ ] no client role can call the cron job's function or read the Vault secrets
   - [ ] the migration contains no secret or URL; advisors report no security issues
 
 ### [ ] 5. Pipeline on Vercel Functions
@@ -203,6 +204,10 @@ All answered by the owner on 2026-11-19 ("all recommended").
 - **Who pushes migrations?**
   - **Decided:** Claude runs `supabase db push` to `docspread-dev` only (the CLI is linked). The owner runs the Vault statements (J3) because they hold the secret.
   - **Changed (slice 2):** the push needs the database password, which Claude must not see, so the owner runs `supabase db push` (it prompts for the password) and Claude checks `supabase migration list` afterwards. From slice 7 on, GitHub Actions pushes.
+- From slice 3: `complete` needs the `ocr` queue, so the queues move from slice 4 into slice 3.
+  - **Decided (orchestrator, 2026-11-19):** slice 3 creates `pgmq`, the `ocr` and `extract` queues and the `service_role`-only queue functions (in `public`, so supabase-js `rpc()` reaches them); slice 4 keeps `pg_cron`, `pg_net` and Vault.
+- From slice 3: there is no status for "row created, file not uploaded yet", and adding one would change the document lifecycle (012, `lifecycle.ts`).
+  - **Decided (orchestrator, 2026-11-19):** the row is created `uploaded` as in 020; `complete` moves it to `processing` and enqueues `ocr`. A row whose file never arrives stays `uploaded`; cleaning those up belongs to the upload spec (007) when it replaces its mock.
 - **Free-plan pausing?**
   - **Decided:** accepted. Supabase pauses a free project after about a week without activity; the cron job doesn't count, so the owner wakes a paused demo from the dashboard.
 - **What happens to `infra/`?**
