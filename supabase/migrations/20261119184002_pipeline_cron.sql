@@ -37,7 +37,8 @@ begin
         url := base_url || '/api/pipeline/' || q,
         headers := jsonb_build_object('content-type', 'application/json', 'x-pipeline-secret', secret),
         body := '{}'::jsonb,
-        timeout_milliseconds := 10000
+        -- The function works inside the request (maxDuration 300 s), so wait for it.
+        timeout_milliseconds := 310000
       );
     end if;
   end loop;
