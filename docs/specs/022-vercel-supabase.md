@@ -112,7 +112,7 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
   - [ ] `GET /api/health` answers 200 on the Vercel URL and under `vercel dev`
   - [ ] typecheck, lint and build stay green; `pnpm dev` still works without the Vercel CLI
 
-### [ ] 2. Storage buckets and policies
+### [x] 2. Storage buckets and policies
 - **Waits for:** J1
 - **Build:** a migration that creates private Storage buckets `documents` and `exports` with `file_size_limit` 20 MB and the allowed MIME types from 007 (pdf, jpeg, png) on `documents`. Policies on `storage.objects`: a member may read objects under their company's prefix (`<company-id>/...`); no client insert, update or delete (uploads only through signed URLs from the API). pgTAP tests like slice 2 of 020.
 - **Files:** `supabase/migrations/*`, `supabase/tests/*`, `supabase/config.toml`
@@ -120,7 +120,7 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 - **Accept:**
   - [x] `supabase db reset` and `supabase test db` pass; `supabase db advisors` reports no security issues
   - [x] a test proves a member of company A can't read company B's objects
-  - [ ] the migration is pushed to `docspread-dev` and `migration list` is in sync
+  - [x] the migration is pushed to `docspread-dev` and `migration list` is in sync
 
 ### [ ] 3. API as a Vercel Function
 - **Waits for:** slice 1, slice 2
@@ -219,3 +219,4 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | 2026-11-19 | — | draft | written after the owner asked to drop AWS: Textract is unavailable in the project's region, CloudFront waits for verification, and the free plan blocks GitHub OIDC and caps Lambda memory |
 | 2026-11-19 | — | ready | owner approved every recommendation and the move to `ready`; deploys through `vercel deploy --prod` (production URL for smoke tests and Vault), Hobby limits (300 s, 2 GB), Claude pushes `dev` migrations; 020 closed as `done` |
 | 2026-11-19 | 2 | 2 of 3 (sonnet) | migration `storage_buckets`: private `documents` (20 MB, pdf/jpeg/png) and `exports` (20 MB); `private.can_read_company_object` (uuid-guarded first segment → `is_company_member`); one SELECT policy, no client writes. `storage_buckets.test.sql` 13 tests; suite 49/49; advisors no issues. Push to `docspread-dev` waits for the owner: the CLI needs the database password (403 on the login role without it). |
+| 2026-11-19 | 2 | done | owner ran `supabase db push` (the CLI token gets 403 on the login role, so the password goes in with `--password`); the Storage API on `docspread-dev` shows `documents` and `exports` private, 20 MB, MIME list on `documents` only. |
