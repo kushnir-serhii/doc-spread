@@ -1,6 +1,6 @@
 import { loadImage } from '@napi-rs/canvas'
 import { createWorker, type Worker } from 'tesseract.js'
-import { normalizeBox, tokenId, type OcrPage, type Token } from './page-types.ts'
+import { normalizeBox, tokenId, type OcrPage, type Token } from './page-types.js'
 
 // English and Ukrainian. The language data is downloaded at runtime and cached in /tmp for the warm container.
 const LANGUAGES = ['eng', 'ukr']

@@ -1,7 +1,7 @@
 import { createCanvas } from '@napi-rs/canvas'
-import { PermanentError } from './sqs.ts'
-import { recognizeImage } from './ocr-image.ts'
-import { normalizeBox, tokenId, type OcrPage, type Token } from './page-types.ts'
+import { PermanentError } from './queue.js'
+import { recognizeImage } from './ocr-image.js'
+import { normalizeBox, tokenId, type OcrPage, type Token } from './page-types.js'
 
 /** Spec 007 recommendation, revisited with real results: longer files are refused, not half-read. */
 export const MAX_PAGES = 50

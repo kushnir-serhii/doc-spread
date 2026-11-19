@@ -1,4 +1,4 @@
-import type { ColumnDef, FieldDef, ScalarFieldType } from './field-types.ts'
+import type { ColumnDef, FieldDef, ScalarFieldType } from './field-types.js'
 
 type Schema = Record<string, unknown>
 

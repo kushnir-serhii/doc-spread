@@ -1,29 +1,16 @@
-import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
-
-// Moved here from env.ts in 022 slice 3: the pipeline still reads its secrets from SSM until slice 5.
-const readSecretFromSsm = async (parameterName: string): Promise<string> => {
-  const result = await new SSMClient({}).send(new GetParameterCommand({ Name: parameterName, WithDecryption: true }))
-  const value = result.Parameter?.Value
-  if (!value) throw new Error(`SSM parameter ${parameterName} is empty`)
-  return value
-}
-
 export interface PipelineEnv {
   supabaseUrl: string
-  documentsBucket: string
   /** Bypasses row-level security. Never log it. */
   supabaseSecretKey: string
-  /** Only the OCR handler needs it. */
-  extractQueueUrl?: string
-  /** Only the extract handler needs these. */
-  anthropicApiKey?: string
-  modelClassify?: string
-  modelExtract?: string
-  classifyMinConfidence?: number
+  documentsBucket: string
+  /** Never log it. */
+  anthropicApiKey: string
+  modelClassify: string
+  modelExtract: string
+  classifyMinConfidence: number
 }
 
 type Source = Record<string, string | undefined>
-type ReadSecret = (parameterName: string) => Promise<string>
 
 const need = (source: Source, name: string): string => {
   const value = source[name]
@@ -31,34 +18,22 @@ const need = (source: Source, name: string): string => {
   return value
 }
 
-const secret = async (source: Source, readSecret: ReadSecret, plain: string, param: string): Promise<string> => {
-  const direct = source[plain]
-  if (direct) return direct
-  const paramName = source[param]
-  if (!paramName) throw new Error(`Missing env variable ${plain} (or ${param})`)
-  return readSecret(paramName)
-}
-
-/** Config shared by both pipeline handlers. Error messages carry variable names only. */
-export const loadOcrEnv = async (source: Source = process.env, readSecret: ReadSecret = readSecretFromSsm): Promise<PipelineEnv> => ({
-  supabaseUrl: need(source, 'SUPABASE_URL'),
-  documentsBucket: need(source, 'S3_DOCUMENTS_BUCKET'),
-  extractQueueUrl: need(source, 'EXTRACT_QUEUE_URL'),
-  supabaseSecretKey: await secret(source, readSecret, 'SUPABASE_SECRET_KEY', 'SSM_SUPABASE_SECRET_KEY_PARAM'),
-})
-
-export const loadExtractEnv = async (source: Source = process.env, readSecret: ReadSecret = readSecretFromSsm): Promise<PipelineEnv> => {
+/**
+ * Config of both pipeline functions, read from the environment (Vercel env or `.env.local`) on the first request.
+ * `PIPELINE_SECRET` is checked by `pipeline-auth.ts` before this runs. Error messages carry variable names only.
+ */
+export const loadPipelineEnv = (source: Source = process.env): PipelineEnv => {
   const classifyMinConfidence = Number(need(source, 'CLASSIFY_MIN_CONFIDENCE'))
   if (!(classifyMinConfidence >= 0 && classifyMinConfidence <= 1)) {
     throw new Error('Invalid env variable CLASSIFY_MIN_CONFIDENCE: expected a number from 0 to 1')
   }
   return {
     supabaseUrl: need(source, 'SUPABASE_URL'),
-    documentsBucket: need(source, 'S3_DOCUMENTS_BUCKET'),
+    supabaseSecretKey: need(source, 'SUPABASE_SECRET_KEY'),
+    documentsBucket: need(source, 'STORAGE_DOCUMENTS_BUCKET'),
+    anthropicApiKey: need(source, 'ANTHROPIC_API_KEY'),
     modelClassify: need(source, 'ANTHROPIC_MODEL_CLASSIFY'),
     modelExtract: need(source, 'ANTHROPIC_MODEL_EXTRACT'),
     classifyMinConfidence,
-    supabaseSecretKey: await secret(source, readSecret, 'SUPABASE_SECRET_KEY', 'SSM_SUPABASE_SECRET_KEY_PARAM'),
-    anthropicApiKey: await secret(source, readSecret, 'ANTHROPIC_API_KEY', 'SSM_ANTHROPIC_API_KEY_PARAM'),
   }
 }

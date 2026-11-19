@@ -1,22 +1,12 @@
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { createClaudeClient } from './claude.ts'
-import { createAdminClient, failOn, setDocumentError } from './db.ts'
-import { FALLBACK_CURRENCY, mapExtraction, type MapContext } from './extract-map.ts'
-import { buildExtractionSchema, CLASSIFY_SCHEMA, CLASSIFY_SYSTEM, EXTRACT_SYSTEM, planExtractionCalls } from './extract-schema.ts'
-import { parseFieldDefs } from './field-types.ts'
-import type { Token } from './page-types.ts'
-import { loadExtractEnv } from './pipeline-env.ts'
-import { PermanentError, runBatch, type SqsBatchResponse, type SqsEvent, type SqsRecord } from './sqs.ts'
-
-// Top-level await: a missing variable fails the cold start and the error names it.
-const env = await loadExtractEnv()
-const supabase: SupabaseClient = createAdminClient(env.supabaseUrl, env.supabaseSecretKey)
-const s3 = new S3Client({})
-const claude = createClaudeClient(env.anthropicApiKey ?? '')
-const modelClassify = env.modelClassify ?? ''
-const modelExtract = env.modelExtract ?? ''
-const minConfidence = env.classifyMinConfidence ?? 1
+import { createClaudeClient } from './claude.js'
+import { downloadDocument, failOn, setDocumentError } from './db.js'
+import { FALLBACK_CURRENCY, mapExtraction, type MapContext } from './extract-map.js'
+import { buildExtractionSchema, CLASSIFY_SCHEMA, CLASSIFY_SYSTEM, EXTRACT_SYSTEM, planExtractionCalls } from './extract-schema.js'
+import { parseFieldDefs } from './field-types.js'
+import type { Token } from './page-types.js'
+import { servePipeline, type PipelineContext } from './pipeline-http.js'
+import { documentIdOf, PermanentError, type WorkResult } from './queue.js'
 
 /** How much of the first page's text the classifier sees. */
 const CLASSIFY_TEXT_CHARS = 6000
@@ -31,21 +21,8 @@ interface TypeChoice {
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 
-const parseMessage = (record: SqsRecord): { documentId: string; companyId: string } => {
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(record.body)
-  } catch {
-    throw new PermanentError('message is not JSON')
-  }
-  if (!isObject(parsed) || typeof parsed.documentId !== 'string' || typeof parsed.companyId !== 'string') {
-    throw new PermanentError('message has no document')
-  }
-  return { documentId: parsed.documentId, companyId: parsed.companyId }
-}
-
 /** The company's types, each with its latest version. */
-const loadTypes = async (companyId: string): Promise<TypeChoice[]> => {
+const loadTypes = async (supabase: SupabaseClient, companyId: string): Promise<TypeChoice[]> => {
   const { data: types, error } = await supabase.from('document_types').select('id, name, description').eq('company_id', companyId)
   failOn('load types', error)
   const { data: versions, error: versionsError } = await supabase
@@ -64,16 +41,20 @@ const loadTypes = async (companyId: string): Promise<TypeChoice[]> => {
   })
 }
 
-const processDocument = async (documentId: string, companyId: string): Promise<void> => {
+const processDocument = async ({ env, supabase }: PipelineContext, documentId: string): Promise<WorkResult> => {
   const { data: doc, error } = await supabase
     .from('documents')
-    .select('id, file_type, storage_path, status')
+    .select('id, company_id, file_type, storage_path, status')
     .eq('id', documentId)
-    .eq('company_id', companyId)
     .maybeSingle()
   failOn('document lookup', error)
-  if (!doc) return
-  if (doc.status === 'error') return // a failed document stays failed; a redelivered message must not revive it
+  if (!doc) return 'orphan'
+  if (doc.status === 'error') return 'done' // a failed document stays failed; a redelivered message must not revive it
+  const companyId = String(doc.company_id)
+  const claude = createClaudeClient(env.anthropicApiKey)
+  const modelClassify = env.modelClassify
+  const modelExtract = env.modelExtract
+  const minConfidence = env.classifyMinConfidence
 
   const { data: pageRows, error: pagesError } = await supabase
     .from('document_pages')
@@ -84,14 +65,15 @@ const processDocument = async (documentId: string, companyId: string): Promise<v
   const pages = (pageRows ?? []).map((row) => ({ index: Number(row.page_index), tokens: Array.isArray(row.tokens) ? (row.tokens as Token[]) : [] })) // our own OCR output
   const firstPageText = (pages[0]?.tokens ?? []).map((token) => token.text).join(' ').slice(0, CLASSIFY_TEXT_CHARS)
 
-  const types = await loadTypes(companyId)
-  const unclassified = async (confidence: number | null): Promise<void> => {
+  const types = await loadTypes(supabase, companyId)
+  const unclassified = async (confidence: number | null): Promise<WorkResult> => {
     const { error: updateError } = await supabase
       .from('documents')
       .update({ status: 'unclassified', classification_confidence: confidence, type_id: null, type_version: null })
       .eq('id', documentId)
     failOn('set unclassified', updateError)
     console.log(JSON.stringify({ event: 'extract_done', documentId, outcome: 'unclassified' }))
+    return 'done'
   }
   if (types.length === 0 || firstPageText.trim() === '') return unclassified(null)
 
@@ -125,10 +107,8 @@ const processDocument = async (documentId: string, companyId: string): Promise<v
       lines.push(`${token.id}|${page.index}|${token.text}`)
     }
   }
-  const object = await s3.send(new GetObjectCommand({ Bucket: env.documentsBucket, Key: String(doc.storage_path) }))
-  if (!object.Body) throw new PermanentError('empty object')
-  const fileKind = doc.file_type === 'png' ? 'png' : doc.file_type === 'jpg' ? 'jpg' : 'pdf'
-  const base64 = Buffer.from(await object.Body.transformToByteArray()).toString('base64')
+    const fileKind = doc.file_type === 'png' ? 'png' : doc.file_type === 'jpg' ? 'jpg' : 'pdf'
+  const base64 = (await downloadDocument(supabase, env.documentsBucket, String(doc.storage_path))).toString('base64')
 
   const tokenList = lines.join('\n')
   const answers: Record<string, unknown> = {}
@@ -146,7 +126,7 @@ const processDocument = async (documentId: string, companyId: string): Promise<v
     if (extraction.refused) {
       await setDocumentError(supabase, documentId, 'refused')
       console.warn(JSON.stringify({ event: 'extract_refused', documentId }))
-      return
+      return 'done'
     }
     if (isObject(extraction.answer)) Object.assign(answers, extraction.answer)
   }
@@ -180,24 +160,23 @@ const processDocument = async (documentId: string, companyId: string): Promise<v
       totalCostUsd: Math.round((classification.costUsd + extractionCost) * 1e6) / 1e6,
     }),
   )
+  return 'done'
 }
 
-export const handler = async (event: SqsEvent): Promise<SqsBatchResponse> =>
-  runBatch(
-    event,
-    async (record) => {
-      const { documentId, companyId } = parseMessage(record)
+/** POST /api/pipeline/extract: drains the `extract` queue (see apps/web/api/pipeline/extract.ts). */
+export const handleExtract = (request: Request): Promise<Response> =>
+  servePipeline(request, 'extract', {
+    work: async (ctx, message) => {
+      const documentId = documentIdOf(message.message)
       try {
-        await processDocument(documentId, companyId)
+        return await processDocument(ctx, documentId)
       } catch (failure) {
         if (!(failure instanceof PermanentError)) throw failure
         // The document cannot be extracted (bad request, cut-off or invalid answer): mark it and consume the message.
-        await setDocumentError(supabase, documentId, failure.message)
+        await setDocumentError(ctx.supabase, documentId, failure.message)
         console.warn(JSON.stringify({ event: 'extract_failed_permanently', documentId, reason: failure.message }))
+        return 'done'
       }
     },
-    // Last receive before the dead-letter queue: show the failure on the document.
-    async (record) => {
-      await setDocumentError(supabase, parseMessage(record).documentId, 'processing failed')
-    },
-  )
+    onGiveUp: ({ supabase }, message) => setDocumentError(supabase, documentIdOf(message.message), 'processing failed'),
+  })

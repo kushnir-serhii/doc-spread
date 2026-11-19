@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { PermanentError } from './sqs.ts'
+import { PermanentError } from './queue.js'
 
 /** USD per million tokens. The one place prices live; update it when the models or their prices change. */
 export const PRICES_PER_MILLION: Record<string, { input: number; output: number }> = {
