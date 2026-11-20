@@ -1,12 +1,21 @@
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { USE_MOCKS } from '@/lib/env'
 import {
-  createDocumentType,
-  createDocumentTypes,
-  getDocumentType,
-  listDocumentTypes,
+  createDocumentType as mockCreateDocumentType,
+  createDocumentTypes as mockCreateDocumentTypes,
+  getDocumentType as mockGetDocumentType,
+  listDocumentTypes as mockListDocumentTypes,
   listTemplates,
-  updateDocumentType,
+  updateDocumentType as mockUpdateDocumentType,
 } from '@/lib/mock'
+import type { DocumentTemplate } from '@/lib/mock'
+import {
+  createDocumentType as realCreateDocumentType,
+  createDocumentTypes as realCreateDocumentTypes,
+  getDocumentType as realGetDocumentType,
+  listDocumentTypes as realListDocumentTypes,
+  updateDocumentType as realUpdateDocumentType,
+} from '@/lib/real/document-types'
 import { groupKeys } from './groups'
 import { planKeys } from './plan'
 import type { CreateDocumentTypeInput, UpdateDocumentTypeInput } from '@/lib/mock/types'
@@ -29,20 +38,20 @@ export const templateKeys = {
 export const useDocumentTypes = () =>
   useQuery({
     queryKey: documentTypeKeys.list(),
-    queryFn: listDocumentTypes,
+    queryFn: USE_MOCKS ? mockListDocumentTypes : realListDocumentTypes,
   })
 
 /** null id (e.g. an unclassified document) skips the request */
 export const useDocumentType = (id: string | null, version?: number) =>
   useQuery({
     queryKey: documentTypeKeys.detail(id ?? '', version),
-    queryFn: id === null ? skipToken : () => getDocumentType(id, version),
+    queryFn: id === null ? skipToken : () => (USE_MOCKS ? mockGetDocumentType(id, version) : realGetDocumentType(id, version)),
   })
 
 export const useCreateDocumentType = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: CreateDocumentTypeInput) => createDocumentType(input),
+    mutationFn: (input: CreateDocumentTypeInput) => (USE_MOCKS ? mockCreateDocumentType : realCreateDocumentType)(input),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),
@@ -56,7 +65,7 @@ export const useCreateDocumentType = () => {
 export const useCreateDocumentTypes = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (inputs: CreateDocumentTypeInput[]) => createDocumentTypes(inputs),
+    mutationFn: (inputs: CreateDocumentTypeInput[]) => (USE_MOCKS ? mockCreateDocumentTypes : realCreateDocumentTypes)(inputs),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),
@@ -70,7 +79,7 @@ export const useUpdateDocumentType = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: UpdateDocumentTypeInput }) =>
-      updateDocumentType(id, patch),
+      (USE_MOCKS ? mockUpdateDocumentType : realUpdateDocumentType)(id, patch),
     onSuccess: (_data, { id }) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),
@@ -83,8 +92,11 @@ export const useUpdateDocumentType = () => {
   })
 }
 
+/** Templates have no backend yet: with mocks off the list is empty. */
+const noTemplates = async (): Promise<DocumentTemplate[]> => []
+
 export const useTemplates = () =>
   useQuery({
     queryKey: templateKeys.list(),
-    queryFn: listTemplates,
+    queryFn: USE_MOCKS ? listTemplates : noTemplates,
   })

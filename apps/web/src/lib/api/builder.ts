@@ -1,4 +1,6 @@
 import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
+import { USE_MOCKS } from '@/lib/env'
+import { notAvailableYet } from '@/lib/real/not-available'
 import { addFieldExample, proposeFields, suggestField, suggestTable, testExtract } from '@/lib/mock'
 import type { FieldAction, FieldDef, FieldExample, SuggestFieldInput, SuggestTableInput, TestExtractInput } from '@/lib/mock/types'
 import { getAllComputedColumnIds, getComputedFieldIds } from '@/lib/fields/computed-fields'
@@ -27,30 +29,48 @@ export const builderKeys = {
     ] as const,
 }
 
+/** The AI builder has no backend yet: with mocks off its calls fail with "not available yet" (the screens that use them are disabled). */
+const AI_BUILDER = 'The AI type builder'
+const requireAiBuilder = (): void => {
+  if (!USE_MOCKS) throw notAvailableYet(AI_BUILDER)
+}
+
 /** proposals for one document never change, so they are fetched once */
 export const useProposeFields = (documentId: string) =>
   useQuery({
     queryKey: builderKeys.proposals(documentId),
-    queryFn: () => proposeFields(documentId),
+    queryFn: () => {
+      requireAiBuilder()
+      return proposeFields(documentId)
+    },
     staleTime: Infinity,
   })
 
 /** one call per pointed-at selection; saves nothing, so there is nothing to invalidate */
 export const useSuggestField = () =>
   useMutation({
-    mutationFn: (input: SuggestFieldInput) => suggestField(input),
+    mutationFn: (input: SuggestFieldInput) => {
+      requireAiBuilder()
+      return suggestField(input)
+    },
   })
 
 /** one call per drawn rectangle; saves nothing, so there is nothing to invalidate */
 export const useSuggestTable = () =>
   useMutation({
-    mutationFn: (input: SuggestTableInput) => suggestTable(input),
+    mutationFn: (input: SuggestTableInput) => {
+      requireAiBuilder()
+      return suggestTable(input)
+    },
   })
 
 /** saves nothing, so there is nothing to invalidate */
 export const useTestExtract = () =>
   useMutation({
-    mutationFn: (input: TestExtractInput) => testExtract(input),
+    mutationFn: (input: TestExtractInput) => {
+      requireAiBuilder()
+      return testExtract(input)
+    },
   })
 
 /**
@@ -87,7 +107,10 @@ export const useAddFieldExample = () => {
       typeId: string
       fieldId: string
       example: FieldExample
-    }) => addFieldExample(typeId, fieldId, example),
+    }) => {
+      requireAiBuilder()
+      return addFieldExample(typeId, fieldId, example)
+    },
     onSuccess: (_data, { typeId }) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: documentTypeKeys.lists() }),

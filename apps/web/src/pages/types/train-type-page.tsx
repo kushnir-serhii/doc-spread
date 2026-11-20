@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useLocation, useParams } from 'react-router'
+import { NotAvailableYet } from '@/components/layout/not-available-yet'
 import { PageHeader } from '@/components/layout/page-header'
 import { readSavedNotice } from '@/features/document-types/saved-notice'
 import { SavedTypeBuilderSkeleton } from '@/features/document-types/saved-type-builder-skeleton'
@@ -10,6 +11,7 @@ import { draftFromType } from '@/features/document-types/type-draft'
 import { TypeNotFound } from '@/features/document-types/type-not-found'
 import { TypesError } from '@/features/document-types/types-error'
 import { useDocuments, useDocumentType } from '@/lib/api'
+import { USE_MOCKS } from '@/lib/env'
 
 interface Saved {
   typeId: string
@@ -17,7 +19,7 @@ interface Saved {
   samples: string[]
 }
 
-const TrainTypePage = () => {
+const TrainTypeWorkspace = () => {
   const { typeId } = useParams()
   const location = useLocation()
   const { data, isPending, isError, refetch } = useDocumentType(typeId ?? null)
@@ -53,6 +55,19 @@ const TrainTypePage = () => {
         onSaved={(notice, samples) => setSaved({ typeId, notice, samples })}
       />
     </>
+  )
+}
+
+const TrainTypePage = () => {
+  const { typeId } = useParams()
+  if (USE_MOCKS) return <TrainTypeWorkspace />
+  return (
+    <NotAvailableYet
+      title="Training with samples is not available yet"
+      description="Testing fields on sample documents needs the AI type builder, which isn't connected yet."
+      backTo={typeId ? `/types/${typeId}` : '/types'}
+      backLabel="Back to the type"
+    />
   )
 }
 

@@ -1,5 +1,6 @@
 import { ChevronDown, Plus } from 'lucide-react'
 import { Link } from 'react-router'
+import { USE_MOCKS } from '@/lib/env'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,17 +20,27 @@ export const NewTypeMenu = () => (
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="w-64">
-      {NEW_TYPE_OPTIONS.map(({ id, label, hint, to, icon: Icon }) => (
-        <DropdownMenuItem key={id} asChild className="min-h-touch md:min-h-8">
-          <Link to={to}>
+      {NEW_TYPE_OPTIONS.map(({ id, label, hint, to, icon: Icon, needsAi }) =>
+        needsAi && !USE_MOCKS ? (
+          <DropdownMenuItem key={id} disabled className="min-h-touch md:min-h-8">
             <Icon aria-hidden />
             <span className="flex min-w-0 flex-col">
               <span>{label}</span>
-              <span className="text-xs text-muted-foreground">{hint}</span>
+              <span className="text-xs">Not available yet</span>
             </span>
-          </Link>
-        </DropdownMenuItem>
-      ))}
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem key={id} asChild className="min-h-touch md:min-h-8">
+            <Link to={to}>
+              <Icon aria-hidden />
+              <span className="flex min-w-0 flex-col">
+                <span>{label}</span>
+                <span className="text-xs text-muted-foreground">{hint}</span>
+              </span>
+            </Link>
+          </DropdownMenuItem>
+        ),
+      )}
     </DropdownMenuContent>
   </DropdownMenu>
 )

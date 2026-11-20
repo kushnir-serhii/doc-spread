@@ -4,6 +4,7 @@ import { AuthError, CURRENCIES } from '@/lib/mock/types'
 import type { Company, CurrencyCode, Recipient } from '@/lib/mock/types'
 import { ApiError, apiFetch } from './api-fetch'
 import { getSupabase } from './client'
+import { getCompanyId } from './company-id'
 
 const isRateLimited = (status: number | undefined, code: string | undefined): boolean =>
   status === 429 || code === 'over_request_rate_limit' || code === 'over_email_send_rate_limit'
@@ -55,18 +56,10 @@ const toCurrency = (value: unknown): CurrencyCode => CURRENCIES.find((code) => c
 
 const toRecipients = (value: unknown): Recipient[] => (Array.isArray(value) ? (value as Recipient[]) : []) // jsonb written by the app in this shape
 
-/** The caller's company: the first active membership by creation order (the same rule as the API). */
+/** The caller's company (see `getCompanyId`). */
 export const getCompany = async (): Promise<Company> => {
   const supabase = getSupabase()
-  const { data: memberships, error } = await supabase
-    .from('team_members')
-    .select('company_id')
-    .eq('status', 'active')
-    .order('created_at', { ascending: true })
-    .limit(1)
-  if (error) throw new Error(`membership lookup failed: ${error.message}`)
-  const companyId = memberships[0]?.company_id
-  if (typeof companyId !== 'string') throw new Error('The user belongs to no company')
+  const companyId = await getCompanyId()
   const { data: row, error: companyError } = await supabase
     .from('companies')
     .select('name, tax_id, recipients, default_currency, locale')

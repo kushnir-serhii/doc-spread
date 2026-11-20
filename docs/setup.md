@@ -59,9 +59,21 @@ On Windows, turn on Developer Mode first (Settings → System → For developers
 ```sh
 vercel link         # once, from the repo root or apps/web; pick the existing project `doc-spread`
 cd apps/web
-# The functions need the server variables, which live in services/api/.env.local (vercel dev doesn't read it):
-set -a && . ../../services/api/.env.local && set +a && vercel dev --listen 3210
+# The functions need the server variables, which live in services/api/.env.local (vercel dev doesn't read it).
+# For the real backend also set VITE_USE_MOCKS=false and VITE_API_BASE_URL=/api (shell variables win over apps/web/.env.local):
+set -a && . ../../services/api/.env.local && set +a
+MSYS_NO_PATHCONV=1 VITE_USE_MOCKS=false VITE_API_BASE_URL=/api vercel dev --listen 3210
 ```
+
+In Git Bash, always put `MSYS_NO_PATHCONV=1` in front: without it Git Bash rewrites `VITE_API_BASE_URL=/api` into a Windows path (`C:/Program Files/Git/api`) and every API call fails. In PowerShell no workaround is needed:
+
+```powershell
+Get-Content ....servicesapi.env.local | ForEach-Object { if ($_ -match '^s*([A-Z0-9_]+)=(.*)$') { [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2].Trim('"'), 'Process') } }
+$env:VITE_USE_MOCKS='false'; $env:VITE_API_BASE_URL='/api'
+vercel dev --listen 3210
+```
+
+`apps/web/vercel.json` rewrites every path to `index.html` except `/api/`, Vite's dev paths (`/@vite`, `/@fs`, `/src/`, `/node_modules/`) and anything with a file extension, so deep links such as `/types/<id>` work and Vite's modules load under `vercel dev`.
 
 Web app and `/api/*` are then on http://localhost:3210, the same routes as production. Check it with the API smoke test over HTTP:
 
