@@ -1,3 +1,5 @@
+import type { GlossaryKey } from './glossary'
+
 export const DIAGRAM_IDS = ['structure', 'domain', 'screens', 'lifecycle', 'pipeline', 'deployment'] as const
 
 export type DiagramId = (typeof DIAGRAM_IDS)[number]
@@ -15,6 +17,8 @@ export interface DiagramDef {
   sources: string[]
   /** Mermaid definition. */
   code: string
+  /** Mermaid node id to glossary entry; every node in code has one. */
+  items: Record<string, GlossaryKey>
   /** Set while the diagram shows something not built yet; `spec` is the spec number that builds it. */
   planned?: { spec: string }
 }

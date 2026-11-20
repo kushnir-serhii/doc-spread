@@ -413,6 +413,18 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+  /* Architecture diagrams: a node with a glossary entry is a button; focus draws on its own shapes
+     (an outline on an SVG group is not drawn by every browser). */
+  [data-diagram-item] {
+    cursor: pointer;
+  }
+  [data-diagram-item]:focus-visible {
+    outline: none;
+  }
+  [data-diagram-item]:focus-visible :is(rect, path, polygon, circle, ellipse) {
+    stroke: var(--ring) !important;
+    stroke-width: 3px !important;
+  }
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

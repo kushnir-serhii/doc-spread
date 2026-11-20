@@ -76,16 +76,16 @@ No secret, account id, project ref or key appears in a diagram or a glossary ent
   - [x] fullscreen opens and closes (button and Esc) and returns focus to the Fullscreen button
   - [x] the library is absent from the main chunk; build output compared before and after
 
-### [ ] 3. Item tooltips and the glossary
+### [x] 3. Item tooltips and the glossary
 - **Build:** `glossary.ts` and `items` on `DiagramDef`, as in **Data**. After Mermaid renders, a resolver per diagram type finds each node in the SVG by its Mermaid id (flowchart and state `g.node`, class `g.node`, sequence actor boxes), makes it focusable (`tabindex="0"`, `role="button"`, `aria-label` = entry title) and attaches handlers. The tooltip is a Radix `Popover` (from `radix-ui`, already installed; see **Open questions**) anchored to the node with a virtual anchor: hover opens after 300 ms and closes on leave, click or tap pins it open, Enter/Space opens it from the keyboard, Esc or a click outside closes it. Content: title, provider badge, "What it is" (`summary`), "In DocSpread" (`role`), `where` paths in mono, and "Docs ↗" (`docsUrl`, opens in a new tab with `rel="noopener noreferrer"`). It follows the node while zooming and panning, or closes when the node scrolls out of view. Under the diagram, a collapsed "Items in this diagram" `details` lists the same entries grouped by provider. In dev, a node without an entry, or an entry whose node isn't found, logs `console.warn` with the diagram and node id. Write glossary entries and `items` for the six existing diagrams.
 - **Files:** `src/features/architecture/diagrams/{glossary,diagram-def,index,structure,domain,screens,lifecycle,pipeline,deployment}.ts`, new `src/features/architecture/{diagram-items.ts,node-tooltip.tsx,diagram-items-list.tsx}`, `mermaid-diagram.tsx`, `diagram-panel.tsx`
 - **Model:** sonnet (designer)
 - **Accept:**
-  - [ ] every node of the six diagrams opens a tooltip; no `console.warn` from the resolver on any tab
-  - [ ] it works by hover, tap (375px) and keyboard (Tab to a node, Enter, Esc); focus is visible on the SVG node
-  - [ ] the tooltip stays inside the viewport at 375px and reads correctly in light and dark (AA contrast)
-  - [ ] it works at any zoom level from slice 2
-  - [ ] "Items in this diagram" lists every entry with the same text
+  - [x] every node of the six diagrams opens a tooltip; no `console.warn` from the resolver on any tab
+  - [x] it works by hover, tap (375px) and keyboard (Tab to a node, Enter, Esc); focus is visible on the SVG node
+  - [x] the tooltip stays inside the viewport at 375px and reads correctly in light and dark (AA contrast)
+  - [x] it works at any zoom level from slice 2
+  - [x] "Items in this diagram" lists every entry with the same text
 
 ### [ ] 4. System context and Delivery (GitHub)
 - **Build:** write diagrams 1 and 10 with their `items` and glossary entries (Vercel project, Vercel Functions, preview vs production deployment, Vercel Git integration, GitHub repository, pull request, GitHub Actions `migrate.yml`, GitHub environment `dev`, Supabase CLI, `docspread-dev`, Anthropic Claude API, …). Fix the Deployment diagram's GitHub nodes (Actions exists, migrations on merge to `main` when `supabase/migrations/**` changes). `context` becomes the default tab.
@@ -137,3 +137,4 @@ None.
 | 2026-11-20 | — | ready | Owner decisions: Radix Popover, react-zoom-pan-pinch, default tab System context, slices 1–5 now and slice 6 after 023. Slices renumbered: conventions rule is 5, the two flows are 6. |
 | 2026-11-20 | 1 | done (sonnet) | `/design` and `/architecture` routes and `DEV_NAV` behind `import.meta.env.DEV`; Developer group hidden when empty; `CLAUDE.md` updated. Replaces 021's "visible in every build". Production build: 79 assets (was 179), no Mermaid/architecture/design chunk, main chunk 339.34 kB (was 436.87). `pnpm preview` not-found checked from the built bundle, not in a browser. UI check `architecture` 4/4. |
 | 2026-11-20 | 2 | done (sonnet, designer) | `react-zoom-pan-pinch` ^4.4.0 (only in the dev-only chunk; main chunk unchanged at 339.34 kB). `diagram-viewport.tsx`, `diagram-toolbar.tsx`: Zoom in/out, Fit, 100%, Fullscreen (full-viewport Dialog, focus returns), `+`/`-`/`0`, live zoom readout; wrapper is now `role="group"` with `aria-roledescription="diagram"`. Fit covers the whole diagram (width-only cut off the bottom); Structure is 2370 px wide, fitted at 32% (1280) and 14% (375). UI check 12/12; screenshots reviewed. Not checked: touch pinch, trackpad pinch, mouse-drag pan. Note: in fullscreen the SVG is in the DOM twice (same Mermaid id). |
+| 2026-11-20 | 3 | done (sonnet, designer) | `glossary.ts` (89 entries), `items` on all six diagrams (structure 21, domain 19, screens 19, lifecycle 8, pipeline 8 participants, deployment 14); Mermaid code unchanged. `diagram-items.ts` resolves nodes inside its own container (fullscreen duplicates the SVG), makes them focusable buttons; `node-tooltip.tsx` = Radix Popover with a virtual anchor (hover 300 ms, tap/click pins, Enter/Space, Esc returns focus, no open after a pan drag, works in fullscreen); `diagram-items-list.tsx` lists entries by provider. All 66 `where` paths exist; no secrets. UI check 24/24, no resolver warnings on any tab. Not checked: AA contrast measured (judged visually), screen reader, popover following during pinch. Clusters and `[*]` markers have no entries. |

@@ -1,3 +1,5 @@
+import type { GlossaryKey } from './glossary'
+
 /** State diagram: every value of DOCUMENT_STATUSES and its transitions (src/lib/mock/types.ts, api.ts). */
 export const LIFECYCLE_DIAGRAM = `stateDiagram-v2
   direction TB
@@ -27,3 +29,15 @@ export const LIFECYCLE_DIAGRAM = `stateDiagram-v2
   error --> processing : user assigns a type (reassignDocumentType)
   exported --> [*]
 `
+
+/** Mermaid node id → glossary entry. */
+export const LIFECYCLE_ITEMS: Record<string, GlossaryKey> = {
+  uploaded: 'statusUploaded',
+  processing: 'statusProcessing',
+  unclassified: 'statusUnclassified',
+  needs_review: 'statusNeedsReview',
+  approved: 'statusApproved',
+  exported: 'statusExported',
+  rejected: 'statusRejected',
+  error: 'statusError',
+}

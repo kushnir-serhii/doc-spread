@@ -1,3 +1,5 @@
+import type { GlossaryKey } from './glossary'
+
 /** Deployment diagram: what runs where, from the Architecture table of spec 022. */
 export const DEPLOYMENT_DIAGRAM = `flowchart LR
   subgraph user["User device"]
@@ -48,3 +50,21 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
   repo --> actions
   actions -->|"migrations"| pg
 `
+
+/** Mermaid node id → glossary entry. */
+export const DEPLOYMENT_ITEMS: Record<string, GlossaryKey> = {
+  browser: 'browserApp',
+  spa: 'vercelStaticSpa',
+  fns: 'vercelFunctions',
+  pg: 'supabasePostgres',
+  auth: 'supabaseAuth',
+  docs: 'storageDocuments',
+  exports: 'storageExports',
+  pgmq: 'pgmq',
+  cron: 'pgCron',
+  net: 'pgNet',
+  vault: 'supabaseVault',
+  claude: 'claudeApi',
+  repo: 'githubRepo',
+  actions: 'githubActionsMigrate',
+}

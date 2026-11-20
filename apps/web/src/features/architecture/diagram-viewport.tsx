@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { DiagramToolbar } from '@/features/architecture/diagram-toolbar'
+import type { GlossaryKey } from '@/features/architecture/diagrams/glossary'
+import { NodeTooltips } from '@/features/architecture/node-tooltip'
 import { cn } from '@/lib/utils'
 
 const MIN_ZOOM = 0.25
@@ -18,11 +20,13 @@ interface DiagramViewportProps {
   svg: string
   label: string
   description: string
+  /** Mermaid node id → glossary entry. */
+  items: Record<string, GlossaryKey>
   /** True inside the fullscreen dialog: no Fullscreen button, the viewport fills the space. */
   inDialog?: boolean
 }
 
-export const DiagramViewport = ({ svg, label, description, inDialog = false }: DiagramViewportProps) => {
+export const DiagramViewport = ({ svg, label, description, items, inDialog = false }: DiagramViewportProps) => {
   const transformRef = useRef<ReactZoomPanPinchRef>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const [zoom, setZoom] = useState(1)
@@ -79,7 +83,9 @@ export const DiagramViewport = ({ svg, label, description, inDialog = false }: D
         onZoomOut={() => void transformRef.current?.zoomOut(ZOOM_STEP)}
         onFit={fit}
         onActualSize={() => place('actual')}
-        fullscreen={inDialog ? undefined : <FullscreenControl svg={svg} label={label} description={description} />}
+        fullscreen={
+          inDialog ? undefined : <FullscreenControl svg={svg} label={label} description={description} items={items} />
+        }
       />
       <div
         ref={viewportRef}
@@ -108,12 +114,13 @@ export const DiagramViewport = ({ svg, label, description, inDialog = false }: D
             <div dangerouslySetInnerHTML={{ __html: svg }} />
           </TransformComponent>
         </TransformWrapper>
+        <NodeTooltips containerRef={viewportRef} svg={svg} items={items} label={label} />
       </div>
     </div>
   )
 }
 
-const FullscreenControl = ({ svg, label, description }: Omit<DiagramViewportProps, 'inDialog'>) => {
+const FullscreenControl = ({ svg, label, description, items }: Omit<DiagramViewportProps, 'inDialog'>) => {
   const contentRef = useRef<HTMLDivElement>(null)
   return (
     <Dialog>
@@ -138,7 +145,7 @@ const FullscreenControl = ({ svg, label, description }: Omit<DiagramViewportProp
       >
         <DialogTitle className="pr-10">{label}</DialogTitle>
         <DialogDescription className="sr-only">{description}</DialogDescription>
-        <DiagramViewport svg={svg} label={label} description={description} inDialog />
+        <DiagramViewport svg={svg} label={label} description={description} items={items} inDialog />
       </DialogContent>
     </Dialog>
   )

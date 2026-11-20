@@ -1,3 +1,5 @@
+import type { GlossaryKey } from './glossary'
+
 /** Class diagram: domain types of the app with key attributes and multiplicities (src/lib/mock/types.ts). */
 export const DOMAIN_DIAGRAM = `classDiagram
   direction TB
@@ -135,3 +137,26 @@ export const DOMAIN_DIAGRAM = `classDiagram
   ExportJob "*" --> "*" Document : documentIds
   ExportMapping "0..1" --> "1" DocumentType : typeId
 `
+
+/** Mermaid node id → glossary entry. */
+export const DOMAIN_ITEMS: Record<string, GlossaryKey> = {
+  Company: 'typeCompany',
+  TeamMember: 'typeTeamMember',
+  Plan: 'typePlan',
+  DocumentType: 'typeDocumentType',
+  FieldDef: 'typeFieldDef',
+  ColumnDef: 'typeColumnDef',
+  FieldAction: 'typeFieldAction',
+  CheckAction: 'typeCheckAction',
+  ComputeAction: 'typeComputeAction',
+  RowCheckAction: 'typeRowCheckAction',
+  RowComputeAction: 'typeRowComputeAction',
+  Document: 'typeDocument',
+  DocumentPage: 'typeDocumentPage',
+  Token: 'typeToken',
+  FieldValue: 'typeFieldValue',
+  ExtractedValue: 'typeExtractedValue',
+  TableValue: 'typeTableValue',
+  ExportJob: 'typeExportJob',
+  ExportMapping: 'typeExportMapping',
+}

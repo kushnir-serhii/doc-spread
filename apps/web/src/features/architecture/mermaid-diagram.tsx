@@ -1,15 +1,17 @@
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DiagramViewport } from '@/features/architecture/diagram-viewport'
+import type { GlossaryKey } from '@/features/architecture/diagrams/glossary'
 import { useMermaid } from '@/features/architecture/use-mermaid'
 
 interface MermaidDiagramProps {
   code: string
   label: string
   description: string
+  items: Record<string, GlossaryKey>
 }
 
-export const MermaidDiagram = ({ code, label, description }: MermaidDiagramProps) => {
+export const MermaidDiagram = ({ code, label, description, items }: MermaidDiagramProps) => {
   const { state, retry } = useMermaid(code)
 
   if (state.status === 'loading') {
@@ -31,5 +33,5 @@ export const MermaidDiagram = ({ code, label, description }: MermaidDiagramProps
     )
   }
 
-  return <DiagramViewport svg={state.svg} label={label} description={description} />
+  return <DiagramViewport svg={state.svg} label={label} description={description} items={items} />
 }
