@@ -1,13 +1,14 @@
 # 023 — First real flow: sign in → type → upload → AI → review → spreadsheet
 
-**Status:** draft · **Depends on:** 022 · **Route(s):** `/sign-in`, `/types`, `/types/new`, `/types/:typeId`, `/upload`, `/inbox`, `/documents/:documentId`, `/export`
+**Status:** ready · **Depends on:** 022 · **Route(s):** `/sign-up`, `/sign-in`, `/types`, `/types/new`, `/types/:typeId`, `/upload`, `/inbox`, `/documents/:documentId`, `/export`
 
 ## Goal
-With `VITE_USE_MOCKS=false` the owner signs in, creates a document type with the fields they need, uploads a real file, watches OCR and Claude fill the fields, reviews and approves the values, and downloads a spreadsheet of the approved documents — all against `docspread-dev`. With mocks on (the public demo) nothing changes. This is one thin path through the real backend; the other screens follow in later specs.
+With `VITE_USE_MOCKS=false` a user signs up with a new company (or signs in), creates a document type with the fields they need, uploads a real file, watches OCR and Claude fill the fields, reviews and approves the values, and downloads a spreadsheet of the approved documents — all against `docspread-dev`. With mocks on (the public demo) nothing changes. This is one thin path through the real backend; the other screens follow in later specs.
 
 ## Scope
 - In:
   - A real data layer next to the mock one: `src/lib/real/*` with the same function signatures as the `@/lib/mock` functions the path needs; every hook in `src/lib/api/*` on the path picks mock or real by `USE_MOCKS`. Components don't change.
+  - Simple sign-up: company name + email + password. A new API route refuses a company name that already exists (case and spaces ignored) and creates nothing; otherwise it creates the user with the email already confirmed (no email service), the company (currency USD) and the owner membership. The browser then signs in.
   - Supabase Auth in the browser: sign in, sign out, session restore, guarded app routes, the caller's company (first active membership, as the API does).
   - Document types: list, read, create, save a new version from the builder (manual fields; versions stay locked, 020).
   - Upload through `/api/uploads` → Storage → `complete`; Inbox and the document page read real rows and poll while anything is `uploaded` or `processing`.
@@ -15,11 +16,11 @@ With `VITE_USE_MOCKS=false` the owner signs in, creates a document type with the
   - Export: a new API route that builds a spreadsheet of approved documents of one type from the type's export mapping, stores it in the `exports` bucket, marks the documents `exported`, records an `export_jobs` row and returns a signed download URL.
   - With mocks off, screens and actions that have no backend yet show a clear "not available yet" state instead of mock data.
   - Local run: `apps/web/.env.local` with `VITE_USE_MOCKS=false` + `vercel dev` (022).
-- Out (later specs): sign-up, password reset and creating a company (the demo login and Demo Company are used); AI features of the type builder (propose fields, suggest table, test extract, type from a sample, field examples); groups; team, plan, settings, templates; reassign type; realtime (polling is enough); email delivery and PDF bundles; production with mocks off (the public demo stays on mocks).
+- Out (later specs): password reset, invites and any email (no email service yet); full name and onboarding steps beyond the company name; AI features of the type builder (propose fields, suggest table, test extract, type from a sample, field examples); groups; team, plan, settings, templates; reassign type; realtime (polling is enough); email delivery and PDF bundles; production with mocks off (the public demo stays on mocks).
 
 ## Architecture
 - Browser → Supabase directly (supabase-js with the publishable key and the user's session) for everything RLS already protects: types, versions, documents, values, pages, export jobs, signed read URLs of the company's files.
-- Browser → `/api/*` (Vercel Functions) for what needs the secret key or server logic: upload (`/api/uploads`, `complete`, 022) and export (new `POST /api/exports`).
+- Browser → `/api/*` (Vercel Functions) for what needs the secret key or server logic: sign-up (new `POST /api/signup`), upload (`/api/uploads`, `complete`, 022) and export (new `POST /api/exports`).
 - ids are uuid strings in the database and plain strings in the app; `src/lib/real/map-*.ts` converts rows to the types in `@/lib/mock/types` (snake_case → camelCase, jsonb as is).
 
 ## Data
@@ -29,12 +30,13 @@ With `VITE_USE_MOCKS=false` the owner signs in, creates a document type with the
 
 ## Slices
 
-### [ ] 1. Real client and sign-in
-- **Build:** add `@supabase/supabase-js` to `apps/web`; `src/lib/real/client.ts` (one client from `readBackendEnv()`, session persisted by supabase-js); `src/lib/real/auth.ts` (sign in → `invalid_credentials` / `rate_limited` codes like the mock, sign out, session, company of the user); `useSignIn`, `useSignOut`, `useSession`, `useCompany` switch on `USE_MOCKS`; app routes redirect to `/sign-in` without a session when mocks are off; a sign-out action in the user menu. A small `src/lib/real/api-fetch.ts` that calls `VITE_API_BASE_URL` with the session's access token. `conventions.md`: `src/lib/real/` is, like `@/lib/mock`, imported only by `src/lib/api/`.
-- **Files:** `apps/web/package.json`, `src/lib/real/{client,auth,api-fetch}.ts`, `src/lib/api/{auth,company}.ts`, `src/app/router.tsx` (guard), user menu component, `docs/conventions.md`
+### [ ] 1. Real client, sign-up and sign-in
+- **Build:** `POST /api/signup` in `services/api` (`{ companyName, email, password }`, no token): validates (company name 2–100 chars after trim, email, password ≥ 8), refuses `company_taken` (409) when a company with the same normalized name (trim, collapse spaces, lowercase) exists, `email_taken` (409) when the email is registered; otherwise creates the user through the Auth admin API with `email_confirm: true`, the company (default currency USD, no locale) and an active owner membership, rolling back what it created if a later step fails. A migration adds a unique index on the normalized company name so two parallel sign-ups can't both win. The sign-up form gets a Company name field (mocks off) and drops Full name; after success the browser signs in and goes to `/types` (onboarding is skipped with mocks off). Then add `@supabase/supabase-js` to `apps/web`; `src/lib/real/client.ts` (one client from `readBackendEnv()`, session persisted by supabase-js); `src/lib/real/auth.ts` (sign in → `invalid_credentials` / `rate_limited` codes like the mock, sign out, session, company of the user); `useSignIn`, `useSignOut`, `useSession`, `useCompany` switch on `USE_MOCKS`; app routes redirect to `/sign-in` without a session when mocks are off; a sign-out action in the user menu. A small `src/lib/real/api-fetch.ts` that calls `VITE_API_BASE_URL` with the session's access token. `conventions.md`: `src/lib/real/` is, like `@/lib/mock`, imported only by `src/lib/api/`.
+- **Files:** `services/api/src/{handler,signup}.ts`, `services/api/scripts/smoke-api.ts`, `supabase/migrations/*`, `supabase/tests/*`, `apps/web/package.json`, `src/lib/real/{client,auth,api-fetch}.ts`, `src/lib/api/{auth,company}.ts`, `src/features/auth/sign-up-form.tsx`, `src/app/router.tsx` (guard), user menu component, `docs/conventions.md`
 - **Model:** sonnet
 - **Accept:**
   - [ ] with mocks on, the app behaves exactly as before (UI check of `/sign-in` and `/inbox` unchanged)
+  - [ ] with mocks off, signing up with a new company name creates the user, the company and the owner and lands signed in; the same company name again (any case or spacing) is refused with "Company already exists" and nothing is created; a used email is refused
   - [ ] with mocks off, the demo login signs in, a reload keeps the session, sign-out returns to `/sign-in`, a wrong password shows the existing error
   - [ ] without a session, `/inbox` redirects to `/sign-in`
   - [ ] typecheck, lint, build green
@@ -85,17 +87,18 @@ With `VITE_USE_MOCKS=false` the owner signs in, creates a document type with the
   - [ ] UI check passes; diagrams updated
 
 ## Backend needs
-Only the export route is new (slice 5). Everything else uses tables and RLS from 020 and the upload API from 022.
+New routes: `POST /api/signup` (slice 1) and `POST /api/exports` (slice 5), plus a unique index on the normalized company name. Everything else uses tables and RLS from 020 and the upload API from 022.
 
 ## Open questions
+All answered by the owner on 2026-11-20: every recommendation accepted, except sign-up (changed below).
 - **How does the browser reach the data?** (a) supabase-js directly with RLS for reads and simple writes, our API only for upload and export; (b) everything through our API.
   - Recommended: (a) — RLS from 020 already isolates companies, it's much less code, and the API keeps what needs the secret key.
 - **New packages?** `@supabase/supabase-js` in `apps/web` (020 kept it out of the web on purpose); a spreadsheet writer in `services/api` (`exceljs`), CSV without a library.
   - Recommended: approve both.
 - **Spreadsheet format?** (a) XLSX and CSV; (b) CSV only (no new library).
   - Recommended: (a).
-- **Who signs in?** (a) the demo login from `seed-demo` (Demo Company, Invoice type); (b) also sign-up and company creation now.
-  - Recommended: (a); sign-up and onboarding get their own spec.
+- **Who signs in?**
+  - **Decided (owner):** a simple sign-up now: company name + email + password; an existing company name is refused and nothing is added. No email service is needed (the user is created already confirmed). The demo login keeps working.
 - **Currencies:** the backend stores any ISO 4217 code the model reads, the web `Money` type lists 5 (020 open question). Recommended: widen the web type to any 3-letter ISO code, keep the 5 as the picker's shortlist.
 - **Mock/real switch per hook or per module?** Recommended: per hook (`queryFn: USE_MOCKS ? mock.x : real.x`), so a screen can go real one hook at a time and the demo build tree-shakes nothing it needs.
 - **Polling interval?** Recommended: 3 s while anything shown is `uploaded`/`processing`, off otherwise.
@@ -106,3 +109,4 @@ Only the export route is new (slice 5). Everything else uses tables and RLS from
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-11-20 | — | draft | written after the owner asked to test the whole flow locally with mocks off |
+| 2026-11-20 | — | ready | owner approved every recommendation; changed sign-up: company name + email + password, existing company refused; going ahead while 022 waits only for its post-merge workflow run |
