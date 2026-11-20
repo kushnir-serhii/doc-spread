@@ -91,7 +91,7 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 - Turn on Windows Developer Mode, so `vercel dev` can create the symlinks its builders need (open: slice 1's `vercel dev` criterion waits for it).
 - Done 2026-11-19: the three secrets are in Production only; add them to Preview too when preview deployments are used.
 
-### [ ] J3. Supabase secrets
+### [x] J3. Supabase secrets
 - Generate `PIPELINE_SECRET` and store it, with the production function URL, in Supabase Vault through the SQL editor (slice 4 gives the exact statements). Claude never sees the value.
 
 ### [x] J4. GitHub
@@ -139,13 +139,13 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
   - [x] `smoke-api` passes against the Vercel production URL; startup with a missing variable names it; the log scan finds no secret
   - [x] no client role can read, send to or archive a queue (pgTAP)
 
-### [ ] 4. Cron trigger
+### [x] 4. Cron trigger
 - **Waits for:** slice 3, J3
 - **Build:** a migration enabling `pg_cron` and `pg_net` (the queues come from slice 3); a `pg_cron` job every 30 seconds that, when a queue has visible messages, POSTs to the matching function with the `PIPELINE_SECRET` header read from Vault. The function URL and secret are read from Vault, never stored in a migration. Document the Vault statements for J3 in the slice report.
 - **Files:** `supabase/migrations/*`, `supabase/tests/*`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] a message put on `ocr` triggers exactly one call to `/api/pipeline/ocr` within a minute
+  - [x] a message put on `ocr` triggers exactly one call to `/api/pipeline/ocr` within a minute
   - [x] no client role can call the cron job's function or read the Vault secrets
   - [x] the migration contains no secret or URL; advisors report no security issues
 
@@ -236,3 +236,4 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | 2026-11-19 | 5 | 1 of 5 (sonnet) | `apps/web/api/pipeline/{ocr,extract}.ts` → `services/api/src/pipeline/*` (`pipeline-auth.ts`: sha-256 + `timingSafeEqual` on `x-pipeline-secret`; `pipeline-http.ts`: lazy env, drain one message at a time, vt 330 s, no new message after 150 s; `queue.ts` over `queue_*` RPCs replaces `sqs.ts`; archive + `error` at `read_ct >= 3`, orphan messages archived). Files come from Storage; `@aws-sdk/*` gone from `services/api`. `vercel.json`: `maxDuration` 300 for both, `includeFiles` for pdfjs / tesseract / canvas on OCR (unverified). `smoke-pipeline` uploads through the production API and polls. Deployed: both functions answer 401 without or with a wrong secret. The run itself waits for J3 and the slice 4 push. |
 | 2026-11-19 | 6 | done (sonnet) | `infra/` deleted and removed from `pnpm-workspace.yaml` (lockfile −29 packages), `.vercelignore` line, stale SQS comment in `claude.ts`. Diagrams `structure.ts` (Vercel Functions under `apps/web/api`, no infra), `pipeline.ts` (signed upload → `complete` → pgmq → pg_cron/pg_net → OCR → extract), `deployment.ts` (Vercel `fra1`, Supabase Frankfurt, Anthropic, GitHub), `index.ts` (sources → 022; `planned` flags removed, 020 is done). Grep for `aws-sdk|aws-cdk|cdk|sqs|ssm` outside `docs/` is empty (only `supabase/config.toml` CLI template comments and a mock vendor mention AWS). Typecheck, lint, build green. UI check 12/12 for the three tabs; screenshots reviewed by the orchestrator: diagrams render in both themes at 375 and 1280 px (the panel scrolls inside, as before). J5 rewritten for the CLI, since `cdk destroy` needs the deleted app. |
 | 2026-11-19 | 7 | 1 of 3 (sonnet) | `.github/workflows/migrate.yml` (push to `main` touching `supabase/migrations/**` or manual; environment `dev`; CLI 2.108.0; `link` + `db push --password` from secrets; no URL stored). `docs/setup.md` (clone → local stack, `vercel dev` + local Vault, deploys, every variable once, adding a variable), `product.md` technical frame, `CLAUDE.md` workspaces, commands and notes; `.env.example` comments; `DEMO_USER_*` added to the example and the table. Open: the workflow runs only from `main` (after the merge and J4); the `vercel dev` part of `setup.md` waits for Developer Mode. |
+| 2026-11-20 | 4 | done | owner set Vault `pipeline_base_url` + `pipeline_secret` (new `PIPELINE_SECRET`, also in Vercel) and pushed `pipeline_cron`. Probe: a message with a random document id sent to `ocr` at 12:14:43 → one POST to `/api/pipeline/ocr` at 12:15:00, secret accepted, message archived ("no such document"); no second call. |
