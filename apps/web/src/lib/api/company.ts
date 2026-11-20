@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getCompany, updateCompany } from '@/lib/mock'
+import { USE_MOCKS } from '@/lib/env'
+import { getCompany as mockGetCompany, updateCompany } from '@/lib/mock'
+import { getCompany as realGetCompany } from '@/lib/real/auth'
 import type { Company } from '@/lib/mock/types'
 
 export const companyKeys = {
@@ -10,7 +12,7 @@ export const companyKeys = {
 export const useCompany = () =>
   useQuery({
     queryKey: companyKeys.detail(),
-    queryFn: getCompany,
+    queryFn: USE_MOCKS ? mockGetCompany : realGetCompany,
   })
 
 export const useUpdateCompany = () => {

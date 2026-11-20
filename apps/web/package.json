@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@docspread/shared": "workspace:*",
+    "@supabase/supabase-js": "2.119.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.104.5",
     "class-variance-authority": "^0.7.1",

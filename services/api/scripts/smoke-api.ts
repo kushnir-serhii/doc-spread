@@ -220,6 +220,73 @@ if (documentId && upload?.url && upload.token && upload.path) {
   }
 }
 
+// ---------- POST /signup (spec 023) ----------
+const signupUserIds: string[] = []
+const signupCompanyIds: string[] = []
+const countUsers = async (): Promise<number> => {
+  let total = 0
+  for (let page = 1; ; page += 1) {
+    const { data } = await admin.auth.admin.listUsers({ page, perPage: 200 })
+    total += data.users.length
+    if (data.users.length < 200) return total
+  }
+}
+{
+  const tag = randomUUID().slice(0, 8)
+  const companyName = `Smoke Signup ${tag}`
+  const email = `smoke-signup-${tag}@example.com`
+  const password = `smoke-${randomUUID()}`
+  const good = { companyName, email, password }
+  const bad = async (label: string, body: unknown, code: string) => {
+    const response = await call('/signup', { method: 'POST', body })
+    check(`POST /signup ${label} returns 400 ${code}`, response.status === 400 && errorCode(response.body) === code, `status ${response.status} ${errorCode(response.body)}`)
+  }
+  await bad('without a body', undefined, 'invalid_body')
+  await bad('with a one-letter company name', { ...good, companyName: ' a ' }, 'invalid_company_name')
+  await bad('with a 101-char company name', { ...good, companyName: 'x'.repeat(101) }, 'invalid_company_name')
+  await bad('with a bad email', { ...good, email: 'not-an-email' }, 'invalid_email')
+  await bad('with a 7-char password', { ...good, password: '1234567' }, 'invalid_password')
+
+  const usersBefore = await countUsers()
+  const created = await call('/signup', { method: 'POST', body: good })
+  const createdBody = typeof created.body === 'object' && created.body !== null ? (created.body as { userId?: string; companyId?: string }) : {} // our API's response shape
+  check('POST /signup with a new company and email returns 201', created.status === 201 && !!createdBody.userId && !!createdBody.companyId, `status ${created.status} ${errorCode(created.body)}`)
+  if (createdBody.userId) signupUserIds.push(createdBody.userId)
+  if (createdBody.companyId) signupCompanyIds.push(createdBody.companyId)
+
+  if (createdBody.userId && createdBody.companyId) {
+    const browser = createClient(supabaseUrl, publishableKey, { auth: { persistSession: false, autoRefreshToken: false } })
+    const signedIn = await browser.auth.signInWithPassword({ email, password })
+    check('the new user can sign in', signedIn.error === null, signedIn.error?.message ?? '')
+    const { data: company } = await admin.from('companies').select('name, default_currency, locale').eq('id', createdBody.companyId).single()
+    check('the company has the name, currency USD and no locale', company?.name === companyName && company.default_currency === 'USD' && company.locale === null)
+    const { data: members } = await admin.from('team_members').select('user_id, role, status, email').eq('company_id', createdBody.companyId)
+    check(
+      'team_members has one active owner for the new user',
+      members?.length === 1 && members[0]?.user_id === createdBody.userId && members[0].role === 'owner' && members[0].status === 'active',
+    )
+
+    const usersAfter = await countUsers()
+    for (const variant of [companyName.toUpperCase(), `  ${companyName.toLowerCase().replace(/ /g, '   ')} `]) {
+      const taken = await call('/signup', { method: 'POST', body: { companyName: variant, email: `smoke-other-${tag}@example.com`, password } })
+      check(`same company name as "${variant.trim()}" returns 409 company_taken`, taken.status === 409 && errorCode(taken.body) === 'company_taken', `status ${taken.status} ${errorCode(taken.body)}`)
+    }
+    check('a refused company name creates no user', (await countUsers()) === usersAfter && usersAfter === usersBefore + 1)
+
+    const otherCompany = `Smoke Signup Other ${tag}`
+    const emailTaken = await call('/signup', { method: 'POST', body: { companyName: otherCompany, email: email.toUpperCase(), password } })
+    check('same email with another company returns 409 email_taken', emailTaken.status === 409 && errorCode(emailTaken.body) === 'email_taken', `status ${emailTaken.status} ${errorCode(emailTaken.body)}`)
+    const { count: leftover } = await admin.from('companies').select('id', { count: 'exact', head: true }).eq('name', otherCompany)
+    check('a refused email creates no company', (leftover ?? 0) === 0)
+  }
+}
+for (const id of signupCompanyIds) await admin.from('companies').delete().in('id', [id]) // cascades to the membership
+for (const id of signupUserIds) await admin.auth.admin.deleteUser(id)
+if (signupUserIds.length > 0) {
+  const { data: leftovers } = await admin.auth.admin.listUsers({ perPage: 200 })
+  check('signup test users removed', !leftovers.users.some((user) => signupUserIds.includes(user.id)))
+}
+
 // Cleanup: test objects, documents rows and the throwaway company (the demo user, company and type stay).
 if (createdPaths.length > 0) await admin.storage.from(bucket).remove(createdPaths)
 if (createdDocumentIds.length > 0) await admin.from('documents').delete().in('id', createdDocumentIds)

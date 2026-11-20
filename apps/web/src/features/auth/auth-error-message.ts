@@ -10,6 +10,8 @@ export const authErrorMessage = (code: AuthErrorCode): string => {
       return 'Too many attempts. Wait a few minutes and try again.'
     case 'email_taken':
       return 'An account with this email already exists.'
+    case 'company_taken':
+      return 'Company already exists.'
     default: {
       const unreachable: never = code
       return unreachable

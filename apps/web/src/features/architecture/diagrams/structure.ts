@@ -16,6 +16,7 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
       api["api"]
       fields["fields"]
       mock["mock (domain types, fake backend)"]
+      real["real (Supabase client, /api calls)"]
       theme["theme"]
       locale["format-locale"]
     end
@@ -51,6 +52,7 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   layout --> ui
   domain --> ui
   api -->|"only importer of mock functions"| mock
+  api -->|"only importer of real functions"| real
   web -->|workspace dependency| shared
   fn -->|"imports by relative path"| apisvc
   apisvc -->|"secret key, SQL"| supabase
