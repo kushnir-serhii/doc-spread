@@ -128,3 +128,15 @@ export const overallConfidence = (values: Record<string, FieldValue>): number =>
   if (scores.length === 0) return 0
   return Math.round((scores.reduce((s, c) => s + c, 0) / scores.length) * 100) / 100
 }
+
+/** A person confirmed these values: confidence 1 on the scalar, or on every cell of the table. */
+export function confirm(value: FieldValue): FieldValue {
+  if (value.type !== 'table') return { ...value, confidence: 1 }
+  return {
+    ...value,
+    rows: value.rows.map((row) => ({
+      ...row,
+      cells: Object.fromEntries(Object.entries(row.cells).map(([id, cell]) => [id, { ...cell, confidence: 1 }])),
+    })),
+  }
+}

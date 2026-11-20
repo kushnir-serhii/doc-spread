@@ -3,7 +3,7 @@ import { ChevronDown, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { CURRENCIES } from '@/lib/mock/types'
+import { currencyOptions, isCurrencyCode } from '@/lib/mock/types'
 import type { Company, CurrencyCode } from '@/lib/mock/types'
 import { cn } from '@/lib/utils'
 
@@ -17,8 +17,6 @@ interface CompanyFormProps {
   error: string | null
   submitLabel: string
 }
-
-const isCurrency = (value: string): value is CurrencyCode => CURRENCIES.some((currency) => currency === value)
 
 export const CompanyForm = ({ initialValues, onSubmit, pending, error, submitLabel }: CompanyFormProps) => {
   const id = useId()
@@ -84,7 +82,7 @@ export const CompanyForm = ({ initialValues, onSubmit, pending, error, submitLab
             disabled={pending}
             aria-describedby={`${id}-currency-help`}
             onChange={(event) => {
-              if (isCurrency(event.target.value)) setCurrency(event.target.value)
+              if (isCurrencyCode(event.target.value)) setCurrency(event.target.value)
             }}
             className={cn(
               'min-h-touch w-full appearance-none rounded-md border border-input bg-card pr-9 pl-3 text-sm shadow-xs outline-none md:min-h-9',
@@ -92,7 +90,7 @@ export const CompanyForm = ({ initialValues, onSubmit, pending, error, submitLab
               'disabled:cursor-not-allowed disabled:opacity-50',
             )}
           >
-            {CURRENCIES.map((code) => (
+            {currencyOptions(initialValues.defaultCurrency).map((code) => (
               <option key={code} value={code}>
                 {code}
               </option>

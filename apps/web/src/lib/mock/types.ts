@@ -1,7 +1,16 @@
 export type Confidence = 'high' | 'medium' | 'low'
 
+/** The shortlist pickers offer. A value or the company may carry any other ISO 4217 code. */
 export const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP', 'JPY'] as const
-export type CurrencyCode = (typeof CURRENCIES)[number]
+/** Any 3-letter ISO 4217 code ("CHF", "SEK"): the backend stores whatever the model reads. */
+export type CurrencyCode = string
+
+const ISO_CURRENCY = /^[A-Z]{3}$/
+export const isCurrencyCode = (value: string): boolean => ISO_CURRENCY.test(value)
+
+/** The shortlist, plus `current` when it isn't on it (so a document's own code stays selectable). */
+export const currencyOptions = (current?: string | null): CurrencyCode[] =>
+  current && isCurrencyCode(current) && !CURRENCIES.some((code) => code === current) ? [...CURRENCIES, current] : [...CURRENCIES]
 
 /** Amount in the currency's minor unit (cents, or yen for JPY) — always an integer. */
 export interface Money {

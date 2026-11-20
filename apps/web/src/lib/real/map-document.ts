@@ -15,16 +15,19 @@ export interface DocumentRow {
   overall_confidence: number | string
   error_message: string | null
   rejection_reason: string | null
+  /** optimistic-lock counter, bumped by the database on every update */
+  version: number
+  storage_path: string | null
 }
 
 export const DOCUMENT_COLUMNS =
-  'id, file_name, file_type, page_count, uploaded_at, status, type_id, type_version, classification_confidence, values, overall_confidence, error_message, rejection_reason'
+  'id, file_name, file_type, page_count, uploaded_at, status, type_id, type_version, classification_confidence, values, overall_confidence, error_message, rejection_reason, version, storage_path'
 
 /** `numeric` columns may arrive as strings. */
 const num = (value: number | string): number => (typeof value === 'number' ? value : Number(value))
 
 /**
- * One row as the app's `Document`. `file.url` stays empty: the signed file URL belongs to the viewer (slice 4).
+ * One row as the app's `Document`. `file.url` is filled by the caller that needs it (`documents.ts` getDocument).
  * The check constraints on `status` and `file_type` guarantee the casts.
  */
 export const toDocument = (row: DocumentRow): Document => ({

@@ -11,7 +11,14 @@ import {
   updateDocumentValues as mockUpdateDocumentValues,
   uploadDocument as mockUploadDocument,
 } from '@/lib/mock'
-import { getDocument as realGetDocument, listDocuments as realListDocuments } from '@/lib/real/documents'
+import {
+  approveDocuments as realApproveDocuments,
+  getDocument as realGetDocument,
+  listDocuments as realListDocuments,
+  rejectDocument as realRejectDocument,
+  updateDocumentValues as realUpdateDocumentValues,
+} from '@/lib/real/documents'
+import { getDocumentPages as realGetDocumentPages } from '@/lib/real/pages'
 import { notAvailableYet } from '@/lib/real/not-available'
 import { uploadDocument as realUploadDocument } from '@/lib/real/upload'
 import { planKeys } from './plan'
@@ -81,7 +88,7 @@ export const useDocumentPages = (id: string | null) =>
     queryFn:
       id === null
         ? skipToken
-        : () => (USE_MOCKS ? mockGetDocumentPages(id) : Promise.reject(notAvailableYet('The document viewer'))), // real in slice 4
+        : () => (USE_MOCKS ? mockGetDocumentPages(id) : realGetDocumentPages(id)),
     staleTime: Infinity,
   })
 
@@ -102,7 +109,7 @@ export const useUpdateDocumentValues = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Record<string, FieldValue> }) =>
-      USE_MOCKS ? mockUpdateDocumentValues(id, patch) : Promise.reject(notAvailableYet('Editing values')), // real in slice 4
+      USE_MOCKS ? mockUpdateDocumentValues(id, patch) : realUpdateDocumentValues(id, patch),
     onSuccess: (_data, { id }) => invalidateAfterChange(queryClient, [id]),
   })
 }
@@ -111,7 +118,7 @@ export const useApproveDocuments = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (ids: string[]) =>
-      USE_MOCKS ? mockApproveDocuments(ids) : Promise.reject(notAvailableYet('Approving')), // real in slice 4
+      USE_MOCKS ? mockApproveDocuments(ids) : realApproveDocuments(ids),
     onSuccess: (_data, ids) => invalidateAfterChange(queryClient, ids),
   })
 }
@@ -120,7 +127,7 @@ export const useRejectDocument = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
-      USE_MOCKS ? mockRejectDocument(id, reason) : Promise.reject(notAvailableYet('Rejecting')), // real in slice 4
+      USE_MOCKS ? mockRejectDocument(id, reason) : realRejectDocument(id, reason),
     onSuccess: (_data, { id }) => invalidateAfterChange(queryClient, [id]),
   })
 }

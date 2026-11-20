@@ -57,7 +57,7 @@ import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
 import { guessFromSelection, proposeFieldsFromPages } from './propose-fields'
 import { buildTableSuggestion } from './suggest-table'
-import { overallConfidence } from './value-builders'
+import { confirm, overallConfidence } from './value-builders'
 import { AuthError } from './types'
 import type {
   BBox,
@@ -183,18 +183,6 @@ function scalarText(value: FieldValue): string | null {
 }
 
 const SEARCHABLE_TYPES: string[] = ['text', 'select', 'email', 'phone', 'tax_id']
-
-/** A person confirmed these values: confidence 1 on the scalar, or on every cell of the table. */
-function confirm(value: FieldValue): FieldValue {
-  if (value.type !== 'table') return { ...value, confidence: 1 }
-  return {
-    ...value,
-    rows: value.rows.map((row) => ({
-      ...row,
-      cells: Object.fromEntries(Object.entries(row.cells).map(([id, cell]) => [id, { ...cell, confidence: 1 }])),
-    })),
-  }
-}
 
 // ---------- auth ----------
 /**

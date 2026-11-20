@@ -1,6 +1,6 @@
 import type { Session } from '@supabase/supabase-js'
 import { DEFAULT_CURRENCY } from '@/lib/fields/default-currency'
-import { AuthError, CURRENCIES } from '@/lib/mock/types'
+import { AuthError, isCurrencyCode } from '@/lib/mock/types'
 import type { Company, CurrencyCode, Recipient } from '@/lib/mock/types'
 import { ApiError, apiFetch } from './api-fetch'
 import { getSupabase } from './client'
@@ -51,8 +51,9 @@ export const onSessionChange = (listener: (session: Session | null) => void): ((
   return () => data.subscription.unsubscribe()
 }
 
-// The web type lists 5 currencies (spec 020/023 open question); anything else falls back to the default for now.
-const toCurrency = (value: unknown): CurrencyCode => CURRENCIES.find((code) => code === value) ?? DEFAULT_CURRENCY
+/** The company's own ISO code is kept as is; only a value that isn't a 3-letter code (never stored by the API) falls back. */
+const toCurrency = (value: unknown): CurrencyCode =>
+  typeof value === 'string' && isCurrencyCode(value) ? value : DEFAULT_CURRENCY
 
 const toRecipients = (value: unknown): Recipient[] => (Array.isArray(value) ? (value as Recipient[]) : []) // jsonb written by the app in this shape
 
