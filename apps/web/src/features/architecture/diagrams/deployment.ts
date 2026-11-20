@@ -1,59 +1,48 @@
-/** Deployment diagram: what runs where, from the Architecture table of spec 020 (planned). */
+/** Deployment diagram: what runs where, from the Architecture table of spec 022. */
 export const DEPLOYMENT_DIAGRAM = `flowchart LR
   subgraph user["User device"]
     browser["Browser (web app)"]
   end
 
-  subgraph aws["AWS (eu-north-1, Stockholm)"]
-    cdn["CloudFront"]
-    webBucket["S3 web bucket"]
-    api["API (Lambda Function URL)"]
-    ocr["OCR Lambda (PDF text layer + Tesseract)"]
-    extract["Extract Lambda"]
-    docs[("S3 documents bucket, private")]
-    exports[("S3 exports bucket, private")]
-    sqs["SQS ingest queue + dead-letter queue"]
-    sqsExtract["SQS extract queue + dead-letter queue"]
-    ses["SES (email, on hold)"]
-    ssm["SSM Parameter Store (secrets)"]
+  subgraph vercel["Vercel project (region fra1)"]
+    spa["Static SPA (rewrite to index.html)"]
+    fns["Functions /api/*: API, pipeline/ocr, pipeline/extract"]
   end
 
-  subgraph supa["Supabase"]
+  subgraph supa["Supabase project docspread-dev (Frankfurt)"]
     pg[("Postgres with row-level security")]
-    auth["Auth"]
+    auth["Auth (JWKS)"]
+    docs[("Storage: documents, private")]
+    exports[("Storage: exports, private")]
+    pgmq["pgmq queues: ocr, extract"]
+    cron["pg_cron (every 30 s)"]
+    net["pg_net"]
+    vault["Vault: pipeline_base_url, pipeline_secret"]
   end
 
   subgraph anth["Anthropic"]
     claude["Claude API"]
   end
 
-  subgraph gh["GitHub Actions"]
-    deploy["Deploy jobs"]
+  subgraph gh["GitHub"]
+    repo["Repository"]
+    actions["GitHub Actions: supabase db push (slice 7, planned)"]
   end
 
-  browser -->|"HTTPS: app files"| cdn
-  cdn -->|"origin access"| webBucket
-  browser -->|"HTTPS: API calls"| api
+  browser -->|"HTTPS: app files"| spa
+  browser -->|"HTTPS: API calls"| fns
   browser -->|"sign in"| auth
-  browser -->|"presigned upload"| docs
-  api -->|"verify token (JWKS)"| auth
-  api -->|"SQL"| pg
-  api -->|"presign"| docs
-  api -->|"presign downloads"| exports
-  docs -->|"object created event"| sqs
-  sqs -->|"trigger"| ocr
-  ocr -->|"read file"| docs
-  ocr -->|"OCR done"| sqsExtract
-  sqsExtract -->|"trigger"| extract
-  extract -->|"read file"| docs
-  extract -->|"HTTPS: classify, extract"| claude
-  ocr -->|"SQL: words with boxes"| pg
-  extract -->|"SQL: status, values"| pg
-  api -->|"send export mail"| ses
-  auth -->|"SMTP for auth email"| ses
-  api -.->|"read secrets"| ssm
-  ocr -.->|"read secrets"| ssm
-  extract -.->|"read secrets"| ssm
-  deploy -->|"OIDC role"| aws
-  deploy -->|"migrations"| pg
+  browser -->|"signed upload"| docs
+  fns -->|"verify token (JWKS)"| auth
+  fns -->|"SQL"| pg
+  fns -->|"signed URLs"| docs
+  fns -->|"signed downloads"| exports
+  fns -->|"HTTPS: classify, extract"| claude
+  pg --- pgmq
+  cron -->|"runs"| net
+  net -->|"POST with x-pipeline-secret"| fns
+  cron -.->|"read settings"| vault
+  repo -->|"Vercel Git integration: deploy"| vercel
+  repo --> actions
+  actions -->|"migrations"| pg
 `

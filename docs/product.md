@@ -55,9 +55,13 @@ Build order and status: [roadmap.md](roadmap.md).
 
 ## Technical frame
 - Monorepo: pnpm workspaces + Turborepo. The web app lives in `apps/web`.
-- Vite + React + TypeScript SPA, static build deployed to S3 + CloudFront (no SSR or server code). CloudFront must serve `index.html` for unknown paths; routes are lazy-loaded.
+- Vite + React + TypeScript SPA (no SSR), hosted on Vercel. Vercel serves `index.html` for every path except `/api/*`; routes are lazy-loaded.
 - React Router, TanStack Query, Tailwind CSS + shadcn/ui, lucide-react, `pdfjs-dist` for the document viewer.
-- Backend later (Supabase planned). Until then every screen runs on typed mocks in `apps/web/src/lib/mock/` behind query hooks in `src/lib/api/`, so mocks can be swapped without redesign. Each spec lists what the backend must provide under **Backend needs**.
+- Only two platforms, plus the AI API. **Vercel**: the web app and the backend as Vercel Functions under `/api` on the same domain (no CORS); code in `apps/web/api/` (thin wrappers) and `services/api` (the logic). **Supabase**: Postgres with row-level security by company, Auth, Storage (private buckets `documents` and `exports`), queues (`pgmq`), and `pg_cron` + `pg_net` to start the pipeline. **Anthropic**: Claude classifies and extracts.
+- Pipeline: the browser uploads to Storage with a signed URL from the API; the API enqueues OCR; a cron job calls the OCR function, then the extract function, which writes values and confidence to Postgres. OCR is the PDF text layer (`pdfjs-dist`) or `tesseract.js` for scans. Retries and dead letters come from the queue (after 3 reads the document gets `error`).
+- Secrets: function secrets are Vercel environment variables; the pipeline secret and function URL for `pg_net` are in Supabase Vault. Real values never go into git. Everything prefixed `VITE_` ships to the browser. How to add a variable: [setup.md](setup.md).
+- Deploys: Vercel deploys the app and functions from Git (previews and production). Migrations in `supabase/migrations/` reach the `docspread-dev` project through GitHub Actions on merge to `main`. Local stack and first setup: [setup.md](setup.md).
+- Until the screens get real data (specs from 004 on), they run on typed mocks in `apps/web/src/lib/mock/` behind query hooks in `src/lib/api/`, so mocks can be swapped without redesign (`VITE_USE_MOCKS=true`). Each spec lists what the backend must provide under **Backend needs**.
 
 Folder layout (`apps/web/src`):
 ```

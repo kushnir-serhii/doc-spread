@@ -1,14 +1,16 @@
-// Startup check (spec 020, slice 5, criterion 4): removing any required variable must fail and name it.
+// Startup check (spec 022, slice 3): a missing variable is named in the error and the log, and no secret
+// value ever reaches a log line.
 import { loadEnv } from '../src/env.ts'
+import { reportScan } from './scan-logs.ts'
 
+// Fake values shaped like the real ones, so the log scan has something to find if the code leaked them.
 const complete: Record<string, string> = {
-  SUPABASE_URL: 'https://example.supabase.co',
-  SUPABASE_JWKS_URL: 'https://example.supabase.co/auth/v1/.well-known/jwks.json',
-  S3_DOCUMENTS_BUCKET: 'bucket',
+  SUPABASE_URL: 'http://127.0.0.1:1',
+  SUPABASE_JWKS_URL: 'http://127.0.0.1:1/auth/v1/.well-known/jwks.json',
+  SUPABASE_SECRET_KEY: 'sb_secret_FAKEFAKEFAKEFAKEFAKE',
+  STORAGE_DOCUMENTS_BUCKET: 'documents',
   UPLOAD_MAX_BYTES: '1024',
-  SUPABASE_SECRET_KEY: 'not-a-real-secret',
 }
-const fakeSecret = () => Promise.resolve('not-a-real-secret')
 
 let failed = 0
 const check = (label: string, ok: boolean) => {
@@ -19,16 +21,62 @@ const check = (label: string, ok: boolean) => {
 for (const name of Object.keys(complete)) {
   const source = { ...complete }
   delete source[name]
-  const message = await loadEnv(source, fakeSecret).then(
-    () => '',
-    (error: unknown) => (error instanceof Error ? error.message : ''),
-  )
-  check(`missing ${name} is named in the error`, message.includes(name))
+  const message = (() => {
+    try {
+      loadEnv(source)
+      return ''
+    } catch (error) {
+      return error instanceof Error ? error.message : ''
+    }
+  })()
+  check(`loadEnv names missing ${name}`, message.includes(name))
 }
-check('complete env loads', (await loadEnv(complete, fakeSecret)).uploadMaxBytes === 1024)
+check('complete env loads', loadEnv(complete).uploadMaxBytes === 1024)
+check('a non-numeric UPLOAD_MAX_BYTES is rejected', (() => {
+  try {
+    loadEnv({ ...complete, UPLOAD_MAX_BYTES: 'lots' })
+    return false
+  } catch (error) {
+    return error instanceof Error && error.message.includes('UPLOAD_MAX_BYTES')
+  }
+})())
 
-const withoutSecret = { ...complete }
-delete withoutSecret.SUPABASE_SECRET_KEY
-const fromSsm = await loadEnv({ ...withoutSecret, SSM_SUPABASE_SECRET_KEY_PARAM: '/p' }, fakeSecret)
-check('secret read through the SSM parameter name', fromSsm.supabaseSecretKey === 'not-a-real-secret')
+// Through the router: each missing variable gives a 500 whose log line names it, and the logs hold no secret.
+const { handle } = await import('../src/handler.js')
+const logged: string[] = []
+const originalError = console.error
+console.error = (...args: unknown[]) => {
+  logged.push(args.map(String).join(' '))
+}
+const saved = { ...process.env }
+const names = Object.keys(complete)
+for (const name of names) {
+  for (const other of names) process.env[other] = complete[other]
+  delete process.env[name]
+  const response = await handle(
+    new Request('http://localhost/api/uploads', {
+      method: 'POST',
+      headers: { authorization: 'Bearer eyJfake.fake.fake' },
+      body: '{}',
+    }),
+  )
+  const body = await response.text()
+  check(`router returns 500 for missing ${name} without echoing it`, response.status === 500 && !body.includes(name))
+  check(`router logs the name ${name}`, logged.some((line) => line.includes(`Missing env variable ${name}`)))
+}
+// With everything set, a bad token is a 401 and logs nothing.
+Object.assign(process.env, complete)
+const before = logged.length
+const unauthorized = await handle(
+  new Request('http://localhost/api/uploads', { method: 'POST', headers: { authorization: 'Bearer eyJfake.fake.fake' }, body: '{}' }),
+)
+check('a bad token returns 401', unauthorized.status === 401)
+check('a bad token writes no log line', logged.length === before)
+console.error = originalError
+for (const name of names) if (saved[name] === undefined) delete process.env[name]
+else process.env[name] = saved[name]
+
+console.log(`captured ${logged.length} log lines`)
+check('log scan finds no secret pattern', reportScan(logged) === 0)
+check('no fake secret value appears in the logs', !logged.some((line) => line.includes('FAKEFAKE')))
 process.exit(failed === 0 ? 0 : 1)

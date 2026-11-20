@@ -53,19 +53,17 @@ export const DIAGRAMS: DiagramDef[] = [
     id: 'pipeline',
     label: 'Pipeline',
     kind: 'Sequence diagram',
-    description: 'One document from upload to review, across the browser and the cloud services.',
-    sources: ['docs/specs/020-cloud-setup.md'],
+    description: 'One document from upload to review, across the browser, Vercel Functions and Supabase.',
+    sources: ['docs/specs/022-vercel-supabase.md'],
     code: PIPELINE_DIAGRAM,
-    planned: { spec: '020' },
   },
   {
     id: 'deployment',
     label: 'Deployment',
     kind: 'Deployment diagram',
-    description: 'What runs where: web, API, storage, queues, document AI and the database.',
-    sources: ['docs/specs/020-cloud-setup.md', 'docs/product.md'],
+    description: 'What runs where on Vercel and Supabase: web, functions, storage, queues and the database.',
+    sources: ['docs/specs/022-vercel-supabase.md', 'docs/product.md'],
     code: DEPLOYMENT_DIAGRAM,
-    planned: { spec: '020' },
   },
 ]
 

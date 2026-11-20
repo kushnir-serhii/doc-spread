@@ -1,5 +1,5 @@
 // The parts of FieldDef, ColumnDef and FieldValue (apps/web/src/lib/mock/types.ts) that the extraction reads and writes.
-import type { BBox } from './page-types.ts'
+import type { BBox } from './page-types.js'
 
 export const SCALAR_FIELD_TYPES = ['text', 'number', 'money', 'date', 'boolean', 'select', 'email', 'phone', 'tax_id'] as const
 export type ScalarFieldType = (typeof SCALAR_FIELD_TYPES)[number]

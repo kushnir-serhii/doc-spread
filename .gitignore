@@ -24,3 +24,6 @@ supabase/.temp/
 supabase/.branches/
 # personal Claude Code instructions
 CLAUDE.local.md
+
+# vercel link (project ids, local only)
+.vercel

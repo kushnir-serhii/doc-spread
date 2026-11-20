@@ -1,0 +1,11 @@
+# Never upload local secrets or build leftovers with `vercel deploy`
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/dist
+**/.turbo
+supabase/.temp
+supabase/.branches
+apps/web/e2e/screenshots
+CLAUDE.local.md

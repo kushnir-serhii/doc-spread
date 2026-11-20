@@ -25,8 +25,9 @@ The single source of truth for what is done, what is next, and in which order. `
 | 017 | [Row actions (table rows)](specs/017-row-actions.md) | done | 016 |
 | 018 | [Export: table column mapping](specs/018-export-table-columns.md) | done | 009 |
 | 019 | [Mock data without country defaults](specs/019-mock-without-country-defaults.md) | done | — |
-| 020 | [Cloud setup: AWS, AI, database and env](specs/020-cloud-setup.md) | in-progress | 012 |
+| 020 | [Cloud setup: AWS, AI, database and env](specs/020-cloud-setup.md) | done | 012 |
 | 021 | [Architecture page: UML diagrams](specs/021-architecture-diagrams.md) | done | — |
+| 022 | [Off AWS: Vercel and Supabase only](specs/022-vercel-supabase.md) | in-progress | 020 |
 
 Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 
@@ -44,6 +45,7 @@ Read top to bottom; the next spec is the first one that isn't `done`. Specs in o
 | 6 | 016, 009, 019, 010 |
 | 7 | 005, 011, 003, 004, 017, 018 |
 | 8 | 020, 021 |
+| 9 | 022 |
 
 - To change the order, edit this table.
 - To make a spec buildable, review it and set it to `ready` here and in the spec.

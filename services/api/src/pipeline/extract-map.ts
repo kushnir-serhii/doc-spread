@@ -1,5 +1,5 @@
-import type { ColumnDef, ExtractedScalar, FieldDef, ScalarFieldType, StoredMoney, StoredValue } from './field-types.ts'
-import { unionBox, type Token } from './page-types.ts'
+import type { ColumnDef, ExtractedScalar, FieldDef, ScalarFieldType, StoredMoney, StoredValue } from './field-types.js'
+import { unionBox, type Token } from './page-types.js'
 
 /**
  * Confidence given to an amount whose currency was assumed (the company's default) instead of read.

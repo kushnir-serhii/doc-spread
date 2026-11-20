@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { PermanentError } from './sqs.ts'
+import { PermanentError } from './queue.js'
 
 /** USD per million tokens. The one place prices live; update it when the models or their prices change. */
 export const PRICES_PER_MILLION: Record<string, { input: number; output: number }> = {
@@ -88,7 +88,7 @@ export interface ClaudeClient {
 }
 
 export const createClaudeClient = (apiKey: string): ClaudeClient => {
-  // The SDK retries 429 and 5xx twice by default; what still fails after that is rethrown for SQS to retry.
+  // The SDK retries 429 and 5xx twice by default; what still fails after that is rethrown, so the pgmq message stays and is retried after its visibility timeout.
   const client = new Anthropic({ apiKey })
   return {
     classify: async ({ documentId, model, prompt, schema, system }) => {

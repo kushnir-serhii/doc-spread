@@ -1,6 +1,6 @@
 # 020 — Cloud setup: AWS, AI, database and env
 
-**Status:** in-progress · **Depends on:** 012 · **Route(s):** —
+**Status:** done · **Depends on:** 012 · **Route(s):** —
 
 ## Goal
 Every external service the product needs exists in `dev` and `prod`, every setting has one documented place, and one real document can travel from upload through OCR and Claude into the database. Later specs can then replace the mocks screen by screen without touching infrastructure.
@@ -287,3 +287,4 @@ This spec provides the foundation for the **Backend needs** of 002 to 019. It de
 | 2026-11-17 | 4 (part) | 2 of 3 | owner ran `supabase link` + `db push`: both migrations applied to `docspread-dev`, `migration list` in sync; all 8 tables answer through the Data API with the secret key, and the publishable key is refused (42501). J7: both secrets in SSM. J8: `cdk bootstrap` done. Only the CloudFront criterion is left (verification). |
 | 2026-11-17 | 5 | done (sonnet) | `services/api` (`@docspread/api`): Function URL handler with `/health` and `POST /uploads` (Supabase JWT via JWKS, company from `team_members`, `documents` row, presigned POST pinned to `<company>/<document>/<file>`, 20 MB, pdf/jpg/png). api Lambda is now a `NodejsFunction` (esbuild); documents CORS allows POST. `seed-demo` (demo@docspread.dev, Demo Company USD, Invoice v1; password only in `.env.local`), `smoke-api` 15/15 on the deployed dev API (re-run by the orchestrator), `check-env` 7/7, log scan 0 secrets. Diagrams `structure.ts`, `pipeline.ts`; UI check 8/8. |
 | 2026-11-17 | 6 | done (sonnet) | `services/api/src/pipeline/`: OCR handler (pdfjs text layer; `tesseract.js` eng+ukr with `@napi-rs/canvas`, linux-arm64 binary added by `infra/scripts/add-native-binary.mjs`) and extract handler (Haiku classify, Opus extract with server-side fallback, effort set, refusals handled, cost logged). `smoke-pipeline` all PASS on dev: invoice PDF and receipt JPG `needs_review`, 30-page PDF `unclassified` (no matching type), broken PDF `error` with the queue still moving; ~$0.39 of Claude for the run. `smoke-api` 15/15 re-run by the orchestrator; offline synth + check pass. Page indexes are 0-based like `DocumentPage.index`. Diagrams `pipeline.ts`, `deployment.ts`. |
+| 2026-11-19 | — | done (moved) | closed by the owner's approval of 022 (off AWS: Vercel and Supabase). Open slices 4 (deploy criterion → Vercel URL), 7 (deploy automation) and 8 (setup docs) and the remaining jobs continue in [022](022-vercel-supabase.md). |

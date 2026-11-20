@@ -1,27 +1,36 @@
-// Scans the api function's recent CloudWatch log events for secret-looking text. Prints only counts.
-import { execFileSync } from 'node:child_process'
+// Scans log lines for secret-looking text. Prints only counts, never the lines.
+// As a CLI it reads lines from stdin, e.g. `vercel logs <deployment-url> | pnpm scan-logs`.
+import { fileURLToPath } from 'node:url'
+import { createInterface } from 'node:readline'
 
-const LOG_GROUP = '/aws/lambda/docspread-dev-api'
-const PATTERNS: Record<string, RegExp> = {
+export const SECRET_PATTERNS: Record<string, RegExp> = {
   'sb_secret_': /sb_secret_/,
   'sk-ant-': /sk-ant-/,
   'JWT (eyJ)': /eyJ/,
   'Bearer ': /Bearer /,
 }
 
-const sinceMs = Date.now() - 3 * 60 * 60 * 1000
-const raw = execFileSync(
-  'aws',
-  ['logs', 'filter-log-events', '--log-group-name', LOG_GROUP, '--start-time', String(sinceMs), '--region', 'eu-north-1', '--profile', 'docspread', '--output', 'json'],
-  { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, shell: process.platform === 'win32' },
-)
-const parsed: { events: { message: string }[] } = JSON.parse(raw) // AWS CLI output shape
-console.log(`log events scanned: ${parsed.events.length}`)
-let total = 0
-for (const [label, pattern] of Object.entries(PATTERNS)) {
-  const count = parsed.events.filter((event) => pattern.test(event.message)).length
-  total += count
-  console.log(`${count === 0 ? 'PASS' : 'FAIL'} events containing ${label}: ${count}`)
+/** Number of lines that match each secret pattern. */
+export const scanLines = (lines: readonly string[]): Record<string, number> =>
+  Object.fromEntries(
+    Object.entries(SECRET_PATTERNS).map(([label, pattern]) => [label, lines.filter((line) => pattern.test(line)).length]),
+  )
+
+/** Prints one PASS/FAIL line per pattern and returns the total number of matching lines. */
+export const reportScan = (lines: readonly string[]): number => {
+  console.log(`log lines scanned: ${lines.length}`)
+  let total = 0
+  for (const [label, count] of Object.entries(scanLines(lines))) {
+    total += count
+    console.log(`${count === 0 ? 'PASS' : 'FAIL'} lines containing ${label}: ${count}`)
+  }
+  return total
 }
-console.log(parsed.events.length > 0 ? 'scan covered real events' : 'FAIL no events to scan')
-process.exit(total === 0 && parsed.events.length > 0 ? 0 : 1)
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const lines: string[] = []
+  for await (const line of createInterface({ input: process.stdin })) lines.push(line)
+  const total = reportScan(lines)
+  if (lines.length === 0) console.log('FAIL no log lines to scan')
+  process.exit(total === 0 && lines.length > 0 ? 0 : 1)
+}

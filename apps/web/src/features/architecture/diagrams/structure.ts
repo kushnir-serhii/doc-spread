@@ -23,11 +23,14 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   subgraph shared["packages/shared (@docspread/shared)"]
     sharedsrc["src (raw TypeScript, no build step)"]
   end
-  subgraph apisvc["services/api (@docspread/api)"]
-    apisrc["Lambda handler: token check, presigned upload; seed and smoke scripts"]
+  subgraph fn["apps/web/api (Vercel Functions)"]
+    health["health.ts"]
+    router["router.ts"]
+    ocrfn["pipeline/ocr.ts"]
+    extractfn["pipeline/extract.ts"]
   end
-  subgraph infra["infra (@docspread/infra)"]
-    cdk["CDK app: dev and prod stacks, scripts"]
+  subgraph apisvc["services/api (@docspread/api)"]
+    apisrc["handlers, token check, signed upload, OCR and extract steps; seed and smoke scripts"]
   end
   subgraph supabase["supabase (folder, not a workspace)"]
     migrations["migrations, seed, tests"]
@@ -49,6 +52,6 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   domain --> ui
   api -->|"only importer of mock functions"| mock
   web -->|workspace dependency| shared
-  infra -->|"bundles handler (esbuild)"| apisvc
+  fn -->|"imports by relative path"| apisvc
   apisvc -->|"secret key, SQL"| supabase
 `

@@ -20,6 +20,16 @@ export default defineConfig([
     },
   },
   {
+    // Vercel Functions run on Node, not in the browser, and are not React code
+    files: ['api/**/*.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     // shadcn/ui primitives export variant helpers next to components
     files: ['src/components/ui/**/*.{ts,tsx}'],
     rules: {

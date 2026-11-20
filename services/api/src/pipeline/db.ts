@@ -16,3 +16,10 @@ export const setDocumentError = async (supabase: SupabaseClient, documentId: str
     .eq('id', documentId)
   failOn('set error status', error)
 }
+
+/** Downloads a document's file from Storage (the secret-key client reads any bucket). */
+export const downloadDocument = async (supabase: SupabaseClient, bucket: string, path: string): Promise<Buffer> => {
+  const { data, error } = await supabase.storage.from(bucket).download(path)
+  if (error || !data) throw new Error(`storage download failed: ${error?.message ?? 'no data'}`)
+  return Buffer.from(await data.arrayBuffer())
+}
