@@ -80,7 +80,10 @@ export const useTestExtract = () =>
 export const useTestExtractPreview = (documentId: string, fields: FieldDef[], actions: FieldAction[] = []) =>
   useQuery({
     queryKey: builderKeys.preview(documentId, fields, actions),
-    queryFn: () => testExtract({ documentId, fields, actions }),
+    queryFn: () => {
+      requireAiBuilder()
+      return testExtract({ documentId, fields, actions })
+    },
     enabled: fields.length > 0,
     placeholderData: keepPreviousData,
   })
@@ -90,7 +93,10 @@ export const useTestExtractPreviews = (documentIds: string[], fields: FieldDef[]
   useQueries({
     queries: documentIds.map((documentId) => ({
       queryKey: builderKeys.preview(documentId, fields, actions),
-      queryFn: () => testExtract({ documentId, fields, actions }),
+      queryFn: () => {
+        requireAiBuilder()
+        return testExtract({ documentId, fields, actions })
+      },
       enabled: fields.length > 0,
       placeholderData: keepPreviousData,
     })),

@@ -106,6 +106,19 @@ pnpm --filter @docspread/api smoke
 pnpm --filter @docspread/api smoke-pipeline
 ```
 
+### Run the real flow locally
+
+The first real path (spec 023) runs with mocks off: sign in, create a type, upload, review, approve, export. Start `vercel dev` as above (mocks off, `VITE_API_BASE_URL=/api`, `services/api/.env.local` loaded), open http://localhost:3210 and:
+
+1. Sign up a company on `/sign-up` (company name, email, password; a name that already exists is refused), or sign in as the demo user (`DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD` in `services/api/.env.local`).
+2. Create a document type with its fields on `/types/new` (blank type; the AI builder, templates and sample-based types are not available yet).
+3. Upload a PDF, image or Word file on `/upload`.
+4. Wait in `/inbox`. The row goes from Processing to Needs review without a reload, usually in 1-2 minutes. The pipeline runs on the **production** functions, because the cloud database's cron job calls them.
+5. Open the document, check the values against the file, edit if needed and approve (or reject with a reason).
+6. On `/export` pick the type and download the `.xlsx` or `.csv`. The documents become exported.
+
+Costs: each invoice costs about $0.14 of Claude (classification plus extraction), so upload sparingly. Groups, Settings, onboarding and password reset show "Not available yet" with mocks off. The public demo (Vercel) stays on mocks.
+
 ## 7. Deploys
 
 - **App and functions:** Vercel builds every push through its Git integration (previews and production). To deploy by hand from `apps/web`: `vercel deploy --prod`. Production is the demo and uses the `docspread-dev` Supabase project. Preview URLs sit behind Deployment Protection, so the cron job and the smoke scripts use the production URL.

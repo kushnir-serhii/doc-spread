@@ -57,7 +57,7 @@ import { seedDocumentPages } from './pages'
 import type { PageSource } from './pages'
 import { guessFromSelection, proposeFieldsFromPages } from './propose-fields'
 import { buildTableSuggestion } from './suggest-table'
-import { confirm, overallConfidence } from './value-builders'
+import { confirm, overallConfidence } from '@/lib/fields/value-confidence'
 import { AuthError } from './types'
 import type {
   BBox,

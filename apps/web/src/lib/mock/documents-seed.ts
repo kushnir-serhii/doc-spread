@@ -1,6 +1,7 @@
 // Seed documents for the mock API: ~27 documents over the three templates, in every status.
 // Built from data.ts (which passes the supplier list) and re-exported there. Not part of the public mock API.
 import { DEFAULT_CURRENCY } from '@/lib/fields/default-currency'
+import { overallConfidence } from '@/lib/fields/value-confidence'
 import { seedDocumentTypeVersions } from './document-types-seed'
 import { INVOICE_SOURCES, RECEIPT_SOURCES } from './showcase-sources'
 import { BASE_NOW, DAY, isoDate, makeRng } from './seed-utils'
@@ -12,7 +13,6 @@ import {
   keyedValues,
   moneyValue,
   numberValue,
-  overallConfidence,
   phoneValue,
   selectValue,
   tableValue,

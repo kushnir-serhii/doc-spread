@@ -6,7 +6,7 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
 
   subgraph vercel["Vercel project (region fra1)"]
     spa["Static SPA (rewrite to index.html)"]
-    fns["Functions /api/*: API, pipeline/ocr, pipeline/extract"]
+    fns["Functions /api/*: API (signup, uploads, exports), pipeline/ocr, pipeline/extract"]
   end
 
   subgraph supa["Supabase project docspread-dev (Frankfurt)"]
@@ -30,9 +30,11 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
   end
 
   browser -->|"HTTPS: app files"| spa
-  browser -->|"HTTPS: API calls"| fns
-  browser -->|"sign in"| auth
-  browser -->|"signed upload"| docs
+  browser -->|"HTTPS: /api/signup, /api/uploads, /api/exports (bearer token)"| fns
+  browser -->|"sign in, session (publishable key)"| auth
+  browser -->|"reads and edits with the session, under RLS"| pg
+  browser -->|"signed upload, signed file and export links"| docs
+  browser -->|"signed download"| exports
   fns -->|"verify token (JWKS)"| auth
   fns -->|"SQL"| pg
   fns -->|"signed URLs"| docs

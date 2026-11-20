@@ -3,10 +3,10 @@ import type { Company, Document, ExportJob, Plan, PlanId, TeamMember } from './t
 import { seedDocumentTypeVersions } from './document-types-seed'
 import { buildSeedDocuments } from './documents-seed'
 import type { SeedSupplier } from './documents-seed'
-import { findValueMismatches } from './value-check'
+import { findValueMismatches } from '@/lib/fields/value-check'
 
 export { seedDocumentTypes, seedDocumentTypeVersions } from './document-types-seed'
-export { findValueMismatches } from './value-check'
+export { findValueMismatches } from '@/lib/fields/value-check'
 
 // ---------- company & team ----------
 export const seedCompany: Company = {

@@ -1,6 +1,6 @@
 import type { Document, FieldValue, ListDocumentsParams } from '@/lib/mock/types'
-import { findValueMismatches } from '@/lib/mock/value-check'
-import { confirm, overallConfidence } from '@/lib/mock/value-builders'
+import { findValueMismatches } from '@/lib/fields/value-check'
+import { confirm, overallConfidence } from '@/lib/fields/value-confidence'
 import { getSupabase } from './client'
 import { getDocumentType } from './document-types'
 import { getSignedFileUrl } from './file-url'

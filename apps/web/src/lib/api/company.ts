@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { USE_MOCKS } from '@/lib/env'
+import { notAvailableYet } from '@/lib/real/not-available'
 import { getCompany as mockGetCompany, updateCompany } from '@/lib/mock'
 import { getCompany as realGetCompany } from '@/lib/real/auth'
 import type { Company } from '@/lib/mock/types'
@@ -18,7 +19,8 @@ export const useCompany = () =>
 export const useUpdateCompany = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (patch: Partial<Company>) => updateCompany(patch),
+    mutationFn: (patch: Partial<Company>) =>
+      USE_MOCKS ? updateCompany(patch) : Promise.reject(notAvailableYet('Editing the company')),
     onSuccess: (data) => {
       queryClient.setQueryData(companyKeys.detail(), data)
       return queryClient.invalidateQueries({ queryKey: companyKeys.all })

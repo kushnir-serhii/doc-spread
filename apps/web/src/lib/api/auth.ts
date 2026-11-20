@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { USE_MOCKS } from '@/lib/env'
 import { requestPasswordReset, signIn as mockSignIn, signUp as mockSignUp } from '@/lib/mock'
+import { notAvailableYet } from '@/lib/real/not-available'
 import { getSession, onSessionChange, signIn as realSignIn, signOut as realSignOut, signUp as realSignUp } from '@/lib/real/auth'
 
 export type SessionUser = { name: string; email: string }
@@ -90,5 +91,6 @@ export const useSignOut = () => {
 
 export const useRequestPasswordReset = () =>
   useMutation({
-    mutationFn: (input: { email: string }) => requestPasswordReset(input),
+    mutationFn: (input: { email: string }) =>
+      USE_MOCKS ? requestPasswordReset(input) : Promise.reject(notAvailableYet('Password reset')),
   })

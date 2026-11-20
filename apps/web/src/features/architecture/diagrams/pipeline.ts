@@ -1,14 +1,16 @@
-/** Sequence diagram: one document from upload to review (spec 022: Vercel Functions, Supabase). */
+/** Sequence diagram: one document from sign-in to export (specs 022 and 023: Vercel Functions, Supabase). */
 export const PIPELINE_DIAGRAM = `sequenceDiagram
   participant B as Browser (web app)
   participant A as Vercel Function /api
   participant ST as Supabase Storage (documents)
+  participant AU as Supabase Auth
   participant DB as Postgres (Supabase, pgmq)
   participant CR as pg_cron + pg_net
   participant O as Vercel Function /api/pipeline/ocr
   participant X as Vercel Function /api/pipeline/extract
   participant C as Claude API
 
+  B->>AU: sign in (publishable key), then every read below runs with the user's session under RLS
   B->>A: POST /api/uploads
   A->>A: verify token, scope to the caller's company
   A->>DB: create the document row (status uploaded)
@@ -32,11 +34,19 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
   X->>C: extract fields (Claude Opus, file and words)
   C-->>X: values, confidence, cited words
   X->>DB: write status (needs_review, or unclassified when unsure), values
-  loop until status is needs_review
-    B->>A: poll the document status
-    A->>DB: read status
-    A-->>B: current status
+  loop every 3 s until status is needs_review (or unclassified, error)
+    B->>DB: read the document row (RLS: own company only)
+    DB-->>B: current status
   end
+  B->>DB: read document_pages (words, boxes) and the type version
+  B->>ST: signed URL of the file (RLS: own company only)
+  Note over B,DB: review: edit values (update with the version check, edited values get confidence 1), approve or reject (status update)
+  B->>A: POST /api/exports (type, format xlsx or csv)
+  A->>DB: read approved documents, build the rows from the type's export mapping
+  A->>ST: write exports/company/job (bucket exports)
+  A->>DB: export_jobs row, documents become exported
+  A-->>B: job id and signed download link (10 min)
+  B->>ST: download the file
 
   alt a step fails
     Note over O,X: the message stays and is read again after its visibility timeout
