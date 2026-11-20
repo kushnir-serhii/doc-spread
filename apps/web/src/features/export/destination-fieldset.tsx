@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { useCompany } from '@/lib/api'
+import { USE_MOCKS } from '@/lib/env'
 import type { DestinationOption } from './export-options'
 import { RadioOption } from './radio-option'
 import { RecipientPicker } from './recipient-picker'
@@ -27,8 +28,9 @@ export const DestinationFieldset = ({ value, onChange, showErrors }: Destination
       <RadioOption
         name={name}
         label="Email"
-        description="Send the file to a saved recipient or another address."
+        description={USE_MOCKS ? 'Send the file to a saved recipient or another address.' : 'Not available yet.'}
         checked={value.kind === 'email'}
+        disabled={!USE_MOCKS}
         onSelect={() =>
           onChange({
             kind: 'email',

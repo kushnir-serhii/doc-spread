@@ -126,6 +126,12 @@ export interface ExportJob {
   status: ExportStatus
 }
 
+/** A file the server built for an export: a short-lived signed link (real backend only). */
+export interface ExportDownload {
+  name: string
+  url: string
+}
+
 export interface CreateExportJobInput {
   format: ExportFormat
   typeId: string

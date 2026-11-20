@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useCompany, useCreateExportJob } from '@/lib/api'
 import type { CreateExportJobInput, Document, DocumentType, ExportColumnMapping } from '@/lib/mock/types'
 import { buildCsvFile, isSingleCsvFile } from './build-csv'
-import { downloadCsv } from './download-csv'
+import { downloadCsv, downloadFromUrl } from './download-csv'
 import { headerErrors } from './export-header-errors'
 import { addressError, resolveRecipient } from './export-options'
 import type { ExportOptions } from './export-options'
@@ -51,11 +51,17 @@ export const ExportSubmit = ({ type, selected, options, mapping, attempted, onBl
   const pending = mutation.isPending
 
   const run = async ({ input, result }: Attempt) => {
-    const done = await mutation.mutateAsync(input).then(
-      () => true,
-      () => false,
+    const created = await mutation.mutateAsync(input).then(
+      (value) => value,
+      () => undefined,
     )
-    if (!done) return
+    if (!created) return
+    if (created.download) {
+      // the server built the file: it replaces the one built here
+      onExported({ ...result, file: undefined, remote: created.download })
+      downloadFromUrl(created.download)
+      return
+    }
     onExported(result)
     if (result.file && input.destination === 'download') downloadCsv(result.file)
   }

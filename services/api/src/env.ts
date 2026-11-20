@@ -2,6 +2,8 @@ export interface Env {
   supabaseUrl: string
   supabaseJwksUrl: string
   documentsBucket: string
+  /** Optional `STORAGE_EXPORTS_BUCKET`, default `exports` (spec 022 bucket). */
+  exportsBucket: string
   uploadMaxBytes: number
   /** Bypasses row-level security. Never log it. */
   supabaseSecretKey: string
@@ -33,6 +35,7 @@ export const loadEnv = (source: Source = process.env): Env => {
     supabaseUrl: source.SUPABASE_URL ?? '',
     supabaseJwksUrl: source.SUPABASE_JWKS_URL ?? '',
     documentsBucket: source.STORAGE_DOCUMENTS_BUCKET ?? '',
+    exportsBucket: source.STORAGE_EXPORTS_BUCKET || 'exports',
     uploadMaxBytes,
     supabaseSecretKey: source.SUPABASE_SECRET_KEY ?? '',
   }

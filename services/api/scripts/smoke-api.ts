@@ -287,6 +287,216 @@ if (signupUserIds.length > 0) {
   check('signup test users removed', !leftovers.users.some((user) => signupUserIds.includes(user.id)))
 }
 
+// ---------- POST /exports (spec 023, slice 5) ----------
+let throwawayExportCompanyId = ''
+const exportJobIds: string[] = []
+const exportDocumentIds: string[] = []
+let exportCompanyId = ''
+let exportTypeId = ''
+let savedMapping: unknown = null
+let keptStatusBefore: string | undefined
+const KEPT_INVOICE_ID = '1ca2f69a-bd05-4c74-9790-be62a5ff4e81'
+const exportsBucket = process.env.STORAGE_EXPORTS_BUCKET || apiEnv.STORAGE_EXPORTS_BUCKET || 'exports'
+{
+  const exportCall = (body: unknown, token: string | undefined = accessToken) => call('/exports', { method: 'POST', token, body })
+  check('POST /exports without a token returns 401', (await call('/exports', { method: 'POST', body: {} })).status === 401)
+  check('POST /exports with a garbage token returns 401', (await exportCall({}, 'not.a.jwt')).status === 401)
+
+  const { data: typeRow } = await admin.from('document_types').select('id, company_id, export_mapping, current_version').eq('name', 'Invoice').limit(1).single()
+  const { data: versionRow } = await admin
+    .from('document_type_versions')
+    .select('fields')
+    .eq('type_id', typeRow?.id ?? '')
+    .eq('version', typeRow?.current_version ?? 1)
+    .single()
+  const fields = (Array.isArray(versionRow?.fields) ? versionRow.fields : []) as { id: string; key: string; type: string; columns?: { id: string }[] }[] // jsonb written by the app as FieldDef[]
+  const table = fields.find((field) => field.type === 'table')
+  const fieldId = (key: string): string => fields.find((field) => field.key === key)?.id ?? ''
+  if (!typeRow || fields.length === 0 || !table) {
+    check('the demo Invoice type with a table field exists', false)
+  } else {
+    exportCompanyId = typeRow.company_id
+    exportTypeId = typeRow.id
+    savedMapping = typeRow.export_mapping
+    const { data: kept } = await admin.from('documents').select('status').eq('id', KEPT_INVOICE_ID).maybeSingle()
+    keptStatusBefore = kept?.status
+
+    const bad = async (label: string, body: unknown, status: number, code: string) => {
+      const response = await exportCall(body)
+      check(`POST /exports ${label} returns ${status} ${code}`, response.status === status && errorCode(response.body) === code, `status ${response.status} ${errorCode(response.body)}`)
+    }
+    await bad('without a body', undefined, 400, 'invalid_body')
+    await bad('with a bad typeId', { typeId: 'x', format: 'xlsx' }, 400, 'invalid_type_id')
+    await bad('with an unknown format', { typeId: exportTypeId, format: 'ods' }, 400, 'invalid_format')
+    await bad('as a PDF bundle', { typeId: exportTypeId, format: 'pdf_bundle' }, 400, 'not_available_yet')
+    await bad('by email', { typeId: exportTypeId, format: 'xlsx', destination: 'email' }, 400, 'not_available_yet')
+    await bad('with empty documentIds', { typeId: exportTypeId, format: 'xlsx', documentIds: [] }, 400, 'invalid_document_ids')
+    await bad('with a malformed mapping', { typeId: exportTypeId, format: 'xlsx', columns: { columns: 'x' } }, 400, 'invalid_columns')
+    await bad('for a random type', { typeId: randomUUID(), format: 'xlsx' }, 404, 'not_found')
+
+    // Another company: its type and its document.
+    const { data: other } = await admin.from('companies').insert({ name: `smoke-export-${randomUUID().slice(0, 8)}`, default_currency: 'USD' }).select('id').single()
+    if (other) {
+      throwawayExportCompanyId = other.id
+      const { data: foreignType } = await admin.from('document_types').insert({ company_id: other.id, name: 'Foreign' }).select('id').single()
+      if (foreignType) {
+        await admin.from('document_type_versions').insert({ type_id: foreignType.id, version: 1, company_id: other.id, fields: [] })
+        await bad('for the type of another company', { typeId: foreignType.id, format: 'xlsx' }, 404, 'not_found')
+      }
+      const foreignDoc = randomUUID()
+      await admin.from('documents').insert({ id: foreignDoc, company_id: other.id, file_name: 'foreign.pdf', file_type: 'pdf', status: 'approved' })
+      await bad('with a document of another company', { typeId: exportTypeId, format: 'xlsx', documentIds: [foreignDoc] }, 404, 'document_not_found')
+      const { data: stillApproved } = await admin.from('documents').select('status').eq('id', foreignDoc).single()
+      check('the document of the other company is untouched', stillApproved?.status === 'approved')
+    }
+
+    // Throwaway documents of the demo Invoice type (the kept invoice is never exported).
+    const money = (amount: number, currency: string) => ({ type: 'money', value: { amount, currency }, confidence: 1 })
+    const cell = (type: string, value: unknown) => ({ type, value, confidence: 1 })
+    const columnId = (name: string): string => table.columns?.find((column) => column.id.endsWith(`-c-${name}`))?.id ?? ''
+    const makeValues = (supplier: string, currency: string, gross: number) => ({
+      [fieldId('supplier_name')]: cell('text', supplier),
+      [fieldId('issue_date')]: cell('date', '2026-10-14'),
+      [fieldId('gross_total')]: money(gross, currency),
+      [table.id]: {
+        type: 'table',
+        rows: [1, 2].map((n) => ({
+          id: `r${n}`,
+          cells: { [columnId('description')]: cell('text', `Item, "${n}"`), [columnId('net')]: money(1000 * n, currency) },
+        })),
+      },
+    })
+    const newDocument = async (name: string, status: string, typeId: string | null, values: unknown): Promise<string> => {
+      const id = randomUUID()
+      const { error } = await admin.from('documents').insert({
+        id,
+        company_id: exportCompanyId,
+        file_name: name,
+        file_type: 'pdf',
+        status,
+        type_id: typeId,
+        type_version: typeId ? typeRow.current_version : null,
+        values,
+      })
+      if (error) throw new Error(`throwaway document failed: ${error.message}`)
+      exportDocumentIds.push(id)
+      return id
+    }
+    const docA = await newDocument('smoke-export-a.pdf', 'approved', exportTypeId, makeValues('Smoke Ltd', 'USD', 123456))
+    const docB = await newDocument('smoke-export-b.pdf', 'approved', exportTypeId, makeValues('Jen Co', 'JPY', 1500))
+    const docReview = await newDocument('smoke-export-review.pdf', 'needs_review', exportTypeId, {})
+    const docUntyped = await newDocument('smoke-export-untyped.pdf', 'approved', null, {})
+
+    await bad('with a document that needs review', { typeId: exportTypeId, format: 'xlsx', documentIds: [docA, docReview] }, 409, 'document_not_approved')
+    await bad('with a document of no type', { typeId: exportTypeId, format: 'xlsx', documentIds: [docA, docUntyped] }, 409, 'document_wrong_type')
+    const { data: untouched } = await admin.from('documents').select('id, status').in('id', [docA, docB, docReview])
+    check(
+      'a refused export changes no document',
+      untouched?.find((row) => row.id === docA)?.status === 'approved' && untouched.find((row) => row.id === docReview)?.status === 'needs_review',
+    )
+    const { count: refusedJobs } = await admin.from('export_jobs').select('id', { count: 'exact', head: true }).eq('type_id', exportTypeId).contains('document_ids', [docA])
+    check('a refused export records no job', (refusedJobs ?? 0) === 0)
+
+    interface Exported {
+      jobId?: string
+      url?: string
+      fileName?: string
+    }
+    const download = async (url: string): Promise<Buffer> => Buffer.from(await (await fetch(url)).arrayBuffer())
+    const objectExists = async (jobId: string, ext: string): Promise<boolean> => {
+      const { data } = await admin.storage.from(exportsBucket).list(exportCompanyId, { search: `${jobId}.${ext}` })
+      return (data ?? []).some((file) => file.name === `${jobId}.${ext}`)
+    }
+    const flatMapping = {
+      columns: fields.map((field) => ({ source: { kind: 'field', fieldId: field.id }, include: true, header: field.key })),
+      tables: { [table.id]: 'flatten' },
+    }
+
+    // XLSX
+    const xlsx = await exportCall({ typeId: exportTypeId, format: 'xlsx', documentIds: [docA, docB] })
+    const xlsxBody = xlsx.body as Exported // our API's response shape
+    check(
+      'POST /exports xlsx returns 200 with jobId, url and fileName',
+      xlsx.status === 200 && !!xlsxBody.jobId && !!xlsxBody.url && /^invoice-\d{4}-\d{2}-\d{2}\.xlsx$/.test(xlsxBody.fileName ?? ''),
+      `status ${xlsx.status} ${errorCode(xlsx.body)}`,
+    )
+    if (xlsxBody.jobId && xlsxBody.url) {
+      exportJobIds.push(xlsxBody.jobId)
+      const bytes = await download(xlsxBody.url)
+      check('the signed URL downloads a non-empty .xlsx (zip magic PK)', bytes.length > 100 && bytes.subarray(0, 2).toString('latin1') === 'PK', `${bytes.length} bytes`)
+      check('the xlsx object is in the exports bucket under <company>/<job>.xlsx', await objectExists(xlsxBody.jobId, 'xlsx'))
+      const { data: job } = await admin.from('export_jobs').select('status, format, destination, type_id, created_by, document_ids, columns').eq('id', xlsxBody.jobId).single()
+      check(
+        'the export job is recorded as completed with its documents and columns',
+        job?.status === 'completed' &&
+          job.format === 'xlsx' &&
+          job.destination === 'download' &&
+          job.type_id === exportTypeId &&
+          !!job.created_by &&
+          JSON.stringify(job.document_ids) === JSON.stringify([docA, docB]) &&
+          !!job.columns,
+      )
+      const { data: after } = await admin.from('documents').select('id, status').in('id', [docA, docB, docReview])
+      check(
+        'the exported documents are exported, the others untouched',
+        after?.find((row) => row.id === docA)?.status === 'exported' &&
+          after.find((row) => row.id === docB)?.status === 'exported' &&
+          after.find((row) => row.id === docReview)?.status === 'needs_review',
+      )
+    }
+    await bad('again for exported documents', { typeId: exportTypeId, format: 'xlsx', documentIds: [docA] }, 409, 'document_not_approved')
+
+    // CSV with one table flattened: a single file with a BOM
+    await admin.from('documents').update({ status: 'approved' }).in('id', [docA, docB])
+    const csv = await exportCall({ typeId: exportTypeId, format: 'csv', documentIds: [docA, docB], columns: flatMapping })
+    const csvBody = csv.body as Exported
+    check('POST /exports csv returns 200 with a .csv file name', csv.status === 200 && /\.csv$/.test(csvBody.fileName ?? ''), `status ${csv.status} ${errorCode(csv.body)}`)
+    if (csvBody.jobId && csvBody.url) {
+      exportJobIds.push(csvBody.jobId)
+      const bytes = await download(csvBody.url)
+      const text = bytes.toString('utf8')
+      const lines = text.replace(/^﻿/, '').trim().split('\r\n')
+      check(
+        'the csv is non-empty, starts with a UTF-8 BOM and has a header plus one row per table row',
+        bytes.length > 50 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf && lines.length === 5,
+        `${lines.length} lines`,
+      )
+      check('the csv quotes a field with quotes and a comma (RFC 4180)', text.includes('"Item, ""1"""'))
+      check('the csv holds money in major units with the currency next to it', text.includes('1234.56,USD') && text.includes('1500,JPY'))
+      const { data: saved } = await admin.from('document_types').select('export_mapping').eq('id', exportTypeId).single()
+      check('the mapping sent with the export is saved on the type', !!saved?.export_mapping && JSON.stringify(saved.export_mapping) !== JSON.stringify(savedMapping))
+    }
+
+    // CSV with the default mapping: the table goes to its own file, so a zip
+    await admin.from('document_types').update({ export_mapping: savedMapping }).eq('id', exportTypeId)
+    await admin.from('documents').update({ status: 'approved' }).in('id', [docA, docB])
+    const zip = await exportCall({ typeId: exportTypeId, format: 'csv', documentIds: [docA, docB] })
+    const zipBody = zip.body as Exported
+    check('POST /exports csv with a separate table returns a .zip', zip.status === 200 && /\.zip$/.test(zipBody.fileName ?? ''), `status ${zip.status} ${errorCode(zip.body)}`)
+    if (zipBody.jobId && zipBody.url) {
+      exportJobIds.push(zipBody.jobId)
+      const bytes = await download(zipBody.url)
+      check('the zip downloads (PK magic)', bytes.length > 100 && bytes.subarray(0, 2).toString('latin1') === 'PK')
+    }
+
+    const { data: keptAfter } = await admin.from('documents').select('status').eq('id', KEPT_INVOICE_ID).maybeSingle()
+    check('the kept invoice was not touched by the smoke', keptAfter?.status === keptStatusBefore, `${keptStatusBefore} -> ${keptAfter?.status}`)
+  }
+}
+if (exportJobIds.length > 0) {
+  const paths = exportJobIds.flatMap((jobId) => ['xlsx', 'csv', 'zip'].map((ext) => `${exportCompanyId}/${jobId}.${ext}`))
+  await admin.storage.from(exportsBucket).remove(paths)
+  await admin.from('export_jobs').delete().in('id', exportJobIds)
+}
+if (exportDocumentIds.length > 0) await admin.from('documents').delete().in('id', exportDocumentIds)
+if (exportTypeId) await admin.from('document_types').update({ export_mapping: savedMapping }).eq('id', exportTypeId)
+if (throwawayExportCompanyId) await admin.from('companies').delete().eq('id', throwawayExportCompanyId)
+if (exportJobIds.length > 0 || exportDocumentIds.length > 0) {
+  const { count: jobsLeft } = await admin.from('export_jobs').select('id', { count: 'exact', head: true }).in('id', exportJobIds)
+  const { count: docsLeft } = await admin.from('documents').select('id', { count: 'exact', head: true }).in('id', exportDocumentIds)
+  check('export test jobs and documents removed', (jobsLeft ?? 0) === 0 && (docsLeft ?? 0) === 0)
+}
+
 // Cleanup: test objects, documents rows and the throwaway company (the demo user, company and type stay).
 if (createdPaths.length > 0) await admin.storage.from(bucket).remove(createdPaths)
 if (createdDocumentIds.length > 0) await admin.from('documents').delete().in('id', createdDocumentIds)
