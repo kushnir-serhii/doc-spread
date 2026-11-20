@@ -1,4 +1,6 @@
 import { DIAGRAM_IDS, type DiagramDef, type DiagramId } from './diagram-def'
+import { CONTEXT_DIAGRAM, CONTEXT_ITEMS } from './context'
+import { DELIVERY_DIAGRAM, DELIVERY_ITEMS } from './delivery'
 import { DEPLOYMENT_DIAGRAM, DEPLOYMENT_ITEMS } from './deployment'
 import { DOMAIN_DIAGRAM, DOMAIN_ITEMS } from './domain'
 import { LIFECYCLE_DIAGRAM, LIFECYCLE_ITEMS } from './lifecycle'
@@ -6,9 +8,19 @@ import { PIPELINE_DIAGRAM, PIPELINE_ITEMS } from './pipeline'
 import { SCREENS_DIAGRAM, SCREENS_ITEMS } from './screens'
 import { STRUCTURE_DIAGRAM, STRUCTURE_ITEMS } from './structure'
 
-export const DEFAULT_DIAGRAM_ID: DiagramId = 'structure'
+export const DEFAULT_DIAGRAM_ID: DiagramId = 'context'
 
 export const DIAGRAMS: DiagramDef[] = [
+  {
+    id: 'context',
+    label: 'System context',
+    kind: 'Context diagram (C4 style)',
+    description:
+      'DocSpread (web app and API) in the middle, the user, and the four outside systems it depends on: Vercel, Supabase, Anthropic and GitHub. One labelled arrow per relationship.',
+    sources: ['CLAUDE.md', 'docs/product.md', 'apps/web/vercel.json', 'services/api/src/', 'apps/web/api/', '.github/workflows/migrate.yml'],
+    code: CONTEXT_DIAGRAM,
+    items: CONTEXT_ITEMS,
+  },
   {
     id: 'structure',
     label: 'Structure',
@@ -70,6 +82,16 @@ export const DIAGRAMS: DiagramDef[] = [
     sources: ['docs/specs/022-vercel-supabase.md', 'docs/specs/023-first-real-flow.md', 'docs/product.md'],
     code: DEPLOYMENT_DIAGRAM,
     items: DEPLOYMENT_ITEMS,
+  },
+  {
+    id: 'delivery',
+    label: 'Delivery',
+    kind: 'Activity diagram',
+    description:
+      'How a change reaches production: a branch per spec, a pull request and preview, the merge to main, the Vercel deploy, and the migrate workflow that applies database migrations to docspread-dev.',
+    sources: ['.github/workflows/migrate.yml', 'CLAUDE.md', 'docs/setup.md', 'docs/process.md'],
+    code: DELIVERY_DIAGRAM,
+    items: DELIVERY_ITEMS,
   },
 ]
 

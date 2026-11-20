@@ -1,6 +1,6 @@
 import type { GlossaryKey } from './glossary'
 
-export const DIAGRAM_IDS = ['structure', 'domain', 'screens', 'lifecycle', 'pipeline', 'deployment'] as const
+export const DIAGRAM_IDS = ['context', 'structure', 'domain', 'screens', 'lifecycle', 'pipeline', 'deployment', 'delivery'] as const
 
 export type DiagramId = (typeof DIAGRAM_IDS)[number]
 

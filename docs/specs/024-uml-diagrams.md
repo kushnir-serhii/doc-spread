@@ -87,15 +87,15 @@ No secret, account id, project ref or key appears in a diagram or a glossary ent
   - [x] it works at any zoom level from slice 2
   - [x] "Items in this diagram" lists every entry with the same text
 
-### [ ] 4. System context and Delivery (GitHub)
+### [x] 4. System context and Delivery (GitHub)
 - **Build:** write diagrams 1 and 10 with their `items` and glossary entries (Vercel project, Vercel Functions, preview vs production deployment, Vercel Git integration, GitHub repository, pull request, GitHub Actions `migrate.yml`, GitHub environment `dev`, Supabase CLI, `docspread-dev`, Anthropic Claude API, …). Fix the Deployment diagram's GitHub nodes (Actions exists, migrations on merge to `main` when `supabase/migrations/**` changes). `context` becomes the default tab.
 - **Files:** `src/features/architecture/diagrams/{context,delivery,deployment,glossary,diagram-def,index}.ts`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] the context diagram has Vercel, Supabase, Anthropic and GitHub, each with a labelled arrow that matches the code (`vercel.json`, `services/api`, `migrate.yml`)
-  - [ ] the delivery diagram matches `migrate.yml` (trigger, paths filter, environment, `supabase db push`) and the deploy rules in `CLAUDE.md`
-  - [ ] `/architecture` with no `?tab=` shows System context; `?tab=nope` too
-  - [ ] every node opens a tooltip; no secrets or project refs in code or glossary
+  - [x] the context diagram has Vercel, Supabase, Anthropic and GitHub, each with a labelled arrow that matches the code (`vercel.json`, `services/api`, `migrate.yml`)
+  - [x] the delivery diagram matches `migrate.yml` (trigger, paths filter, environment, `supabase db push`) and the deploy rules in `CLAUDE.md`
+  - [x] `/architecture` with no `?tab=` shows System context; `?tab=nope` too
+  - [x] every node opens a tooltip; no secrets or project refs in code or glossary
 
 ### [x] 5. Keeping the diagrams true
 - **Build:** extend the rule in `conventions.md` → Architecture diagrams: a route change updates Screens and User flow; a status, storage, queue or pipeline change updates Lifecycle, Document flow and Pipeline; a workflow, deploy or env-platform change updates Delivery, Deployment and System context; a new service updates System context and Deployment; every new node gets a glossary entry in the same slice. Add the four new tabs to the UI-check list in `process.md` if one is named there.
@@ -139,3 +139,4 @@ None.
 | 2026-11-20 | 2 | done (sonnet, designer) | `react-zoom-pan-pinch` ^4.4.0 (only in the dev-only chunk; main chunk unchanged at 339.34 kB). `diagram-viewport.tsx`, `diagram-toolbar.tsx`: Zoom in/out, Fit, 100%, Fullscreen (full-viewport Dialog, focus returns), `+`/`-`/`0`, live zoom readout; wrapper is now `role="group"` with `aria-roledescription="diagram"`. Fit covers the whole diagram (width-only cut off the bottom); Structure is 2370 px wide, fitted at 32% (1280) and 14% (375). UI check 12/12; screenshots reviewed. Not checked: touch pinch, trackpad pinch, mouse-drag pan. Note: in fullscreen the SVG is in the DOM twice (same Mermaid id). |
 | 2026-11-20 | 3 | done (sonnet, designer) | `glossary.ts` (89 entries), `items` on all six diagrams (structure 21, domain 19, screens 19, lifecycle 8, pipeline 8 participants, deployment 14); Mermaid code unchanged. `diagram-items.ts` resolves nodes inside its own container (fullscreen duplicates the SVG), makes them focusable buttons; `node-tooltip.tsx` = Radix Popover with a virtual anchor (hover 300 ms, tap/click pins, Enter/Space, Esc returns focus, no open after a pan drag, works in fullscreen); `diagram-items-list.tsx` lists entries by provider. All 66 `where` paths exist; no secrets. UI check 24/24, no resolver warnings on any tab. Not checked: AA contrast measured (judged visually), screen reader, popover following during pinch. Clusters and `[*]` markers have no entries. |
 | 2026-11-20 | 5 | done (haiku) | `conventions.md` → Architecture diagrams: dev only, ten tabs, change → diagrams table (adds User flow, Document flow, System context, Delivery), glossary + `items` rule. `CLAUDE.md` bullet rewritten. `process.md` unchanged (names no architecture routes). Built in parallel with slice 4. |
+| 2026-11-20 | 4 | done (sonnet) | `context.ts` (7 nodes, 10 labelled arrows, `flowchart` in C4 style) and `delivery.ts` (14 nodes, swimlanes Developer / GitHub / Vercel / Supabase, matches `migrate.yml`); `context` is the default tab (also for `?tab=nope`); Deployment's GitHub Actions node no longer "planned". 16 new glossary entries (105 total). UI check 16/16, no resolver warnings on context, delivery and deployment. Note: the browser → Supabase arrow (sign in, signed upload) describes the 022/023 design; the web code for it lands with 023. Both diagrams fit at 30–49%, so text is small until zoomed. |

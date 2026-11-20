@@ -28,7 +28,7 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
 
   subgraph gh["GitHub"]
     repo["Repository"]
-    actions["GitHub Actions: supabase db push (slice 7, planned)"]
+    actions["GitHub Actions migrate.yml: supabase db push on merge to main (supabase/migrations/** changed)"]
   end
 
   browser -->|"HTTPS: app files"| spa
@@ -48,7 +48,7 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
   cron -.->|"read settings"| vault
   repo -->|"Vercel Git integration: deploy"| vercel
   repo --> actions
-  actions -->|"migrations"| pg
+  actions -->|"applies new migrations"| pg
 `
 
 /** Mermaid node id → glossary entry. */
