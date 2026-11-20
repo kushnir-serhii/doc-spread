@@ -1,6 +1,6 @@
 # 023 — First real flow: sign in → type → upload → AI → review → spreadsheet
 
-**Status:** ready · **Depends on:** 022 · **Route(s):** `/sign-up`, `/sign-in`, `/types`, `/types/new`, `/types/:typeId`, `/upload`, `/inbox`, `/documents/:documentId`, `/export`
+**Status:** in-progress · **Depends on:** 022 · **Route(s):** `/sign-up`, `/sign-in`, `/types`, `/types/new`, `/types/:typeId`, `/upload`, `/inbox`, `/documents/:documentId`, `/export`
 
 ## Goal
 With `VITE_USE_MOCKS=false` a user signs up with a new company (or signs in), creates a document type with the fields they need, uploads a real file, watches OCR and Claude fill the fields, reviews and approves the values, and downloads a spreadsheet of the approved documents — all against `docspread-dev`. With mocks on (the public demo) nothing changes. This is one thin path through the real backend; the other screens follow in later specs.
@@ -30,16 +30,16 @@ With `VITE_USE_MOCKS=false` a user signs up with a new company (or signs in), cr
 
 ## Slices
 
-### [ ] 1. Real client, sign-up and sign-in
+### [x] 1. Real client, sign-up and sign-in
 - **Build:** `POST /api/signup` in `services/api` (`{ companyName, email, password }`, no token): validates (company name 2–100 chars after trim, email, password ≥ 8), refuses `company_taken` (409) when a company with the same normalized name (trim, collapse spaces, lowercase) exists, `email_taken` (409) when the email is registered; otherwise creates the user through the Auth admin API with `email_confirm: true`, the company (default currency USD, no locale) and an active owner membership, rolling back what it created if a later step fails. A migration adds a unique index on the normalized company name so two parallel sign-ups can't both win. The sign-up form gets a Company name field (mocks off) and drops Full name; after success the browser signs in and goes to `/types` (onboarding is skipped with mocks off). Then add `@supabase/supabase-js` to `apps/web`; `src/lib/real/client.ts` (one client from `readBackendEnv()`, session persisted by supabase-js); `src/lib/real/auth.ts` (sign in → `invalid_credentials` / `rate_limited` codes like the mock, sign out, session, company of the user); `useSignIn`, `useSignOut`, `useSession`, `useCompany` switch on `USE_MOCKS`; app routes redirect to `/sign-in` without a session when mocks are off; a sign-out action in the user menu. A small `src/lib/real/api-fetch.ts` that calls `VITE_API_BASE_URL` with the session's access token. `conventions.md`: `src/lib/real/` is, like `@/lib/mock`, imported only by `src/lib/api/`.
 - **Files:** `services/api/src/{handler,signup}.ts`, `services/api/scripts/smoke-api.ts`, `supabase/migrations/*`, `supabase/tests/*`, `apps/web/package.json`, `src/lib/real/{client,auth,api-fetch}.ts`, `src/lib/api/{auth,company}.ts`, `src/features/auth/sign-up-form.tsx`, `src/app/router.tsx` (guard), user menu component, `docs/conventions.md`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] with mocks on, the app behaves exactly as before (UI check of `/sign-in` and `/inbox` unchanged)
-  - [ ] with mocks off, signing up with a new company name creates the user, the company and the owner and lands signed in; the same company name again (any case or spacing) is refused with "Company already exists" and nothing is created; a used email is refused
-  - [ ] with mocks off, the demo login signs in, a reload keeps the session, sign-out returns to `/sign-in`, a wrong password shows the existing error
-  - [ ] without a session, `/inbox` redirects to `/sign-in`
-  - [ ] typecheck, lint, build green
+  - [x] with mocks on, the app behaves exactly as before (UI check of `/sign-in` and `/inbox` unchanged)
+  - [x] with mocks off, signing up with a new company name creates the user, the company and the owner and lands signed in; the same company name again (any case or spacing) is refused with "Company already exists" and nothing is created; a used email is refused
+  - [x] with mocks off, the demo login signs in, a reload keeps the session, sign-out returns to `/sign-in`, a wrong password shows the existing error
+  - [x] without a session, `/inbox` redirects to `/sign-in`
+  - [x] typecheck, lint, build green
 
 ### [ ] 2. Document types from the database
 - **Build:** `src/lib/real/document-types.ts` + `map-document-type.ts`: list (current version of each type), read one (any version), create (type row + version 1), save (new version = `current_version + 1`, insert into `document_type_versions`, bump `current_version`), export mapping read/write on `document_types`. Hooks in `lib/api/document-types.ts` switch. Builder AI buttons (propose, suggest, test extract, examples) are disabled with "not available yet" when mocks are off.
@@ -110,3 +110,4 @@ All answered by the owner on 2026-11-20: every recommendation accepted, except s
 | --- | --- | --- | --- |
 | 2026-11-20 | — | draft | written after the owner asked to test the whole flow locally with mocks off |
 | 2026-11-20 | — | ready | owner approved every recommendation; changed sign-up: company name + email + password, existing company refused; going ahead while 022 waits only for its post-merge workflow run |
+| 2026-11-20 | 1 | done (sonnet) | `POST /api/signup` (`signup.ts`: validation, normalized-name check, admin `createUser` with `email_confirm`, company USD + owner membership, rollback) and migration `company_name_unique` (+ pgTAP); web: `@supabase/supabase-js`, `lib/real/{client,api-fetch,auth}.ts`, per-hook switch in `lib/api/{auth,company}.ts`, `useSignOut` / `useSession`, `RequireSession` guard with `returnTo`, Company name on sign-up (mocks off), real Sign out. Checks: typecheck, lint, build; `supabase test db` 6 files pass, advisors clean; smoke ALL PASS direct and over local HTTP (sign-up 400 / 201 / 409 cases); Playwright run with mocks off (sign up, reload, sign out, guard, duplicate company, used email, wrong password, demo login, returnTo); UI check with mocks on 12/12, sign-up unchanged. Migration not yet on dev (owner push). Found: `vercel dev` serves Vite module requests through the SPA rewrite (blank page) and Git Bash rewrites `/api` env values — fixed in slice 2. |
