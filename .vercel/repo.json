@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_WtDg6ArOQI3ApsPAhOpW5eGtb8YY",
+      "name": "doc-spread",
+      "directory": "apps/web",
+      "orgId": "team_fwZK6lu4iQFM0aoaxYuWWBF1"
+    }
+  ]
+}
