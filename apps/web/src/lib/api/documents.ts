@@ -1,20 +1,24 @@
 import { skipToken, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
+import { USE_MOCKS } from '@/lib/env'
 import {
-  approveDocuments,
-  getDocument,
-  getDocumentPages,
-  listDocuments,
-  reassignDocumentType,
-  rejectDocument,
-  updateDocumentValues,
-  uploadDocument,
+  approveDocuments as mockApproveDocuments,
+  getDocument as mockGetDocument,
+  getDocumentPages as mockGetDocumentPages,
+  listDocuments as mockListDocuments,
+  reassignDocumentType as mockReassignDocumentType,
+  rejectDocument as mockRejectDocument,
+  updateDocumentValues as mockUpdateDocumentValues,
+  uploadDocument as mockUploadDocument,
 } from '@/lib/mock'
+import { getDocument as realGetDocument, listDocuments as realListDocuments } from '@/lib/real/documents'
+import { notAvailableYet } from '@/lib/real/not-available'
+import { uploadDocument as realUploadDocument } from '@/lib/real/upload'
 import { planKeys } from './plan'
 import type { Document, FieldValue, ListDocumentsParams } from '@/lib/mock/types'
 import { groupKeys } from './groups'
 
-const POLL_INTERVAL_MS = 1500
+const POLL_INTERVAL_MS = USE_MOCKS ? 1500 : 3000
 
 export const documentKeys = {
   all: ['documents'] as const,
@@ -42,7 +46,7 @@ interface UseDocumentsOptions {
 export const useDocuments = (params: ListDocumentsParams = {}, { keepPreviousIf }: UseDocumentsOptions = {}) =>
   useQuery({
     queryKey: documentKeys.list(params),
-    queryFn: () => listDocuments(params),
+    queryFn: () => (USE_MOCKS ? mockListDocuments(params) : realListDocuments(params)),
     refetchInterval: pollWhilePending,
     placeholderData: (previous, previousQuery) =>
       keepPreviousIf && previousQuery && keepPreviousIf(previousQuery.queryKey[2]) ? previous : undefined,
@@ -51,7 +55,7 @@ export const useDocuments = (params: ListDocumentsParams = {}, { keepPreviousIf 
 export const useDocument = (id: string) =>
   useQuery({
     queryKey: documentKeys.detail(id),
-    queryFn: () => getDocument(id),
+    queryFn: () => (USE_MOCKS ? mockGetDocument(id) : realGetDocument(id)),
     refetchInterval: pollWhilePending,
   })
 
@@ -60,13 +64,13 @@ export const useDocumentsByIds = (ids: string[]) =>
   useQueries({
     queries: ids.map((id) => ({
       queryKey: documentKeys.detail(id),
-      queryFn: () => getDocument(id),
+      queryFn: () => (USE_MOCKS ? mockGetDocument(id) : realGetDocument(id)),
       refetchInterval: pollWhilePending,
     })),
   })
 
 /** Seeded documents with real OCR words: ready-made samples for a try-out (mock data; the backend lists its own). */
-const DEMO_DOCUMENT_IDS = ['doc-001', 'doc-002']
+const DEMO_DOCUMENT_IDS = USE_MOCKS ? ['doc-001', 'doc-002'] : []
 
 export const useDemoDocuments = () => useDocumentsByIds(DEMO_DOCUMENT_IDS)
 
@@ -74,7 +78,10 @@ export const useDemoDocuments = () => useDocumentsByIds(DEMO_DOCUMENT_IDS)
 export const useDocumentPages = (id: string | null) =>
   useQuery({
     queryKey: documentKeys.pages(id ?? ''),
-    queryFn: id === null ? skipToken : () => getDocumentPages(id),
+    queryFn:
+      id === null
+        ? skipToken
+        : () => (USE_MOCKS ? mockGetDocumentPages(id) : Promise.reject(notAvailableYet('The document viewer'))), // real in slice 4
     staleTime: Infinity,
   })
 
@@ -95,7 +102,7 @@ export const useUpdateDocumentValues = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Record<string, FieldValue> }) =>
-      updateDocumentValues(id, patch),
+      USE_MOCKS ? mockUpdateDocumentValues(id, patch) : Promise.reject(notAvailableYet('Editing values')), // real in slice 4
     onSuccess: (_data, { id }) => invalidateAfterChange(queryClient, [id]),
   })
 }
@@ -103,7 +110,8 @@ export const useUpdateDocumentValues = () => {
 export const useApproveDocuments = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (ids: string[]) => approveDocuments(ids),
+    mutationFn: (ids: string[]) =>
+      USE_MOCKS ? mockApproveDocuments(ids) : Promise.reject(notAvailableYet('Approving')), // real in slice 4
     onSuccess: (_data, ids) => invalidateAfterChange(queryClient, ids),
   })
 }
@@ -112,7 +120,7 @@ export const useRejectDocument = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
-      rejectDocument(id, reason),
+      USE_MOCKS ? mockRejectDocument(id, reason) : Promise.reject(notAvailableYet('Rejecting')), // real in slice 4
     onSuccess: (_data, { id }) => invalidateAfterChange(queryClient, [id]),
   })
 }
@@ -121,7 +129,7 @@ export const useReassignDocumentType = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, typeId }: { id: string; typeId: string }) =>
-      reassignDocumentType(id, typeId),
+      USE_MOCKS ? mockReassignDocumentType(id, typeId) : Promise.reject(notAvailableYet('Changing the type')),
     onSuccess: (_data, { id }) => invalidateAfterChange(queryClient, [id]),
   })
 }
@@ -137,7 +145,7 @@ export const useUploadDocument = () => {
       file: File
       typeId?: string
       onProgress?: (fraction: number) => void
-    }) => uploadDocument(file, { typeId, onProgress }),
+    }) => (USE_MOCKS ? mockUploadDocument : realUploadDocument)(file, { typeId, onProgress }),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: documentKeys.lists() }),
