@@ -94,8 +94,8 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 ### [ ] J3. Supabase secrets
 - Generate `PIPELINE_SECRET` and store it, with the production function URL, in Supabase Vault through the SQL editor (slice 4 gives the exact statements). Claude never sees the value.
 
-### [ ] J4. GitHub
-- Add the three Supabase secrets to the `dev` environment.
+### [x] J4. GitHub
+- Add the three Supabase secrets to the `dev` environment. Done 2026-11-20: token `github-actions-docspread` (90 days, `docspread-dev` only; Projects, Project Settings, Database, Database Config, Connection Pooling, API Keys read; Migrations read-write; no secret values).
 
 ### [ ] J5. Retire AWS
 - `infra/` is gone after slice 6, so the stack is deleted with CloudFormation directly (`dev` buckets have `autoDeleteObjects`, so their files go too). Sign in with `aws login --profile docspread`, then, one at a time:
