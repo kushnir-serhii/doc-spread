@@ -27,3 +27,4 @@ dist-ssr
 /e2e/screenshots/
 /e2e/.output/
 /playwright-report/
+.vercel

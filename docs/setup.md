@@ -54,18 +54,33 @@ Open the URL Vite prints. With `VITE_USE_MOCKS=true` every screen runs on typed 
 
 ## 6. Run the web app and functions together
 
+On Windows, turn on Developer Mode first (Settings → System → For developers): `vercel dev` creates symlinks and fails with `EPERM` without it.
+
 ```sh
 vercel link         # once, from the repo root or apps/web; pick the existing project `doc-spread`
 cd apps/web
-vercel dev          # web app + /api functions, usually on http://localhost:3000
+# The functions need the server variables, which live in services/api/.env.local (vercel dev doesn't read it):
+set -a && . ../../services/api/.env.local && set +a && vercel dev --listen 3210
 ```
 
-`vercel dev` loads the project's Vercel environment for the Development target and `.env.local` files in `apps/web`. If a function variable is missing, add it with `vercel env add NAME development` (type secrets yourself).
+Web app and `/api/*` are then on http://localhost:3210, the same routes as production. Check it with the API smoke test over HTTP:
+
+```sh
+SMOKE_API_URL=http://localhost:3210/api pnpm --filter @docspread/api smoke
+```
+
+With `services/api/.env.local` pointing at `docspread-dev`, the database's cron job still calls the **production** functions (Vault holds the production URL), so the pipeline steps of a local upload run on Vercel. To run a pipeline step on your machine, call the local function yourself; it drains its queue:
+
+```sh
+curl -X POST -H "x-pipeline-secret: $PIPELINE_SECRET" http://localhost:3210/api/pipeline/ocr   # same shell as above
+```
+
+For a fully local pipeline, point `services/api/.env.local` at the local stack (`supabase status` prints its URL and keys) and set the two Vault secrets below in the local database.
 
 The pipeline is started by `pg_cron` and `pg_net` inside the database, which read two secrets from Supabase Vault. Locally, store them once in the local database (run in Studio's SQL editor at `http://127.0.0.1:54323`; use the same `PIPELINE_SECRET` as in `services/api/.env.local`):
 
 ```sql
-select vault.create_secret('http://host.docker.internal:3000', 'pipeline_base_url');
+select vault.create_secret('http://host.docker.internal:3210', 'pipeline_base_url');
 select vault.create_secret('<your PIPELINE_SECRET>', 'pipeline_secret');
 ```
 
