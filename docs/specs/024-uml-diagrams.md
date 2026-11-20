@@ -97,13 +97,13 @@ No secret, account id, project ref or key appears in a diagram or a glossary ent
   - [ ] `/architecture` with no `?tab=` shows System context; `?tab=nope` too
   - [ ] every node opens a tooltip; no secrets or project refs in code or glossary
 
-### [ ] 5. Keeping the diagrams true
+### [x] 5. Keeping the diagrams true
 - **Build:** extend the rule in `conventions.md` → Architecture diagrams: a route change updates Screens and User flow; a status, storage, queue or pipeline change updates Lifecycle, Document flow and Pipeline; a workflow, deploy or env-platform change updates Delivery, Deployment and System context; a new service updates System context and Deployment; every new node gets a glossary entry in the same slice. Add the four new tabs to the UI-check list in `process.md` if one is named there.
 - **Files:** `docs/conventions.md`, `docs/process.md`, `CLAUDE.md`
 - **Model:** haiku
 - **Accept:**
-  - [ ] `conventions.md` maps each kind of change to the diagrams it updates, including the glossary rule
-  - [ ] `CLAUDE.md` describes the page as dev only with ten diagrams and tooltips
+  - [x] `conventions.md` maps each kind of change to the diagrams it updates, including the glossary rule
+  - [x] `CLAUDE.md` describes the page as dev only with ten diagrams and tooltips
 
 ### [ ] 6. User flow and Document flow (after 023)
 - **Waits for:** 023 to be `done` (merged), so both flows are drawn once against the real sign-up, upload, review and export. Slices 1–5 don't wait.
@@ -138,3 +138,4 @@ None.
 | 2026-11-20 | 1 | done (sonnet) | `/design` and `/architecture` routes and `DEV_NAV` behind `import.meta.env.DEV`; Developer group hidden when empty; `CLAUDE.md` updated. Replaces 021's "visible in every build". Production build: 79 assets (was 179), no Mermaid/architecture/design chunk, main chunk 339.34 kB (was 436.87). `pnpm preview` not-found checked from the built bundle, not in a browser. UI check `architecture` 4/4. |
 | 2026-11-20 | 2 | done (sonnet, designer) | `react-zoom-pan-pinch` ^4.4.0 (only in the dev-only chunk; main chunk unchanged at 339.34 kB). `diagram-viewport.tsx`, `diagram-toolbar.tsx`: Zoom in/out, Fit, 100%, Fullscreen (full-viewport Dialog, focus returns), `+`/`-`/`0`, live zoom readout; wrapper is now `role="group"` with `aria-roledescription="diagram"`. Fit covers the whole diagram (width-only cut off the bottom); Structure is 2370 px wide, fitted at 32% (1280) and 14% (375). UI check 12/12; screenshots reviewed. Not checked: touch pinch, trackpad pinch, mouse-drag pan. Note: in fullscreen the SVG is in the DOM twice (same Mermaid id). |
 | 2026-11-20 | 3 | done (sonnet, designer) | `glossary.ts` (89 entries), `items` on all six diagrams (structure 21, domain 19, screens 19, lifecycle 8, pipeline 8 participants, deployment 14); Mermaid code unchanged. `diagram-items.ts` resolves nodes inside its own container (fullscreen duplicates the SVG), makes them focusable buttons; `node-tooltip.tsx` = Radix Popover with a virtual anchor (hover 300 ms, tap/click pins, Enter/Space, Esc returns focus, no open after a pan drag, works in fullscreen); `diagram-items-list.tsx` lists entries by provider. All 66 `where` paths exist; no secrets. UI check 24/24, no resolver warnings on any tab. Not checked: AA contrast measured (judged visually), screen reader, popover following during pinch. Clusters and `[*]` markers have no entries. |
+| 2026-11-20 | 5 | done (haiku) | `conventions.md` → Architecture diagrams: dev only, ten tabs, change → diagrams table (adds User flow, Document flow, System context, Delivery), glossary + `items` rule. `CLAUDE.md` bullet rewritten. `process.md` unchanged (names no architecture routes). Built in parallel with slice 4. |
