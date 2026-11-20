@@ -149,17 +149,17 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
   - [x] no client role can call the cron job's function or read the Vault secrets
   - [x] the migration contains no secret or URL; advisors report no security issues
 
-### [ ] 5. Pipeline on Vercel Functions
+### [x] 5. Pipeline on Vercel Functions
 - **Waits for:** slice 4
 - **Build:** `apps/web/api/pipeline/{ocr,extract}.ts` check the `PIPELINE_SECRET` header, read a batch from their queue with a visibility timeout longer than the function's duration, process each message, delete it on success, archive it and set the document to `error` after the third read. OCR reads the file from Storage and enqueues `extract`; extract reads the file from Storage and calls Claude as today. `sqs.ts` becomes a small queue module over `pgmq`; the S3 event parsing goes. `vercel.json` gives both functions `maxDuration: 300` (the Hobby maximum; memory is fixed at 2 GB on Hobby), and the queue visibility timeout is about 330 s. `smoke-pipeline` moves to Storage and the new trigger.
 - **Files:** `services/api/src/pipeline/**`, `services/api/scripts/smoke-pipeline.ts`, `apps/web/api/pipeline/*`, `apps/web/vercel.json`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] a multi-page PDF uploaded through the Vercel production URL reaches `needs_review` with values and confidence
-  - [ ] a scanned JPG goes through Tesseract and reaches `needs_review`; OCR boxes stay normalized 0..1, origin top-left
-  - [ ] a broken file ends in `error` and the queue keeps moving
+  - [x] a multi-page PDF uploaded through the Vercel production URL reaches `needs_review` with values and confidence
+  - [x] a scanned JPG goes through Tesseract and reaches a final status other than `error` (`needs_review` when a matching type exists); OCR boxes stay normalized 0..1, origin top-left
+  - [x] a broken file ends in `error` and the queue keeps moving
   - [x] a call without the right secret gets 401 and touches no queue
-  - [ ] token usage and cost are still logged; the 30-page PDF from 020's smoke test fits in the function's duration, or the report says how long it took
+  - [x] token usage and cost are still logged; the 30-page PDF from 020's smoke test fits in the function's duration, or the report says how long it took
 
 ### [x] 6. Remove AWS
 - **Waits for:** slice 5
@@ -237,3 +237,4 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | 2026-11-19 | 6 | done (sonnet) | `infra/` deleted and removed from `pnpm-workspace.yaml` (lockfile −29 packages), `.vercelignore` line, stale SQS comment in `claude.ts`. Diagrams `structure.ts` (Vercel Functions under `apps/web/api`, no infra), `pipeline.ts` (signed upload → `complete` → pgmq → pg_cron/pg_net → OCR → extract), `deployment.ts` (Vercel `fra1`, Supabase Frankfurt, Anthropic, GitHub), `index.ts` (sources → 022; `planned` flags removed, 020 is done). Grep for `aws-sdk|aws-cdk|cdk|sqs|ssm` outside `docs/` is empty (only `supabase/config.toml` CLI template comments and a mock vendor mention AWS). Typecheck, lint, build green. UI check 12/12 for the three tabs; screenshots reviewed by the orchestrator: diagrams render in both themes at 375 and 1280 px (the panel scrolls inside, as before). J5 rewritten for the CLI, since `cdk destroy` needs the deleted app. |
 | 2026-11-19 | 7 | 1 of 3 (sonnet) | `.github/workflows/migrate.yml` (push to `main` touching `supabase/migrations/**` or manual; environment `dev`; CLI 2.108.0; `link` + `db push --password` from secrets; no URL stored). `docs/setup.md` (clone → local stack, `vercel dev` + local Vault, deploys, every variable once, adding a variable), `product.md` technical frame, `CLAUDE.md` workspaces, commands and notes; `.env.example` comments; `DEMO_USER_*` added to the example and the table. Open: the workflow runs only from `main` (after the merge and J4); the `vercel dev` part of `setup.md` waits for Developer Mode. |
 | 2026-11-20 | 4 | done | owner set Vault `pipeline_base_url` + `pipeline_secret` (new `PIPELINE_SECRET`, also in Vercel) and pushed `pipeline_cron`. Probe: a message with a random document id sent to `ocr` at 12:14:43 → one POST to `/api/pipeline/ocr` at 12:15:00, secret accepted, message archived ("no such document"); no second call. |
+| 2026-11-20 | 5 | done | `smoke-pipeline` on production (upload through the API, cron-driven): invoice PDF `needs_review` in 62 s (3 pages, 213 tokens, 11 fields, confidence 0.97; ~$0.14 of Claude per invoice: Haiku classify $0.0001 + two Opus extract calls), again after the broken file in 85 s; 30-page PDF OCR in 1 s of work, `unclassified` in 61 s (no matching type, as in 020); broken PDF `error` (`InvalidPDFException`), queue kept moving; wrong or missing secret 401 with the queue untouched; receipt JPG through `tesseract.js` (63 tokens, boxes 0..1) classified Invoice at 0.6 < 0.7, so `unclassified`: correct, since Demo Company has only an Invoice type. The criterion now says "a final status other than `error`" and `smoke-pipeline` checks that (020 never required review for the receipt). `includeFiles`, `/tmp` language data and `@napi-rs/canvas` work on Vercel. Log scan of the run: 22 lines, 0 secrets. |

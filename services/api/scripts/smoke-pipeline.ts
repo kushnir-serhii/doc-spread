@@ -184,6 +184,7 @@ const verify = async (item: Upload, row: DocRow, expect: 'needs_review' | 'final
   const fieldCount = Object.keys(row.values).length
 
   check(`${item.label}: reached a final status`, FINAL.has(row.status), `${row.status} after ${seconds} s`)
+  if (expect === 'final') check(`${item.label}: did not end in error`, row.status !== 'error', row.status)
   if (expect === 'needs_review') check(`${item.label}: status is needs_review`, row.status === 'needs_review', row.status)
   check(`${item.label}: page rows exist and match page_count`, pageRows.length > 0 && pageRows.length === row.page_count, `${pageRows.length} rows, page_count ${row.page_count}`)
   check(`${item.label}: ${tokens.length} tokens, every bbox within 0..1`, tokens.length > 0 && boxesOk)
@@ -287,7 +288,9 @@ const main = async () => {
   const summaries: Summary[] = []
   for (const item of [...valid, after]) {
     const row = await waitFinal(item.documentId)
-    const mustReview = item.label.startsWith('sample-invoice') || item.label.startsWith('sample-receipt')
+    // Only the invoice must reach review: the Demo Company has just an Invoice type, so a receipt may stay unclassified
+    // (below CLASSIFY_MIN_CONFIDENCE). It must still finish OCR (Tesseract) without an error.
+    const mustReview = item.label.startsWith('sample-invoice')
     summaries.push(await verify(item, row, mustReview ? 'needs_review' : 'final'))
   }
   check('a valid upload after the broken one still finishes', summaries.at(-1)?.status === 'needs_review')
