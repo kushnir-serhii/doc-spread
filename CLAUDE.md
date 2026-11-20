@@ -54,7 +54,7 @@ There is no test runner configured yet; the root `test` script is a placeholder 
 - **`services/api` is compiled per file by Vercel.** Use `.js` import specifiers for relative imports (`import { x } from './env.js'`) and no top-level `await` in anything a function imports; read env and build clients on the first request.
 - **Functions live in `apps/web/api/`** (`router.ts`, `health.ts`, `pipeline/ocr.ts`, `pipeline/extract.ts`) with their own `tsconfig.api.json`. `apps/web/vercel.json` rewrites `/api/*` to `api/router` (every other non-`/api` path to `index.html`) and sets region and `maxDuration`.
 - **Env variables:** `VITE_*` ships to the browser; everything else is a secret in Vercel env or `services/api/.env.local`. Adding one: `docs/setup.md`.
-- **Architecture diagrams.** The `/architecture` page in `apps/web` (Developer nav group) shows UML diagrams of the project: structure, domain model, screens, document lifecycle, pipeline and deployment. They are hand-written Mermaid text in `apps/web/src/features/architecture/diagrams/` and must be updated with the code (rule in `docs/conventions.md` → Architecture diagrams).
+- **Architecture diagrams.** The `/architecture` page in `apps/web` (Developer nav group; it and `/design` exist only in dev — `pnpm dev`, `vercel dev`, the UI check — not in production or preview builds, where `/architecture` shows the not-found page) shows UML diagrams of the project: structure, domain model, screens, document lifecycle, pipeline and deployment. They are hand-written Mermaid text in `apps/web/src/features/architecture/diagrams/` and must be updated with the code (rule in `docs/conventions.md` → Architecture diagrams).
 
 ## Specs and process
 

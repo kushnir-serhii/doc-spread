@@ -1,6 +1,6 @@
 # 024 — UML diagrams: system, user and document flows (dev only)
 
-**Status:** ready · **Depends on:** 021 · **Route(s):** `/architecture` (dev only), `/design` (dev only)
+**Status:** in-progress · **Depends on:** 021 · **Route(s):** `/architecture` (dev only), `/design` (dev only)
 
 ## Goal
 In local dev, a developer opens `/architecture` and can see how DocSpread works end to end: which services run where (Vercel, Supabase, GitHub, Anthropic), how a document travels from file to spreadsheet, how a user moves through the product, and how code reaches production. Hovering over or tapping any box in a diagram explains what that item is and what it does in DocSpread. Large diagrams can be zoomed, panned and fitted to the screen. The page no longer ships in production builds.
@@ -56,15 +56,15 @@ No secret, account id, project ref or key appears in a diagram or a glossary ent
 
 ## Slices
 
-### [ ] 1. Dev-only routes and nav
+### [x] 1. Dev-only routes and nav
 - **Build:** in `router.tsx`, add the `/design` and `/architecture` route objects only when `import.meta.env.DEV` is true, so Vite drops their lazy imports from the production build. `DEV_NAV` is empty in production, and the sidebar and mobile nav hide the Developer group when it is empty. Update `CLAUDE.md` (the page is dev only) and note in this spec's log that 021's visibility decision is replaced.
 - **Files:** `src/app/router.tsx`, `src/components/layout/nav-items.ts`, the sidebar and mobile nav components that render `DEV_NAV`, `CLAUDE.md`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] `pnpm dev`: both pages open from the Developer group in the sidebar and the mobile nav, as before
-  - [ ] `pnpm build`: `dist/` has no architecture, design or Mermaid chunk (checked by grepping `dist/assets` for `mermaid` and `architecture-page`); the main chunk doesn't grow
-  - [ ] `pnpm preview`: `/architecture` and `/design` show the not-found page; no Developer group in either nav
-  - [ ] typecheck, lint, build green; the UI check of `architecture` still passes
+  - [x] `pnpm dev`: both pages open from the Developer group in the sidebar and the mobile nav, as before
+  - [x] `pnpm build`: `dist/` has no architecture, design or Mermaid chunk (checked by grepping `dist/assets` for `mermaid` and `architecture-page`); the main chunk doesn't grow
+  - [x] `pnpm preview`: `/architecture` and `/design` show the not-found page; no Developer group in either nav
+  - [x] typecheck, lint, build green; the UI check of `architecture` still passes
 
 ### [ ] 2. Pan, zoom, fit and fullscreen
 - **Build:** add `react-zoom-pan-pinch` (see **Open questions**) inside the lazy architecture chunk only. Wrap the rendered SVG: a toolbar with Zoom in, Zoom out, Fit, 100% and Fullscreen (icon buttons with labels, ≥ 44px); drag to pan, wheel or trackpad pinch to zoom on desktop, two-finger pinch on touch; keyboard `+`, `-`, `0` (fit) while the diagram has focus. A diagram opens fitted to the container width, or at 100% if it's narrower. Zoom range 25%–400%; the current zoom is shown. Fullscreen opens the same diagram in a full-screen `Dialog` with the same controls; Esc closes it. Fit runs again when the container resizes or the theme redraws the SVG. Replaces 021's scroll container.
@@ -135,3 +135,4 @@ None.
 | --- | --- | --- | --- |
 | 2026-11-20 | — | draft | Written from the owner's request: dev-only route; diagrams covering Vercel, Supabase and GitHub; document flow; user flow; tooltips on every item using a popular stable library; pan/zoom/fit. Builds on 021's page and renderer. |
 | 2026-11-20 | — | ready | Owner decisions: Radix Popover, react-zoom-pan-pinch, default tab System context, slices 1–5 now and slice 6 after 023. Slices renumbered: conventions rule is 5, the two flows are 6. |
+| 2026-11-20 | 1 | done (sonnet) | `/design` and `/architecture` routes and `DEV_NAV` behind `import.meta.env.DEV`; Developer group hidden when empty; `CLAUDE.md` updated. Replaces 021's "visible in every build". Production build: 79 assets (was 179), no Mermaid/architecture/design chunk, main chunk 339.34 kB (was 436.87). `pnpm preview` not-found checked from the built bundle, not in a browser. UI check `architecture` 4/4. |

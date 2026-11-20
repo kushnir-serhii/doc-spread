@@ -28,10 +28,12 @@ export function MobileNav() {
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 py-3">
           <SidebarNav items={MAIN_NAV} label="Main" onNavigate={close} />
-          <div className="mt-auto flex flex-col gap-2">
-            <Separator />
-            <SidebarNav items={DEV_NAV} label="Developer" onNavigate={close} />
-          </div>
+          {DEV_NAV.length > 0 && (
+            <div className="mt-auto flex flex-col gap-2">
+              <Separator />
+              <SidebarNav items={DEV_NAV} label="Developer" onNavigate={close} />
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

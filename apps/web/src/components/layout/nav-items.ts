@@ -15,7 +15,10 @@ export const MAIN_NAV: NavItem[] = [
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
-export const DEV_NAV: NavItem[] = [
-  { to: '/design', label: 'Design tokens', icon: Palette },
-  { to: '/architecture', label: 'Architecture', icon: Network },
-]
+// Dev only: empty in production builds
+export const DEV_NAV: NavItem[] = import.meta.env.DEV
+  ? [
+      { to: '/design', label: 'Design tokens', icon: Palette },
+      { to: '/architecture', label: 'Architecture', icon: Network },
+    ]
+  : []
