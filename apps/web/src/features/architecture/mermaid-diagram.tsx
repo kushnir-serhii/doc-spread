@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { DiagramViewport } from '@/features/architecture/diagram-viewport'
 import { useMermaid } from '@/features/architecture/use-mermaid'
 
 interface MermaidDiagramProps {
@@ -30,16 +31,5 @@ export const MermaidDiagram = ({ code, label, description }: MermaidDiagramProps
     )
   }
 
-  return (
-    <div
-      role="img"
-      aria-label={`${label}: ${description}`}
-      tabIndex={0}
-      className="max-h-dvh overflow-auto rounded-lg border bg-card p-4"
-      // The SVG string comes from Mermaid (securityLevel 'strict') for a constant definition
-      // in this repo, never from user input. It carries its own styles; every color in it
-      // comes from the design tokens via mermaid-theme.ts.
-      dangerouslySetInnerHTML={{ __html: state.svg }}
-    />
-  )
+  return <DiagramViewport svg={state.svg} label={label} description={description} />
 }
