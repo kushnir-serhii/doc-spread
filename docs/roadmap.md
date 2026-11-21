@@ -27,7 +27,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 019 | [Mock data without country defaults](specs/019-mock-without-country-defaults.md) | done | — |
 | 020 | [Cloud setup: AWS, AI, database and env](specs/020-cloud-setup.md) | done | 012 |
 | 021 | [Architecture page: UML diagrams](specs/021-architecture-diagrams.md) | done | — |
-| 022 | [Off AWS: Vercel and Supabase only](specs/022-vercel-supabase.md) | in-progress | 020 |
+| 022 | [Off AWS: Vercel and Supabase only](specs/022-vercel-supabase.md) | done | 020 |
 | 023 | [First real flow](specs/023-first-real-flow.md) | done | 022 |
 | 024 | [UML diagrams: system, user and document flows (dev only)](specs/024-uml-diagrams.md) | done | 021 |
 

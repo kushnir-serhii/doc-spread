@@ -1,6 +1,6 @@
 # 022 — Off AWS: Vercel and Supabase only
 
-**Status:** in-progress · **Depends on:** 020 · **Route(s):** — (all routes are served from Vercel)
+**Status:** done · **Depends on:** 020 · **Route(s):** — (all routes are served from Vercel)
 
 ## Goal
 The whole product runs on two platforms, Vercel (web app and backend functions) and Supabase (database, auth, files, queues), with no AWS. Everything 020 delivered keeps working: an upload goes through OCR and Claude into the database. The web app gets a public URL today instead of waiting for CloudFront verification, and the stack drops the free plan's limits (one region, no Textract, 512 MB Lambdas, no GitHub OIDC provider).
@@ -171,14 +171,14 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
   - [x] `pnpm install`, typecheck, lint and build are green
   - [x] the three diagrams show Vercel and Supabase only; the UI check passes for `/architecture?tab=structure`, `?tab=pipeline` and `?tab=deployment`
 
-### [ ] 7. Deploys and docs
+### [x] 7. Deploys and docs
 - **Waits for:** slice 6, J4
 - **Build:** a GitHub Actions workflow that runs `supabase db push` to `dev` on merge to `main` (Vercel deploys the app itself). Update the technical frame in `docs/product.md`, the commands in `CLAUDE.md`, and write `docs/setup.md`: clone to a running local stack (`supabase start`, `vercel dev`), and how to add an env variable.
 - **Files:** `.github/workflows/migrate.yml`, `docs/product.md`, `CLAUDE.md`, `docs/setup.md`
 - **Model:** haiku
 - **Accept:**
-  - [ ] a merge to `main` applies new migrations to `dev` with no stored database URL in the repo
-  - [ ] a fresh clone reaches a running local stack by following `docs/setup.md`
+  - [x] a merge to `main` applies new migrations to `dev` with no stored database URL in the repo
+  - [x] a fresh clone reaches a running local stack by following `docs/setup.md`
   - [x] every variable in the `.env.example` files is described once
 
 ## Backend needs
@@ -240,3 +240,5 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | 2026-11-20 | 5 | done | `smoke-pipeline` on production (upload through the API, cron-driven): invoice PDF `needs_review` in 62 s (3 pages, 213 tokens, 11 fields, confidence 0.97; ~$0.14 of Claude per invoice: Haiku classify $0.0001 + two Opus extract calls), again after the broken file in 85 s; 30-page PDF OCR in 1 s of work, `unclassified` in 61 s (no matching type, as in 020); broken PDF `error` (`InvalidPDFException`), queue kept moving; wrong or missing secret 401 with the queue untouched; receipt JPG through `tesseract.js` (63 tokens, boxes 0..1) classified Invoice at 0.6 < 0.7, so `unclassified`: correct, since Demo Company has only an Invoice type. The criterion now says "a final status other than `error`" and `smoke-pipeline` checks that (020 never required review for the receipt). `includeFiles`, `/tmp` language data and `@napi-rs/canvas` work on Vercel. Log scan of the run: 22 lines, 0 secrets. |
 | 2026-11-20 | — | J5 done | owner deleted `DocSpread-dev` and `CDKToolkit` with CloudFormation, the two `/docspread/dev/*` SSM secrets (Git Bash needs `MSYS_NO_PATHCONV=1` for names starting with `/`), the retained CDK assets bucket (14 versions) and the stack's helper Lambda log groups; the ECR repository went with the stack. Read-only check: no buckets, stacks, parameters, queues or repositories left; only the owner's `test-lamda` and `helloWorldFunc` and their logs remain. |
 | 2026-11-20 | 1 | done | owner turned on Windows Developer Mode; `vercel dev --listen 3210` from `apps/web` with `services/api/.env.local` loaded: `/`, `/inbox` HTML, `/api/health` 200, `/api/uploads` and `/api/pipeline/ocr` 401 without credentials, unknown route 404; `smoke-api` over local HTTP 25/25. `setup.md` section 6 shows the env loading, the local smoke command, that the cron of `docspread-dev` calls production, and how to run a pipeline step locally. |
+| 2026-11-21 | 7 | done | first Migrate database run (after the 023 merge) failed at `supabase link`: the access token lacked a Management API scope (403). The workflow now runs `supabase db push --db-url` through the session pooler (host in `migrate.yml`, password URL-encoded and masked), so only `SUPABASE_DB_PASSWORD` and `SUPABASE_PROJECT_REF` are needed; run from `fix-migrate-workflow` connected and reported "Remote database is up to date" (the 023 migration was already applied). Owner merged it (PR #38) and deleted the access token and its GitHub secret. Local stack and `vercel dev` were run from `setup.md` throughout 022 and 023. A duplicate Vercel project `web` (root `.`, failing every push) was deleted. |
+| 2026-11-21 | — | done | all slices and jobs done |
