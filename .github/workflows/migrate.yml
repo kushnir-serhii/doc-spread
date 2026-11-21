@@ -21,9 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      # Session pooler of docspread-dev (Supabase dashboard > Connect > Session pooler). Not a secret.
+      # GitHub runners have no IPv6, so the direct db.<ref>.supabase.co host can't be used.
+      SUPABASE_POOLER_HOST: aws-1-eu-west-1.pooler.supabase.com
     steps:
       - uses: actions/checkout@v4
 
@@ -31,8 +33,9 @@ jobs:
         with:
           version: 2.108.0
 
-      - name: Link the project
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
-
+      # No `supabase link`: it needs a Management API token with many scopes. db push talks to the database directly.
       - name: Push migrations
-        run: supabase db push --password "$SUPABASE_DB_PASSWORD"
+        run: |
+          PW=$(jq -rn --arg p "$SUPABASE_DB_PASSWORD" '$p|@uri')
+          echo "::add-mask::$PW"
+          supabase db push --db-url "postgresql://postgres.${SUPABASE_PROJECT_REF}:${PW}@${SUPABASE_POOLER_HOST}:5432/postgres"

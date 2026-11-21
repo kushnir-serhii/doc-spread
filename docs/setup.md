@@ -123,8 +123,7 @@ Costs: each invoice costs about $0.14 of Claude (classification plus extraction)
 
 - **App and functions:** Vercel builds every push through its Git integration (previews and production). To deploy by hand from `apps/web`: `vercel deploy --prod`. Production is the demo and uses the `docspread-dev` Supabase project. Preview URLs sit behind Deployment Protection, so the cron job and the smoke scripts use the production URL.
 - **Migrations:** `.github/workflows/migrate.yml` runs `supabase db push` against `docspread-dev` when a push to `main` changes `supabase/migrations/**` (or by hand: Actions > Migrate database > Run workflow). By hand from your machine: `supabase link --project-ref <ref>`, then `supabase db push --password <database password>`. The CLI's access token alone gets a 403 on the login role, so the password is needed.
-- **GitHub environment `dev`** (Settings > Environments > `dev` > Secrets). The workflow reads three secrets:
-  - `SUPABASE_ACCESS_TOKEN`: dashboard > Account > Access Tokens.
+- **GitHub environment `dev`** (Settings > Environments > `dev` > Secrets). The workflow connects to the database through the session pooler (host in `migrate.yml`) and reads two secrets:
   - `SUPABASE_DB_PASSWORD`: the database password of `docspread-dev` (Project Settings > Database).
   - `SUPABASE_PROJECT_REF`: the project reference (the `<ref>` in `https://<ref>.supabase.co`).
 
