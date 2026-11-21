@@ -84,14 +84,16 @@ Loading (skeleton) · empty (explanation plus next action) · error (message plu
 
 ## Architecture diagrams
 
-The diagrams on `/architecture` are hand-written and live in `src/features/architecture/diagrams/`. A slice that makes one of the changes below updates the matching diagram in the same slice.
+The `/architecture` page is dev only: it exists under `pnpm dev`, `vercel dev` and the UI check, and production and preview builds have no route, chunk or Mermaid code for it. It has ten tabs (`?tab=`): System context (`context`, the default), Structure, Domain model, Screens, User flow, Document lifecycle, Document flow, Pipeline, Deployment and Delivery (User flow and Document flow arrive with spec 024 slice 6, after 023). The diagrams are hand-written and live in `src/features/architecture/diagrams/`. A slice that makes one of the changes below updates the matching diagrams in the same slice.
 
-| Change | Diagram to update |
+| Change | Diagrams to update (tab, file in `diagrams/`) |
 | --- | --- |
-| A new, moved or removed folder under `src/`, a new workspace, or a changed import rule | `structure.ts` |
-| A new, renamed or removed domain type or relation in `lib/mock/types.ts` | `domain.ts` |
-| A route added, removed or renamed in `router.tsx`, or a new link between screens | `screens.ts` |
-| A document status or transition added or changed | `lifecycle.ts` |
-| A pipeline step or a service added, removed or replaced | `pipeline.ts`, `deployment.ts` |
+| A new, moved or removed folder under `src/`, a new workspace, or a changed import rule | Structure (`structure.ts`) |
+| A new, renamed or removed domain type or relation in `lib/mock/types.ts` | Domain model (`domain.ts`) |
+| A route added, removed or renamed in `router.tsx`, or a new link between screens | Screens (`screens.ts`), User flow (`user-flow.ts`) |
+| A document status, storage bucket, queue or pipeline step added, removed or changed | Document lifecycle (`lifecycle.ts`), Document flow (`document-flow.ts`), Pipeline (`pipeline.ts`) |
+| A service added, removed or replaced, or a new external service | System context (`context.ts`), Deployment (`deployment.ts`) |
+| A GitHub workflow, deploy step, or hosting or env platform change | Delivery (`delivery.ts`), Deployment (`deployment.ts`), System context (`context.ts`) |
 
+- Every new diagram node gets an entry in `diagrams/glossary.ts` and a line in its diagram's `items`, in the same slice. The dev console shows no resolver warnings on `/architecture`.
 - When a planned diagram's spec is `done`, remove its `planned` flag in `diagrams/index.ts`.

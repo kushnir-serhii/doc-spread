@@ -1,3 +1,5 @@
+import type { GlossaryKey } from './glossary'
+
 /** Sequence diagram: one document from sign-in to export (specs 022 and 023: Vercel Functions, Supabase). */
 export const PIPELINE_DIAGRAM = `sequenceDiagram
   participant B as Browser (web app)
@@ -54,3 +56,16 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
     X->>DB: after 3 failed reads archive the message, status error
   end
 `
+
+/** Mermaid participant id → glossary entry. */
+export const PIPELINE_ITEMS: Record<string, GlossaryKey> = {
+  B: 'browserApp',
+  AU: 'supabaseAuth',
+  A: 'fnApiRouter',
+  ST: 'storageDocuments',
+  DB: 'supabasePostgres',
+  CR: 'pgCronPgNet',
+  O: 'fnPipelineOcr',
+  X: 'fnPipelineExtract',
+  C: 'claudeApi',
+}

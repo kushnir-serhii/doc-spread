@@ -1,3 +1,5 @@
+import type { GlossaryKey } from './glossary'
+
 /** Deployment diagram: what runs where, from the Architecture table of spec 022. */
 export const DEPLOYMENT_DIAGRAM = `flowchart LR
   subgraph user["User device"]
@@ -26,7 +28,7 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
 
   subgraph gh["GitHub"]
     repo["Repository"]
-    actions["GitHub Actions: supabase db push (slice 7, planned)"]
+    actions["GitHub Actions migrate.yml: supabase db push on merge to main (supabase/migrations/** changed)"]
   end
 
   browser -->|"HTTPS: app files"| spa
@@ -46,5 +48,23 @@ export const DEPLOYMENT_DIAGRAM = `flowchart LR
   cron -.->|"read settings"| vault
   repo -->|"Vercel Git integration: deploy"| vercel
   repo --> actions
-  actions -->|"migrations"| pg
+  actions -->|"applies new migrations"| pg
 `
+
+/** Mermaid node id → glossary entry. */
+export const DEPLOYMENT_ITEMS: Record<string, GlossaryKey> = {
+  browser: 'browserApp',
+  spa: 'vercelStaticSpa',
+  fns: 'vercelFunctions',
+  pg: 'supabasePostgres',
+  auth: 'supabaseAuth',
+  docs: 'storageDocuments',
+  exports: 'storageExports',
+  pgmq: 'pgmq',
+  cron: 'pgCron',
+  net: 'pgNet',
+  vault: 'supabaseVault',
+  claude: 'claudeApi',
+  repo: 'githubRepo',
+  actions: 'githubActionsMigrate',
+}

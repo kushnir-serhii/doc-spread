@@ -1,3 +1,5 @@
+import type { GlossaryKey } from './glossary'
+
 /** Package diagram: workspaces, folders of apps/web/src and the allowed import directions (docs/conventions.md). */
 export const STRUCTURE_DIAGRAM = `flowchart TB
   subgraph web["apps/web (@docspread/web), folders of src"]
@@ -60,3 +62,29 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   fn -->|"imports by relative path"| apisvc
   apisvc -->|"secret key, SQL"| supabase
 `
+
+/** Mermaid node id → glossary entry. */
+export const STRUCTURE_ITEMS: Record<string, GlossaryKey> = {
+  main: 'srcMain',
+  app: 'srcApp',
+  pages: 'srcPages',
+  features: 'srcFeatures',
+  hooks: 'srcHooks',
+  styles: 'srcStyles',
+  layout: 'componentsLayout',
+  domain: 'componentsDomain',
+  ui: 'componentsUi',
+  api: 'libApi',
+  fields: 'libFields',
+  mock: 'libMock',
+  real: 'libReal',
+  theme: 'libTheme',
+  locale: 'libFormatLocale',
+  sharedsrc: 'sharedPackage',
+  health: 'fnHealth',
+  router: 'fnApiRouter',
+  ocrfn: 'fnPipelineOcr',
+  extractfn: 'fnPipelineExtract',
+  apisrc: 'servicesApi',
+  migrations: 'supabaseMigrations',
+}

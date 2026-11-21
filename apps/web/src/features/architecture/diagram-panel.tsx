@@ -1,5 +1,6 @@
 import { Hourglass } from 'lucide-react'
 
+import { DiagramItemsList } from '@/features/architecture/diagram-items-list'
 import { DiagramSource } from '@/features/architecture/diagram-source'
 import type { DiagramDef } from '@/features/architecture/diagrams/diagram-def'
 import { MermaidDiagram } from '@/features/architecture/mermaid-diagram'
@@ -33,7 +34,8 @@ export const DiagramPanel = ({ diagram }: DiagramPanelProps) => (
     )}
     {diagram.code ? (
       <>
-        <MermaidDiagram code={diagram.code} label={diagram.label} description={diagram.description} />
+        <MermaidDiagram code={diagram.code} label={diagram.label} description={diagram.description} items={diagram.items} />
+        <DiagramItemsList items={diagram.items} />
         <DiagramSource code={diagram.code} />
       </>
     ) : (

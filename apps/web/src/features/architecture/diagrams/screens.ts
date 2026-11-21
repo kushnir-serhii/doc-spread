@@ -1,3 +1,5 @@
+import type { GlossaryKey } from './glossary'
+
 /** Navigation diagram: every route in src/app/router.tsx, grouped by layout, with the links between screens. */
 export const SCREENS_DIAGRAM = `flowchart TB
   subgraph pub["Public"]
@@ -56,3 +58,26 @@ export const SCREENS_DIAGRAM = `flowchart TB
   exp --> types
   exp --> inbox
 `
+
+/** Mermaid node id → glossary entry. */
+export const SCREENS_ITEMS: Record<string, GlossaryKey> = {
+  landing: 'screenLanding',
+  signin: 'screenSignIn',
+  signup: 'screenSignUp',
+  reset: 'screenReset',
+  onboarding: 'screenOnboarding',
+  inbox: 'screenInbox',
+  upload: 'screenUpload',
+  types: 'screenTypes',
+  typesnew: 'screenTypesNew',
+  type: 'screenType',
+  train: 'screenTrain',
+  document: 'screenReview',
+  groups: 'screenGroups',
+  group: 'screenGroup',
+  exp: 'screenExport',
+  settings: 'screenSettings',
+  design: 'screenDesign',
+  architecture: 'screenArchitecture',
+  sidebar: 'screenNav',
+}

@@ -32,10 +32,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
       <div className={cn('flex flex-1 flex-col gap-4 overflow-y-auto px-3 py-2', collapsed && 'px-2')}>
         <SidebarNav items={MAIN_NAV} label="Main" collapsed={collapsed} />
-        <div className="mt-auto flex flex-col gap-2">
-          <Separator />
-          <SidebarNav items={DEV_NAV} label="Developer" collapsed={collapsed} />
-        </div>
+        {DEV_NAV.length > 0 && (
+          <div className="mt-auto flex flex-col gap-2">
+            <Separator />
+            <SidebarNav items={DEV_NAV} label="Developer" collapsed={collapsed} />
+          </div>
+        )}
       </div>
       <div className={cn('border-t border-sidebar-border p-3', collapsed && 'flex justify-center px-2')}>
         <Tooltip>
