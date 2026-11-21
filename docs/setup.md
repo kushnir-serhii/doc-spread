@@ -54,18 +54,45 @@ Open the URL Vite prints. With `VITE_USE_MOCKS=true` every screen runs on typed 
 
 ## 6. Run the web app and functions together
 
+On Windows, turn on Developer Mode first (Settings → System → For developers): `vercel dev` creates symlinks and fails with `EPERM` without it.
+
 ```sh
 vercel link         # once, from the repo root or apps/web; pick the existing project `doc-spread`
 cd apps/web
-vercel dev          # web app + /api functions, usually on http://localhost:3000
+# The functions need the server variables, which live in services/api/.env.local (vercel dev doesn't read it).
+# For the real backend also set VITE_USE_MOCKS=false and VITE_API_BASE_URL=/api (shell variables win over apps/web/.env.local):
+set -a && . ../../services/api/.env.local && set +a
+MSYS_NO_PATHCONV=1 VITE_USE_MOCKS=false VITE_API_BASE_URL=/api vercel dev --listen 3210
 ```
 
-`vercel dev` loads the project's Vercel environment for the Development target and `.env.local` files in `apps/web`. If a function variable is missing, add it with `vercel env add NAME development` (type secrets yourself).
+In Git Bash, always put `MSYS_NO_PATHCONV=1` in front: without it Git Bash rewrites `VITE_API_BASE_URL=/api` into a Windows path (`C:/Program Files/Git/api`) and every API call fails. In PowerShell no workaround is needed:
+
+```powershell
+Get-Content ....servicesapi.env.local | ForEach-Object { if ($_ -match '^s*([A-Z0-9_]+)=(.*)$') { [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2].Trim('"'), 'Process') } }
+$env:VITE_USE_MOCKS='false'; $env:VITE_API_BASE_URL='/api'
+vercel dev --listen 3210
+```
+
+`apps/web/vercel.json` rewrites every path to `index.html` except `/api/`, Vite's dev paths (`/@vite`, `/@fs`, `/src/`, `/node_modules/`) and anything with a file extension, so deep links such as `/types/<id>` work and Vite's modules load under `vercel dev`.
+
+Web app and `/api/*` are then on http://localhost:3210, the same routes as production. Check it with the API smoke test over HTTP:
+
+```sh
+SMOKE_API_URL=http://localhost:3210/api pnpm --filter @docspread/api smoke
+```
+
+With `services/api/.env.local` pointing at `docspread-dev`, the database's cron job still calls the **production** functions (Vault holds the production URL), so the pipeline steps of a local upload run on Vercel. To run a pipeline step on your machine, call the local function yourself; it drains its queue:
+
+```sh
+curl -X POST -H "x-pipeline-secret: $PIPELINE_SECRET" http://localhost:3210/api/pipeline/ocr   # same shell as above
+```
+
+For a fully local pipeline, point `services/api/.env.local` at the local stack (`supabase status` prints its URL and keys) and set the two Vault secrets below in the local database.
 
 The pipeline is started by `pg_cron` and `pg_net` inside the database, which read two secrets from Supabase Vault. Locally, store them once in the local database (run in Studio's SQL editor at `http://127.0.0.1:54323`; use the same `PIPELINE_SECRET` as in `services/api/.env.local`):
 
 ```sql
-select vault.create_secret('http://host.docker.internal:3000', 'pipeline_base_url');
+select vault.create_secret('http://host.docker.internal:3210', 'pipeline_base_url');
 select vault.create_secret('<your PIPELINE_SECRET>', 'pipeline_secret');
 ```
 
@@ -78,6 +105,19 @@ pnpm --filter @docspread/api check-env
 pnpm --filter @docspread/api smoke
 pnpm --filter @docspread/api smoke-pipeline
 ```
+
+### Run the real flow locally
+
+The first real path (spec 023) runs with mocks off: sign in, create a type, upload, review, approve, export. Start `vercel dev` as above (mocks off, `VITE_API_BASE_URL=/api`, `services/api/.env.local` loaded), open http://localhost:3210 and:
+
+1. Sign up a company on `/sign-up` (company name, email, password; a name that already exists is refused), or sign in as the demo user (`DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD` in `services/api/.env.local`).
+2. Create a document type with its fields on `/types/new` (blank type; the AI builder, templates and sample-based types are not available yet).
+3. Upload a PDF, image or Word file on `/upload`.
+4. Wait in `/inbox`. The row goes from Processing to Needs review without a reload, usually in 1-2 minutes. The pipeline runs on the **production** functions, because the cloud database's cron job calls them.
+5. Open the document, check the values against the file, edit if needed and approve (or reject with a reason).
+6. On `/export` pick the type and download the `.xlsx` or `.csv`. The documents become exported.
+
+Costs: each invoice costs about $0.14 of Claude (classification plus extraction), so upload sparingly. Groups, Settings, onboarding and password reset show "Not available yet" with mocks off. The public demo (Vercel) stays on mocks.
 
 ## 7. Deploys
 

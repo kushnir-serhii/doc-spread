@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { FileStack } from 'lucide-react'
+import { USE_MOCKS } from '@/lib/env'
 import { NEW_TYPE_OPTIONS } from './new-type-options'
 
 export const TypesEmptyState = () => (
@@ -13,8 +14,18 @@ export const TypesEmptyState = () => (
       and which to show in lists. Create one to start processing files.
     </p>
     <ul className="mt-6 grid w-full max-w-3xl gap-3 sm:grid-cols-3">
-      {NEW_TYPE_OPTIONS.map(({ id, label, hint, to, icon: Icon }) => (
+      {NEW_TYPE_OPTIONS.map(({ id, label, hint, to, icon: Icon, needsAi }) => (
         <li key={id}>
+          {needsAi && !USE_MOCKS ? (
+            <div
+              aria-disabled="true"
+              className="flex h-full min-h-touch flex-col items-center gap-1 rounded-lg border border-dashed bg-card p-4 text-center text-muted-foreground"
+            >
+              <Icon className="size-5" aria-hidden />
+              <span className="text-sm font-medium">{label}</span>
+              <span className="text-xs">Not available yet</span>
+            </div>
+          ) : (
           <Link
             to={to}
             className="flex h-full min-h-touch flex-col items-center gap-1 rounded-lg border bg-card p-4 text-center outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -23,6 +34,7 @@ export const TypesEmptyState = () => (
             <span className="text-sm font-medium">{label}</span>
             <span className="text-xs text-muted-foreground">{hint}</span>
           </Link>
+          )}
         </li>
       ))}
     </ul>

@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createExportJob, getExportMapping, listExportJobs } from '@/lib/mock'
-import type { CreateExportJobInput } from '@/lib/mock/types'
+import { USE_MOCKS } from '@/lib/env'
+import {
+  createExportJob as mockCreateExportJob,
+  getExportMapping as mockGetExportMapping,
+  listExportJobs as mockListExportJobs,
+} from '@/lib/mock'
+import {
+  createExportJob as realCreateExportJob,
+  getExportMapping as realGetExportMapping,
+  listExportJobs as realListExportJobs,
+} from '@/lib/real/export'
+import type { CreateExportJobInput, ExportDownload, ExportJob } from '@/lib/mock/types'
 import { documentKeys } from './documents'
 import { groupKeys } from './groups'
 
@@ -15,20 +25,24 @@ export const exportKeys = {
 export const useExportMapping = (typeId: string) =>
   useQuery({
     queryKey: exportKeys.mapping(typeId),
-    queryFn: () => getExportMapping(typeId),
+    queryFn: () => (USE_MOCKS ? mockGetExportMapping(typeId) : realGetExportMapping(typeId)),
   })
 
 export const useExportJobs = () =>
   useQuery({
     queryKey: exportKeys.list(),
-    queryFn: listExportJobs,
+    queryFn: USE_MOCKS ? mockListExportJobs : realListExportJobs,
   })
+
+/** `download` is set when the server built the file (mocks off); with mocks on the page builds the CSV itself. */
+const createJob = async (input: CreateExportJobInput): Promise<{ job: ExportJob; download?: ExportDownload }> =>
+  USE_MOCKS ? { job: await mockCreateExportJob(input) } : realCreateExportJob(input)
 
 /** exporting changes document status, so documents and group values go stale too */
 export const useCreateExportJob = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: CreateExportJobInput) => createExportJob(input),
+    mutationFn: createJob,
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: exportKeys.lists() }),

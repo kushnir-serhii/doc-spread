@@ -107,14 +107,14 @@ Claude guides each job one step at a time when a slice first needs it. Order: J1
 
 ## Slices
 
-### [ ] 1. Web app on Vercel
+### [x] 1. Web app on Vercel
 - **Waits for:** J2
 - **Build:** `apps/web/vercel.json` with a rewrite of every path except `/api/` to `/index.html`, the functions region next to Supabase (`fra1`), and a `apps/web/api/health.ts` function that returns `{ ok: true }`. The production build runs on mocks. Update `apps/web/.env.example` for `VITE_API_BASE_URL=/api`.
 - **Files:** `apps/web/vercel.json`, `apps/web/api/health.ts`, `apps/web/.env.example`, `apps/web/tsconfig*.json` (if `api/` needs its own config), `turbo.json`
 - **Model:** sonnet
 - **Accept:**
   - [x] the Vercel production URL serves the app, and `/inbox` loads after a reload (020 slice 4's last criterion)
-  - [ ] `GET /api/health` answers 200 on the Vercel URL and under `vercel dev` (Vercel URL: done; `vercel dev` needs Windows Developer Mode)
+  - [x] `GET /api/health` answers 200 on the Vercel URL and under `vercel dev`
   - [x] typecheck, lint and build stay green; `pnpm dev` still works without the Vercel CLI
 
 ### [x] 2. Storage buckets and policies
@@ -239,3 +239,4 @@ All answered by the owner on 2026-11-19 ("all recommended").
 | 2026-11-20 | 4 | done | owner set Vault `pipeline_base_url` + `pipeline_secret` (new `PIPELINE_SECRET`, also in Vercel) and pushed `pipeline_cron`. Probe: a message with a random document id sent to `ocr` at 12:14:43 → one POST to `/api/pipeline/ocr` at 12:15:00, secret accepted, message archived ("no such document"); no second call. |
 | 2026-11-20 | 5 | done | `smoke-pipeline` on production (upload through the API, cron-driven): invoice PDF `needs_review` in 62 s (3 pages, 213 tokens, 11 fields, confidence 0.97; ~$0.14 of Claude per invoice: Haiku classify $0.0001 + two Opus extract calls), again after the broken file in 85 s; 30-page PDF OCR in 1 s of work, `unclassified` in 61 s (no matching type, as in 020); broken PDF `error` (`InvalidPDFException`), queue kept moving; wrong or missing secret 401 with the queue untouched; receipt JPG through `tesseract.js` (63 tokens, boxes 0..1) classified Invoice at 0.6 < 0.7, so `unclassified`: correct, since Demo Company has only an Invoice type. The criterion now says "a final status other than `error`" and `smoke-pipeline` checks that (020 never required review for the receipt). `includeFiles`, `/tmp` language data and `@napi-rs/canvas` work on Vercel. Log scan of the run: 22 lines, 0 secrets. |
 | 2026-11-20 | — | J5 done | owner deleted `DocSpread-dev` and `CDKToolkit` with CloudFormation, the two `/docspread/dev/*` SSM secrets (Git Bash needs `MSYS_NO_PATHCONV=1` for names starting with `/`), the retained CDK assets bucket (14 versions) and the stack's helper Lambda log groups; the ECR repository went with the stack. Read-only check: no buckets, stacks, parameters, queues or repositories left; only the owner's `test-lamda` and `helloWorldFunc` and their logs remain. |
+| 2026-11-20 | 1 | done | owner turned on Windows Developer Mode; `vercel dev --listen 3210` from `apps/web` with `services/api/.env.local` loaded: `/`, `/inbox` HTML, `/api/health` 200, `/api/uploads` and `/api/pipeline/ocr` 401 without credentials, unknown route 404; `smoke-api` over local HTTP 25/25. `setup.md` section 6 shows the env loading, the local smoke command, that the cron of `docspread-dev` calls production, and how to run a pipeline step locally. |

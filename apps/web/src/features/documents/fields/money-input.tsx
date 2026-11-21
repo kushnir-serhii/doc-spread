@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { majorText, minorDigits, toMinor } from '@/lib/fields/currency-digits'
 import { DEFAULT_CURRENCY } from '@/lib/fields/default-currency'
-import { CURRENCIES, type CurrencyCode, type ExtractedValue, type Money } from '@/lib/mock/types'
+import { currencyOptions, isCurrencyCode, type CurrencyCode, type ExtractedValue, type Money } from '@/lib/mock/types'
 import type { FieldEditProps } from './field-types'
 
 const moneyText = (money: Money | null) => (money ? majorText(money.amount, money.currency) : '')
@@ -14,8 +14,6 @@ const parseMajor = (text: string, currency: string): number | null | undefined =
   const major = Number(text.replace(',', '.'))
   return Number.isFinite(major) ? toMinor(major, currency) : undefined
 }
-
-const isCurrency = (code: string): code is CurrencyCode => CURRENCIES.some((c) => c === code)
 
 /** Major units in the input (12.50), minor units in the value (1250; JPY 1500 and 1500). The currency is always visible and changeable. */
 export const MoneyInput = ({ id, field, value, onChange }: FieldEditProps<ExtractedValue<'money'>>) => {
@@ -47,14 +45,14 @@ export const MoneyInput = ({ id, field, value, onChange }: FieldEditProps<Extrac
       <Select
         value={currency}
         onValueChange={(code) => {
-          if (isCurrency(code)) commit(shown, code)
+          if (isCurrencyCode(code)) commit(shown, code)
         }}
       >
         <SelectTrigger className="min-h-touch w-24" aria-label={`${field.label} currency`}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {CURRENCIES.map((code) => (
+          {currencyOptions(currency).map((code) => (
             <SelectItem key={code} value={code}>
               {code}
             </SelectItem>

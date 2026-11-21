@@ -27,7 +27,7 @@ React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 
 - `src/features/<domain>/`: domain UI and logic (`documents/`, `document-types/`, `groups/`, `export/`).
 - `src/components/ui/`: shadcn primitives. Add them with `pnpm dlx shadcn@latest add <name>` inside `apps/web` and don't hand-edit them unless necessary.
 - `src/components/`: shared custom components (`layout/`, `domain/`).
-- `src/lib/api/`: TanStack Query hooks and query keys. The only place that imports `@/lib/mock` functions.
+- `src/lib/api/`: TanStack Query hooks and query keys. The only place that imports `@/lib/mock` functions and `@/lib/real` (the Supabase and `/api` calls used with `VITE_USE_MOCKS=false`).
 - `src/hooks/`: generic hooks that aren't tied to a domain.
 - Import through the `@/` alias. Don't use deep relative paths (`../../..`).
 
@@ -62,7 +62,7 @@ React 19 · TypeScript (strict) · Vite 8 · React Router 8 · TanStack Query 5 
 - One hook per operation in `src/lib/api/<domain>.ts`: `useDocuments(params)`, `useDocument(id)`, `useApproveDocuments()`.
 - Query keys come from a factory (`documentKeys.list(params)`, `documentKeys.detail(id)`). Never write inline arrays.
 - Mutations invalidate or update the affected keys. Use optimistic updates only where the spec asks for them.
-- Components never call `@/lib/mock` directly.
+- Components never call `@/lib/mock` or `@/lib/real` directly. Each hook picks one per call: `queryFn: USE_MOCKS ? mockFn : realFn`.
 - Handle `isPending` (skeleton), `isError` (message plus retry) and empty data explicitly.
 
 ## Styling

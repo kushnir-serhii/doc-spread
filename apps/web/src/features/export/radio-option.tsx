@@ -7,6 +7,8 @@ interface RadioOptionProps {
   label: string
   description?: string
   checked: boolean
+  /** no backend yet (mocks off): the option can't be picked */
+  disabled?: boolean
   onSelect: () => void
   /** extra content (an input) shown under the text while checked */
   children?: ReactNode
@@ -14,7 +16,7 @@ interface RadioOptionProps {
 }
 
 /** Native radio in a 44px row. */
-export const RadioOption = ({ name, label, description, checked, onSelect, children, className }: RadioOptionProps) => {
+export const RadioOption = ({ name, label, description, checked, disabled, onSelect, children, className }: RadioOptionProps) => {
   const id = useId()
   return (
     <div
@@ -23,12 +25,16 @@ export const RadioOption = ({ name, label, description, checked, onSelect, child
         className,
       )}
     >
-      <label htmlFor={id} className="flex min-h-touch cursor-pointer items-start gap-3 px-3 py-2.5 md:min-h-9">
+      <label
+        htmlFor={id}
+        className="flex min-h-touch cursor-pointer items-start gap-3 px-3 py-2.5 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60 md:min-h-9"
+      >
         <input
           id={id}
           type="radio"
           name={name}
           checked={checked}
+          disabled={disabled}
           onChange={onSelect}
           className="mt-0.5 size-4 shrink-0 cursor-pointer accent-primary"
         />

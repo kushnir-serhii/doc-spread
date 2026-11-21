@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useParams, useSearchParams } from 'react-router'
+import { NotAvailableYet } from '@/components/layout/not-available-yet'
 import { PageHeader } from '@/components/layout/page-header'
 import { TypeNotFound } from '@/features/document-types/type-not-found'
 import { GroupBackLink } from '@/features/groups/group-back-link'
@@ -9,9 +10,10 @@ import { GroupValuesError } from '@/features/groups/group-values-error'
 import { GroupValuesSkeleton } from '@/features/groups/group-values-skeleton'
 import { GroupValuesView } from '@/features/groups/group-values-view'
 import { useDocumentTypes, useGroupValues } from '@/lib/api'
+import { USE_MOCKS } from '@/lib/env'
 import { totalFields } from '@/lib/fields/total-fields'
 
-const GroupPage = () => {
+const GroupContent = () => {
   const { typeId = '', fieldId = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const typesQuery = useDocumentTypes()
@@ -117,5 +119,21 @@ const GroupPage = () => {
     </>
   )
 }
+
+/** Groups have no backend yet: with mocks off the page says so instead of showing mock data. */
+const GroupPage = () =>
+  USE_MOCKS ? (
+    <GroupContent />
+  ) : (
+    <>
+      <GroupBackLink />
+      <NotAvailableYet
+        title="Not available yet"
+        description="Grouping documents by a field is not available yet."
+        backTo="/groups"
+        backLabel="Back to groups"
+      />
+    </>
+  )
 
 export default GroupPage

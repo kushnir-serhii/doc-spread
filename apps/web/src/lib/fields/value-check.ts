@@ -1,10 +1,10 @@
-import type { AnyExtractedValue, CurrencyCode, Document, DocumentType } from './types'
+import type { AnyExtractedValue, CurrencyCode, Document, DocumentType } from '@/lib/mock/types'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
 /**
  * Checks a document's values against the type version it was extracted with.
- * The types can't tie a value to its field id, so this runs over the mock seeds.
+ * The types can't tie a value to its field id, so this is a consistency check (mock seeds, real documents).
  * Returns human-readable problems; an empty array means the document is consistent.
  */
 export const findValueMismatches = (doc: Document, type: DocumentType | undefined): string[] => {

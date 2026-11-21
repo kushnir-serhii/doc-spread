@@ -1,10 +1,11 @@
 import { useId, useRef, useState, type FormEvent } from 'react'
 import { LoaderCircle } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useSignIn } from '@/lib/api'
+import { safeReturnTo } from '@/lib/return-to'
 import { AuthError } from '@/lib/mock/types'
 import { authErrorMessage, GENERIC_ERROR } from './auth-error-message'
 import { emailMessage } from './auth-validation'
@@ -14,6 +15,7 @@ export const SignInForm = () => {
   const id = useId()
   const navigate = useNavigate()
   const signIn = useSignIn()
+  const returnTo = safeReturnTo(useSearchParams()[0].get('returnTo'))
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
   const [email, setEmail] = useState('')
@@ -40,7 +42,7 @@ export const SignInForm = () => {
       passwordRef.current?.focus()
       return
     }
-    signIn.mutate({ email: email.trim(), password }, { onSuccess: () => void navigate('/inbox') })
+    signIn.mutate({ email: email.trim(), password }, { onSuccess: () => void navigate(returnTo ?? '/inbox') })
   }
 
   return (

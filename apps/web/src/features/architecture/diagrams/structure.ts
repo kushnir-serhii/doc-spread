@@ -16,6 +16,7 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
       api["api"]
       fields["fields"]
       mock["mock (domain types, fake backend)"]
+      real["real (Supabase client with RLS, /api calls)"]
       theme["theme"]
       locale["format-locale"]
     end
@@ -30,7 +31,7 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
     extractfn["pipeline/extract.ts"]
   end
   subgraph apisvc["services/api (@docspread/api)"]
-    apisrc["handlers, token check, signed upload, OCR and extract steps; seed and smoke scripts"]
+    apisrc["handlers, token check, signup.ts, signed upload, export/ (XLSX, CSV), OCR and extract steps; seed and smoke scripts"]
   end
   subgraph supabase["supabase (folder, not a workspace)"]
     migrations["migrations, seed, tests"]
@@ -51,6 +52,10 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   layout --> ui
   domain --> ui
   api -->|"only importer of mock functions"| mock
+  api -->|"only importer of real functions"| real
+  real -->|"domain types only"| mock
+  real --> fields
+  mock --> fields
   web -->|workspace dependency| shared
   fn -->|"imports by relative path"| apisvc
   apisvc -->|"secret key, SQL"| supabase
