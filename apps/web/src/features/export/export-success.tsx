@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { CircleCheck, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { downloadCsv } from './download-csv'
+import { downloadCsv, downloadFromUrl } from './download-csv'
 import type { ExportResult } from './export-result'
 import { formatLabel } from './export-summary'
 
@@ -16,7 +16,9 @@ const SERVER_NOTE = 'The file is generated on the server — download will be av
 /** Replaces the form after an export; focus moves here because the form (and its button) is gone. */
 export const ExportSuccess = ({ result, onExportMore, onViewHistory }: ExportSuccessProps) => {
   const id = useId()
-  const { file, recipient } = result
+  const { file, recipient, remote } = result
+  const fileName = file?.name ?? remote?.name
+  const canDownload = file !== undefined || remote !== undefined
   const noun = result.count === 1 ? 'document' : 'documents'
 
   return (
@@ -32,7 +34,7 @@ export const ExportSuccess = ({ result, onExportMore, onViewHistory }: ExportSuc
             Exported {result.count} {result.typeName.toLowerCase()} {noun} as {formatLabel(result.format)}
           </h2>
           <p id={`${id}-detail`} className="text-sm wrap-break-word text-muted-foreground">
-            {recipient ? `Sent to ${recipient}.` : file ? `Downloaded ${file.name}.` : SERVER_NOTE}
+            {recipient ? `Sent to ${recipient}.` : fileName ? `Downloaded ${fileName}.` : SERVER_NOTE}
           </p>
         </div>
       </div>
@@ -42,12 +44,12 @@ export const ExportSuccess = ({ result, onExportMore, onViewHistory }: ExportSuc
             type="button"
             variant="outline"
             className="min-h-touch md:min-h-9"
-            disabled={!file}
-            aria-describedby={file ? undefined : `${id}-detail`}
-            onClick={() => file && downloadCsv(file)}
+            disabled={!canDownload}
+            aria-describedby={canDownload ? undefined : `${id}-detail`}
+            onClick={() => (remote ? downloadFromUrl(remote) : file && downloadCsv(file))}
           >
             <Download aria-hidden />
-            {file ? 'Download again' : 'Download'}
+            {canDownload ? 'Download again' : 'Download'}
           </Button>
         )}
         <Button type="button" className="min-h-touch md:min-h-9" onClick={onExportMore}>

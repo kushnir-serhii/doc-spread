@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react'
+import { NotAvailableYet } from '@/components/layout/not-available-yet'
 import { DocumentViewer } from '@/features/documents/viewer/document-viewer'
 import type { DocumentViewerHandle } from '@/features/documents/viewer/viewer-highlights'
 import type { ViewerMode, ViewerSelection } from '@/features/documents/viewer/viewer-types'
 import { useDocument } from '@/lib/api'
+import { USE_MOCKS } from '@/lib/env'
 import { Button } from '@/components/ui/button'
 import { useDemoHighlights } from './use-demo-highlights'
 
@@ -20,7 +22,7 @@ const MODES: { mode: ViewerMode; label: string }[] = [
 
 const round = (n: number) => n.toFixed(3)
 
-export const ViewerSection = () => {
+const ViewerDemo = () => {
   const [documentId, setDocumentId] = useState(DEMO_DOCUMENTS[0].id)
   const [showTokens, setShowTokens] = useState(false)
   const { data: doc, isError, refetch } = useDocument(documentId)
@@ -141,3 +143,16 @@ export const ViewerSection = () => {
     </div>
   )
 }
+
+/** The demo reads seeded mock documents, so with mocks off it says so instead of requesting ids the database doesn't have. */
+export const ViewerSection = () =>
+  USE_MOCKS ? (
+    <ViewerDemo />
+  ) : (
+    <NotAvailableYet
+      title="Not available yet"
+      description="The viewer demo uses the seeded mock documents, so it only runs with mocks on."
+      backTo="/inbox"
+      backLabel="Back to the inbox"
+    />
+  )

@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { AppShell } from '@/components/layout/app-shell'
 import { AuthLayout } from '@/components/layout/auth-layout'
+import { RequireSession } from '@/components/layout/require-session'
 import { RoutePending } from '@/components/layout/route-pending'
 
 export const router = createBrowserRouter([
@@ -35,7 +36,11 @@ export const router = createBrowserRouter([
 
       // App — inside the shell
       {
-        element: <AppShell />,
+        element: (
+          <RequireSession>
+            <AppShell />
+          </RequireSession>
+        ),
         children: [
           { path: '/app', element: <Navigate to="/inbox" replace /> },
           { path: '/upload', lazy: () => import('@/pages/upload/upload-page').then((m) => ({ Component: m.default })) },

@@ -5,7 +5,9 @@ import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { AuthError, createVerifier } from './auth.js'
 import { loadEnv } from './env.js'
+import { ExportError, createExport, validateExport } from './export/create-export.js'
 import type { Env } from './env.js'
+import { SignupError, signup, validateSignup } from './signup.js'
 import { sanitizeFileName, validateUpload } from './upload-rules.js'
 
 class HttpError extends Error {
@@ -144,6 +146,25 @@ const completeUpload = async (request: Request, ctx: Context, documentId: string
   return json(202, { documentId, status: 'processing' })
 }
 
+/** Builds a spreadsheet of approved documents of one type; see `export/create-export.ts`. */
+const createExportFile = async (request: Request, ctx: Context): Promise<Response> => {
+  const { env, supabase, verifyToken } = ctx
+  const { userId } = await verifyToken(request.headers.get('authorization') ?? undefined)
+  const validation = validateExport(await parseBody(request))
+  if (!validation.ok) throw new HttpError(validation.status, validation.code, validation.message)
+  const companyId = await companyOf(ctx, userId)
+  const result = await createExport({ supabase, bucket: env.exportsBucket, userId, companyId }, validation.value)
+  return json(200, result)
+}
+
+/** Public route (no token): creates the user, the company and the owner membership. */
+const createAccount = async (request: Request, { supabase }: Context): Promise<Response> => {
+  const validation = validateSignup(await parseBody(request))
+  if (!validation.ok) throw new HttpError(400, validation.code, validation.message)
+  const result = await signup(supabase, validation.value)
+  return json(201, result)
+}
+
 /** Web-standard handler: takes a Request, returns a Response. The `/api` prefix is optional. */
 export const handle = async (request: Request): Promise<Response> => {
   const method = request.method
@@ -151,11 +172,15 @@ export const handle = async (request: Request): Promise<Response> => {
   try {
     if (method === 'GET' && path === '/health') return json(200, { ok: true })
     if (method === 'POST' && path === '/uploads') return await createUpload(request, getContext())
+    if (method === 'POST' && path === '/exports') return await createExportFile(request, getContext())
+    if (method === 'POST' && path === '/signup') return await createAccount(request, getContext())
     const complete = /^\/uploads\/([^/]+)\/complete$/.exec(path)
     if (method === 'POST' && complete?.[1]) return await completeUpload(request, getContext(), complete[1])
     return json(404, { error: 'not_found', message: 'Unknown route' })
   } catch (error) {
     if (error instanceof AuthError) return json(401, { error: 'unauthorized', message: 'Missing or invalid token' })
+    if (error instanceof ExportError) return json(error.status, { error: error.code, message: error.message })
+    if (error instanceof SignupError) return json(error.status, { error: error.code, message: error.message })
     if (error instanceof HttpError) return json(error.status, { error: error.code, message: error.message })
     // Only the error name and message are logged: never tokens, headers or environment values.
     console.error(JSON.stringify({ route: `${method} ${path}`, error: error instanceof Error ? `${error.name}: ${error.message}` : 'unknown' }))

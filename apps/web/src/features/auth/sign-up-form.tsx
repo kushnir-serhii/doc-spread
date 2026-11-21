@@ -5,12 +5,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useSignUp } from '@/lib/api'
+import { USE_MOCKS } from '@/lib/env'
 import { AuthError } from '@/lib/mock/types'
 import { authErrorMessage, GENERIC_ERROR } from './auth-error-message'
 import { emailMessage } from './auth-validation'
 import { PasswordInput } from './password-input'
 
-const nameMessage = (name: string): string | null => (name.trim() === '' ? 'Enter your name.' : null)
+const nameMessage = (name: string): string | null => {
+  const length = name.trim().length
+  if (USE_MOCKS) return length === 0 ? 'Enter your name.' : null
+  if (length === 0) return 'Enter your company name.'
+  return length < 2 || length > 100 ? 'Use 2 to 100 characters.' : null
+}
 const passwordMessage = (password: string): string | null =>
   password.length < 8 ? 'Use at least 8 characters.' : null
 
@@ -31,6 +37,7 @@ export const SignUpForm = () => {
   const passwordError = submitted ? passwordMessage(password) : null
   const pending = signUp.isPending
   const error = signUp.error
+  const nameLabel = USE_MOCKS ? 'Full name' : 'Company name'
   const emailTaken = error instanceof AuthError && error.code === 'email_taken'
   const formError = error ? (error instanceof AuthError ? authErrorMessage(error.code) : GENERIC_ERROR) : null
 
@@ -51,19 +58,20 @@ export const SignUpForm = () => {
     }
     signUp.mutate(
       { name: name.trim(), email: email.trim(), password },
-      { onSuccess: () => void navigate('/onboarding') },
+      // with mocks off the company name is already given, so onboarding is skipped
+      { onSuccess: () => void navigate(USE_MOCKS ? '/onboarding' : '/types') },
     )
   }
 
   return (
     <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`${id}-name`}>Full name</Label>
+        <Label htmlFor={`${id}-name`}>{nameLabel}</Label>
         <Input
           id={`${id}-name`}
           ref={nameRef}
           type="text"
-          autoComplete="name"
+          autoComplete={USE_MOCKS ? 'name' : 'organization'}
           value={name}
           aria-invalid={nameError !== null}
           aria-describedby={nameError ? `${id}-name-error` : undefined}

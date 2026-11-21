@@ -1,6 +1,7 @@
 import { useReducer, useRef, useState } from 'react'
 import { ArrowLeft, ScanSearch } from 'lucide-react'
 import { Link } from 'react-router'
+import { USE_MOCKS } from '@/lib/env'
 import { getAllComputedColumnIds, getComputedFieldIds } from '@/lib/fields/computed-fields'
 import { ActionsSection } from './actions/actions-section'
 import type { ActionEditorTarget } from './actions/action-form'
@@ -84,7 +85,13 @@ export const TypeBuilder = ({ initialDraft, savedType, notice = null, onSaved }:
           <ArrowLeft className="size-4" aria-hidden />
           Back to types
         </Link>
-        {savedType && (
+        {savedType && !USE_MOCKS && (
+          <span className="inline-flex min-h-touch items-center gap-1 px-2 text-sm text-muted-foreground md:min-h-9">
+            <ScanSearch className="size-4" aria-hidden />
+            Train with samples: not available yet
+          </span>
+        )}
+        {savedType && USE_MOCKS && (
           <Link
             to={`/types/${savedType.id}/train`}
             className="inline-flex min-h-touch items-center gap-1 rounded-md px-2 text-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring md:min-h-9"

@@ -1,5 +1,5 @@
 import { LogOut, Settings } from 'lucide-react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useSignOut } from '@/lib/api'
 
 export interface UserMenuProps {
   name: string
@@ -26,6 +27,8 @@ function initials(name: string) {
 }
 
 export function UserMenu({ name, email }: UserMenuProps) {
+  const navigate = useNavigate()
+  const signOut = useSignOut()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -49,11 +52,16 @@ export function UserMenu({ name, email }: UserMenuProps) {
             Settings
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="min-h-touch md:min-h-8">
-          <Link to="/sign-in">
-            <LogOut aria-hidden="true" />
-            Sign out
-          </Link>
+        <DropdownMenuItem
+          className="min-h-touch md:min-h-8"
+          onSelect={() => {
+            // Go first: once the session is gone the route guard would send the visitor to /sign-in?returnTo=...
+            void navigate('/sign-in')
+            signOut.mutate()
+          }}
+        >
+          <LogOut aria-hidden="true" />
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
