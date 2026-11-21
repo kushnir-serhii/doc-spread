@@ -60,6 +60,7 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
 /** Mermaid participant id → glossary entry. */
 export const PIPELINE_ITEMS: Record<string, GlossaryKey> = {
   B: 'browserApp',
+  AU: 'supabaseAuth',
   A: 'fnApiRouter',
   ST: 'storageDocuments',
   DB: 'supabasePostgres',

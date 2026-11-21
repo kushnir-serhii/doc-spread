@@ -77,6 +77,7 @@ export const STRUCTURE_ITEMS: Record<string, GlossaryKey> = {
   api: 'libApi',
   fields: 'libFields',
   mock: 'libMock',
+  real: 'libReal',
   theme: 'libTheme',
   locale: 'libFormatLocale',
   sharedsrc: 'sharedPackage',

@@ -15,7 +15,7 @@ export const DELIVERY_DIAGRAM = `flowchart TB
     pr["Pull request"]
     trigger{"Push to main changed supabase/migrations/** (or manual run)?"}
     env["Environment dev: secrets"]
-    migrate["Actions migrate.yml: supabase link, supabase db push"]
+    migrate["Actions migrate.yml: supabase db push via the session pooler"]
   end
 
   subgraph vc["Vercel"]

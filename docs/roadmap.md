@@ -29,7 +29,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 021 | [Architecture page: UML diagrams](specs/021-architecture-diagrams.md) | done | — |
 | 022 | [Off AWS: Vercel and Supabase only](specs/022-vercel-supabase.md) | in-progress | 020 |
 | 023 | [First real flow](specs/023-first-real-flow.md) | done | 022 |
-| 024 | [UML diagrams: system, user and document flows (dev only)](specs/024-uml-diagrams.md) | in-progress | 021 |
+| 024 | [UML diagrams: system, user and document flows (dev only)](specs/024-uml-diagrams.md) | done | 021 |
 
 Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 
@@ -49,7 +49,7 @@ Read top to bottom; the next spec is the first one that isn't `done`. Specs in o
 | 8 | 020, 021 |
 | 9 | 022 |
 | 10 | 023 |
-| 11 | 024 (slices 1–5 now; slice 6 after 023) |
+| 11 | 024 |
 
 - To change the order, edit this table.
 - To make a spec buildable, review it and set it to `ready` here and in the spec.

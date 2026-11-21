@@ -1,6 +1,6 @@
 # 024 — UML diagrams: system, user and document flows (dev only)
 
-**Status:** in-progress · **Depends on:** 021 · **Route(s):** `/architecture` (dev only), `/design` (dev only)
+**Status:** done · **Depends on:** 021 · **Route(s):** `/architecture` (dev only), `/design` (dev only)
 
 ## Goal
 In local dev, a developer opens `/architecture` and can see how DocSpread works end to end: which services run where (Vercel, Supabase, GitHub, Anthropic), how a document travels from file to spreadsheet, how a user moves through the product, and how code reaches production. Hovering over or tapping any box in a diagram explains what that item is and what it does in DocSpread. Large diagrams can be zoomed, panned and fitted to the screen. The page no longer ships in production builds.
@@ -45,7 +45,7 @@ Tab order, with `context` as the new default tab (a missing or unknown `?tab=` f
 | 2 | Structure (`structure`) | Package diagram | as 021, plus `services/api`, `supabase/`, `apps/web/api/`, `src/lib/real` (once 023 adds it) | as 021 | |
 | 3 | Domain model (`domain`) | Class diagram | as 021 | as 021 | |
 | 4 | Screens (`screens`) | Navigation diagram | as 021, without the dev-only routes in production terms (they're labelled "dev only") | as 021 | |
-| 5 | User flow (`user-flow`) | Activity diagram (`flowchart` with swimlanes User / Web app / Backend) | Sign up with a company (or sign in) → create a document type → upload → wait for processing → review, edit, approve or reject → export a spreadsheet. Branches: company or email taken, wrong password, file refused, unclassified (assign a type), error, reject. A note marks which steps use the real backend with mocks off and which are mock-only | `src/app/router.tsx`, `docs/product.md`, specs 005–009, 023 | ✓ |
+| 5 | User flow (`user-flow`) | Activity diagram (`flowchart` with swimlanes User / Web app / Backend) | Sign up with a company (or sign in) → create a document type → upload → wait for processing → review, edit, approve or reject → export a spreadsheet. Branches: company or email taken, wrong password, file refused, unclassified, error, reject. Only the real path with mocks off is drawn: steps that work only on mocks (onboarding, assigning or changing a type) are left out | `src/app/router.tsx`, `docs/product.md`, specs 005–009, 023 | ✓ |
 | 6 | Document lifecycle (`lifecycle`) | State diagram | as 021 | as 021 | |
 | 7 | Document flow (`document-flow`) | Activity diagram (`flowchart` with swimlanes Browser / Vercel Functions / Supabase / Anthropic) | One file from end to end: `/api/uploads` → signed upload to Storage `documents` → `complete` → pgmq `ocr` → pg_cron + pg_net call `pipeline/ocr` → pages and tokens in Postgres → pgmq `extract` → `pipeline/extract` → Claude classify + extract → values in Postgres (`needs_review` / `unclassified` / `error`) → browser polls → review → `/api/exports` → spreadsheet in Storage `exports` → signed download. Each step is labelled with the document status it sets | `services/api/src/`, `apps/web/api/`, `supabase/migrations/`, specs 022, 023 | ✓ |
 | 8 | Pipeline (`pipeline`) | Sequence diagram | as 021/022 | as 022 | |
@@ -105,15 +105,18 @@ No secret, account id, project ref or key appears in a diagram or a glossary ent
   - [x] `conventions.md` maps each kind of change to the diagrams it updates, including the glossary rule
   - [x] `CLAUDE.md` describes the page as dev only with ten diagrams and tooltips
 
-### [ ] 6. User flow and Document flow (after 023)
+### [x] 6. User flow and Document flow (after 023)
 - **Waits for:** 023 to be `done` (merged), so both flows are drawn once against the real sign-up, upload, review and export. Slices 1–5 don't wait.
 - **Build:** write diagrams 5 and 7 with their `items` and glossary entries, from the code after 023. The document flow labels each step with the status it sets, using only values from `DOCUMENT_STATUSES`; the user flow names only routes that exist in `router.tsx`.
-- **Files:** `src/features/architecture/diagrams/{user-flow,document-flow,glossary,diagram-def,index}.ts`
+  Also bring Delivery up to date with PR #38: `migrate.yml` no longer runs `supabase link` and uses no access token; it runs `supabase db push --db-url` through the session pooler with two secrets (database password, project reference). Fix the Delivery node and the glossary entries for Actions `migrate.yml`, the GitHub environment `dev` and the owner's `supabase db push`.
+- **Files:** `src/features/architecture/diagrams/{user-flow,document-flow,delivery,glossary,diagram-def,index}.ts`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] every route in the user flow exists in `router.tsx`; every status in the document flow is in `DOCUMENT_STATUSES`
-  - [ ] the document flow names both Storage buckets, both pgmq queues, pg_cron/pg_net, both pipeline functions and both Claude calls, consistent with the Pipeline tab
-  - [ ] both render without error in light and dark, at 375px and 1280px; every node opens a tooltip
+  - [x] the user flow draws only the real path with mocks off (sign-up leads to `/types`); no onboarding or type reassignment
+  - [x] Delivery and its tooltips match the current `migrate.yml`: no `supabase link`, no access token, two secrets
+  - [x] every route in the user flow exists in `router.tsx`; every status in the document flow is in `DOCUMENT_STATUSES`
+  - [x] the document flow names both Storage buckets, both pgmq queues, pg_cron/pg_net, both pipeline functions and both Claude calls, consistent with the Pipeline tab
+  - [x] both render without error in light and dark, at 375px and 1280px; every node opens a tooltip
 
 ## Backend needs
 None.
@@ -127,6 +130,9 @@ None.
   - **Decided (2026-11-20):** System context (`context`), the big-picture map. Structure stays a tab.
 - **Order with 023?**
   - **Decided (2026-11-20):** build slices 1–5 now (dev-only pages, libraries, tooltips, the existing six diagrams, System context, Delivery, the conventions rule). Slice 6 (User flow, Document flow) waits until 023 is done. Both specs touch `diagrams/*`, so a small merge is expected; whichever merges second rebases.
+- **Slice 6 scope (2026-11-21)?**
+  - **Decided:** fix Delivery for PR #38 in slice 6; the user flow shows the real path only (mocks off), without mock-only steps.
+- **Flows are small at fit zoom (2026-11-21)?** User flow fits at 17–21%, Document flow at 28%: long cross-lane edges in Mermaid's layout. Correct, readable after zooming. A redraw (fewer edges, another layout) would be a follow-up.
 - **Branch:**
   - **Decided (2026-11-20):** `uml-diagrams-024` from `main`, in its own worktree (`../doc-spread-024`) so the 023 working tree stays untouched.
 
@@ -140,3 +146,4 @@ None.
 | 2026-11-20 | 3 | done (sonnet, designer) | `glossary.ts` (89 entries), `items` on all six diagrams (structure 21, domain 19, screens 19, lifecycle 8, pipeline 8 participants, deployment 14); Mermaid code unchanged. `diagram-items.ts` resolves nodes inside its own container (fullscreen duplicates the SVG), makes them focusable buttons; `node-tooltip.tsx` = Radix Popover with a virtual anchor (hover 300 ms, tap/click pins, Enter/Space, Esc returns focus, no open after a pan drag, works in fullscreen); `diagram-items-list.tsx` lists entries by provider. All 66 `where` paths exist; no secrets. UI check 24/24, no resolver warnings on any tab. Not checked: AA contrast measured (judged visually), screen reader, popover following during pinch. Clusters and `[*]` markers have no entries. |
 | 2026-11-20 | 5 | done (haiku) | `conventions.md` → Architecture diagrams: dev only, ten tabs, change → diagrams table (adds User flow, Document flow, System context, Delivery), glossary + `items` rule. `CLAUDE.md` bullet rewritten. `process.md` unchanged (names no architecture routes). Built in parallel with slice 4. |
 | 2026-11-20 | 4 | done (sonnet) | `context.ts` (7 nodes, 10 labelled arrows, `flowchart` in C4 style) and `delivery.ts` (14 nodes, swimlanes Developer / GitHub / Vercel / Supabase, matches `migrate.yml`); `context` is the default tab (also for `?tab=nope`); Deployment's GitHub Actions node no longer "planned". 16 new glossary entries (105 total). UI check 16/16, no resolver warnings on context, delivery and deployment. Note: the browser → Supabase arrow (sign in, signed upload) describes the 022/023 design; the web code for it lands with 023. Both diagrams fit at 30–49%, so text is small until zoomed. |
+| 2026-11-21 | 6 | done (sonnet) | Rebased on main after 023 and PR #38 (roadmap and `pipeline.ts` conflicts). `user-flow.ts` (24 nodes, swimlanes User / Web app / Backend, real path only: routes `/sign-up`, `/sign-in`, `/types/new`, `/upload`, `/inbox`, `/documents/:documentId`, `/export`) and `document-flow.ts` (27 nodes, swimlanes Browser / Vercel Functions / Supabase / Anthropic; statuses uploaded, processing, needs_review, unclassified, error, approved, exported; both buckets, both queues, pg_cron + pg_net, both functions, Haiku classify and Opus extract). 28 new glossary entries. Drift: Delivery and the `migrate.yml`, environment `dev` and `supabase db push` entries match PR #38 (pooler, no `supabase link`, two secrets); Pipeline `AU` and Structure `real` got entries. Typecheck, lint, build green; no Mermaid/architecture chunk in `dist`. UI check 44/44 (ten tabs + design); no resolver warnings; screenshots reviewed. |
