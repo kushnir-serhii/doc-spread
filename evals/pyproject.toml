@@ -5,6 +5,8 @@ description = "Golden dataset and extraction evals for DocSpread"
 requires-python = ">=3.12"
 dependencies = [
     "faker>=40.63.0",
+    "matplotlib>=3.11.2",
+    "pandas>=3.1.1",
     "pillow>=13.0.0",
     "pydantic>=2",
     "pypdf>=7.1.1",

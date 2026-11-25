@@ -25,6 +25,16 @@ uv run python -m evals.run --resume runs/<run> --max-usd 20         # continue a
 
 `--subset` takes comma-separated id globs or tags; `--concurrency` defaults to 4, `--max-usd` to 10 (the run stops starting documents past the cap and exits with code 2). Each run writes `runs/<utc>-<label>/results.jsonl` (one line per document, model and repeat) and `run.json`; `runs/` is git-ignored. Model aliases live in `evals/models.py`. Tests use a fake `eval-extract` (`EVAL_EXTRACT_CMD`), so `uv run pytest` costs nothing.
 
+## Analyze a run
+
+```sh
+uv run python -m evals.analyze runs/<run>                       # metrics.json, report.md, charts/ in the run dir
+uv run python -m evals.analyze runs/<run> --compare runs/<other> # also prints a diff table against another run
+uv run python -m evals.analyze runs/<run> --out <dir>           # write the outputs elsewhere
+```
+
+Scores every result against its truth file (no API calls). `metrics.json` and `report.md` hold aggregates only, and the report is rendered from `metrics.json`. Metric definitions are in the report's "How to read" section and in `evals/metrics.py`; `LOW_CONFIDENCE` is the constant there, mirroring `apps/web/src/lib/fields/confidence.ts`.
+
 ## What the dataset is
 
 A fixed yardstick for the extraction evals (026) and the CI gate (027): 43 documents, each next to a `<id>.truth.json` with the correct field values.
