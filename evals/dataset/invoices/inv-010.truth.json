@@ -1,0 +1,280 @@
+{
+  "id": "inv-010",
+  "file": "inv-010.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "sek",
+    "date-localized-month",
+    "lang-sv",
+    "layout-a",
+    "missing-optional"
+  ],
+  "seed": 10010,
+  "fields": {
+    "supplier_name": "Håkansson Mohamed HB",
+    "supplier_tax_id": "SE16658496920501",
+    "invoice_number": "FA-2026-3453",
+    "issue_date": "2026-04-01",
+    "sale_date": null,
+    "due_date": "2026-05-31",
+    "payment_term_days": 60,
+    "net_total": {
+      "amount": "57450.78",
+      "currency": "SEK"
+    },
+    "vat_total": {
+      "amount": "4952.31",
+      "currency": "SEK"
+    },
+    "gross_total": {
+      "amount": "62403.09",
+      "currency": "SEK"
+    },
+    "line_items": [
+      {
+        "description": "Kabelsats",
+        "quantity": 5,
+        "unit": "tjl",
+        "unit_net": {
+          "amount": "148.28",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "741.40",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "44.48",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "785.88",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Datamigrering - Pro",
+        "quantity": 6,
+        "unit": "tjl",
+        "unit_net": {
+          "amount": "361.43",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "2168.58",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "542.15",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "2710.73",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Designgranskning",
+        "quantity": 8,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "1330.51",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "10644.08",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "638.64",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "11282.72",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Programvarulicens - Pro",
+        "quantity": 1,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "298.09",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "298.09",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "17.89",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "315.98",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Programvarulicens - Pro",
+        "quantity": 12,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "1008.47",
+          "currency": "SEK"
+        },
+        "vat_rate": 12,
+        "net": {
+          "amount": "12101.64",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "1452.20",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "13553.84",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Kabelsats",
+        "quantity": 6,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "291.80",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "1750.80",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "437.70",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "2188.50",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Utbildningstillfälle - Pro",
+        "quantity": 20,
+        "unit": "st",
+        "unit_net": {
+          "amount": "1186.36",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "23727.20",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "1423.63",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "25150.83",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Servicebesök",
+        "quantity": 5,
+        "unit": "st",
+        "unit_net": {
+          "amount": "860.34",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "4301.70",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "258.10",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "4559.80",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Kabelsats - XL",
+        "quantity": 1,
+        "unit": "tim",
+        "unit_net": {
+          "amount": "918.02",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "918.02",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "55.08",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "973.10",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Utbildningstillfälle - Pro",
+        "quantity": 0.5,
+        "unit": "st",
+        "unit_net": {
+          "amount": "449.19",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "224.60",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "13.48",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "238.08",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Utbildningstillfälle - B",
+        "quantity": 1,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "574.67",
+          "currency": "SEK"
+        },
+        "vat_rate": 12,
+        "net": {
+          "amount": "574.67",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "68.96",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "643.63",
+          "currency": "SEK"
+        }
+      }
+    ]
+  }
+}

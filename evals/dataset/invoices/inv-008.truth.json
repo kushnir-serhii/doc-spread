@@ -1,0 +1,347 @@
+{
+  "id": "inv-008",
+  "file": "inv-008.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "chf",
+    "date-iso",
+    "lang-en",
+    "layout-b",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10008,
+  "fields": {
+    "supplier_name": "Hill, Dominguez and Chavez",
+    "supplier_tax_id": null,
+    "invoice_number": "FA-2026-8324",
+    "issue_date": "2025-04-01",
+    "sale_date": "2025-03-28",
+    "due_date": "2025-05-31",
+    "payment_term_days": 60,
+    "net_total": {
+      "amount": "76957.42",
+      "currency": "CHF"
+    },
+    "vat_total": {
+      "amount": "2891.87",
+      "currency": "CHF"
+    },
+    "gross_total": {
+      "amount": "79849.29",
+      "currency": "CHF"
+    },
+    "line_items": [
+      {
+        "description": "Design review - Plus",
+        "quantity": 8,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1060.17",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "8481.36",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "220.52",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "8701.88",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Data migration - A",
+        "quantity": 3,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "882.41",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "2647.23",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "68.83",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "2716.06",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Support plan",
+        "quantity": 2,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "376.58",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "753.16",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "19.58",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "772.74",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Software license - B",
+        "quantity": 2,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "255.25",
+          "currency": "CHF"
+        },
+        "vat_rate": 3.8,
+        "net": {
+          "amount": "510.50",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "19.40",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "529.90",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Printed manuals",
+        "quantity": 2.5,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1455.09",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "3637.73",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "94.58",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "3732.31",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Consulting services - B",
+        "quantity": 12,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1330.81",
+          "currency": "CHF"
+        },
+        "vat_rate": 8.1,
+        "net": {
+          "amount": "15969.72",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "1293.55",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "17263.27",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Software license - Plus",
+        "quantity": 1,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "30.17",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "30.17",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "0.78",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "30.95",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Consulting services - XL",
+        "quantity": 1,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "542.93",
+          "currency": "CHF"
+        },
+        "vat_rate": 3.8,
+        "net": {
+          "amount": "542.93",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "20.63",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "563.56",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Printed manuals - B",
+        "quantity": 2,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "148.39",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "296.78",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "7.72",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "304.50",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Cable set",
+        "quantity": 8,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "279.33",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "2234.64",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "58.10",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "2292.74",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Maintenance visit",
+        "quantity": 15,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "83.67",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "1255.05",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "32.63",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "1287.68",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Maintenance visit - Pro",
+        "quantity": 15,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1378.81",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "20682.15",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "537.74",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "21219.89",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Maintenance visit - Plus",
+        "quantity": 20,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "980.83",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "19616.60",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "510.03",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "20126.63",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Cloud hosting",
+        "quantity": 1,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "299.40",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "299.40",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "7.78",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "307.18",
+          "currency": "CHF"
+        }
+      }
+    ]
+  }
+}

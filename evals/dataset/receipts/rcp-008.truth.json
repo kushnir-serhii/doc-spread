@@ -1,0 +1,31 @@
+{
+  "id": "rcp-008",
+  "file": "rcp-008.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-medium",
+    "jpg",
+    "no-currency",
+    "date-iso",
+    "lang-de",
+    "missing-optional"
+  ],
+  "seed": 10008,
+  "fields": {
+    "merchant": "HOFMANN",
+    "merchant_tax_id": null,
+    "receipt_date": "2026-05-02",
+    "total": {
+      "amount": "23.72",
+      "currency": null
+    },
+    "tax_total": {
+      "amount": "4.12",
+      "currency": null
+    },
+    "payment_method": "Other",
+    "items": null
+  }
+}

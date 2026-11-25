@@ -1,0 +1,171 @@
+{
+  "id": "inv-012",
+  "file": "inv-012.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "eur",
+    "date-localized-month",
+    "lang-pl",
+    "layout-c",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10012,
+  "fields": {
+    "supplier_name": "Stowarzyszenie Durlik i syn s.c",
+    "supplier_tax_id": null,
+    "invoice_number": "INV-2026-3574",
+    "issue_date": "2025-07-25",
+    "sale_date": "2025-07-23",
+    "due_date": "2025-08-15",
+    "payment_term_days": 21,
+    "net_total": {
+      "amount": "6095.36",
+      "currency": "EUR"
+    },
+    "vat_total": {
+      "amount": "426.67",
+      "currency": "EUR"
+    },
+    "gross_total": {
+      "amount": "6522.03",
+      "currency": "EUR"
+    },
+    "line_items": [
+      {
+        "description": "Hosting w chmurze - XL",
+        "quantity": 1,
+        "unit": "mies",
+        "unit_net": {
+          "amount": "364.05",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "364.05",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "25.48",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "389.53",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Drukowane instrukcje - XL",
+        "quantity": 0.5,
+        "unit": "usł",
+        "unit_net": {
+          "amount": "680.33",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "340.17",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "23.81",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "363.98",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Przegląd projektu - XL",
+        "quantity": 0.5,
+        "unit": "godz",
+        "unit_net": {
+          "amount": "1315.32",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "657.66",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "46.04",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "703.70",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Migracja danych",
+        "quantity": 1.5,
+        "unit": "usł",
+        "unit_net": {
+          "amount": "127.16",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "190.74",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "13.35",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "204.09",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Drukowane instrukcje - Pro",
+        "quantity": 12,
+        "unit": "szt",
+        "unit_net": {
+          "amount": "357.17",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "4286.04",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "300.02",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "4586.06",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Szkolenie - Plus",
+        "quantity": 10,
+        "unit": "usł",
+        "unit_net": {
+          "amount": "25.67",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "256.70",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "17.97",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "274.67",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

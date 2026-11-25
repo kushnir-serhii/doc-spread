@@ -1,0 +1,14 @@
+{
+  "id": "dst-mock",
+  "file": "dst-mock.pdf",
+  "expectedType": null,
+  "source": "synthetic",
+  "tags": [
+    "mock-sample",
+    "text-pdf",
+    "multi-page",
+    "contract"
+  ],
+  "seed": null,
+  "fields": {}
+}

@@ -1,0 +1,131 @@
+{
+  "id": "inv-019",
+  "file": "inv-019.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "scanned",
+    "eur",
+    "date-localized-month",
+    "lang-de",
+    "layout-a",
+    "missing-optional"
+  ],
+  "seed": 10019,
+  "fields": {
+    "supplier_name": "Seifert KG",
+    "supplier_tax_id": "DE654822535",
+    "invoice_number": "FV-2025-9151",
+    "issue_date": "2025-07-10",
+    "sale_date": "2025-07-10",
+    "due_date": "2025-08-24",
+    "payment_term_days": 45,
+    "net_total": {
+      "amount": "28246.14",
+      "currency": "EUR"
+    },
+    "vat_total": null,
+    "gross_total": {
+      "amount": "28246.14",
+      "currency": "EUR"
+    },
+    "line_items": [
+      {
+        "description": "Kabelsatz - Plus",
+        "quantity": 12,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "651.49",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "7817.88",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Cloud-Hosting - XL",
+        "quantity": 6,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "998.37",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "5990.22",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Cloud-Hosting - Pro",
+        "quantity": 12,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "596.22",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "7154.64",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Beratungsleistung - Plus",
+        "quantity": 0.5,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "53.49",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "26.75",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Schulung vor Ort",
+        "quantity": 5,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "914.77",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "4573.85",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Softwarelizenz - A",
+        "quantity": 2.5,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "1073.12",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "2682.80",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      }
+    ]
+  }
+}

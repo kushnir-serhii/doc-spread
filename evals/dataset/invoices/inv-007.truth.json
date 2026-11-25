@@ -1,0 +1,588 @@
+{
+  "id": "inv-007",
+  "file": "inv-007.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "multi-page",
+    "no-currency",
+    "date-long",
+    "lang-en",
+    "layout-a"
+  ],
+  "seed": 10007,
+  "fields": {
+    "supplier_name": "Potts-Wood",
+    "supplier_tax_id": "GB975 4212 08",
+    "invoice_number": "RE-2025-5479",
+    "issue_date": "2026-01-31",
+    "sale_date": "2026-01-29",
+    "due_date": "2026-03-02",
+    "payment_term_days": 30,
+    "net_total": {
+      "amount": "120565.09",
+      "currency": null
+    },
+    "vat_total": {
+      "amount": "24130.21",
+      "currency": null
+    },
+    "gross_total": {
+      "amount": "144695.30",
+      "currency": null
+    },
+    "line_items": [
+      {
+        "description": "Design review - B",
+        "quantity": 4,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "1413.75",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "5655.00",
+          "currency": null
+        },
+        "vat": {
+          "amount": "1131.00",
+          "currency": null
+        },
+        "gross": {
+          "amount": "6786.00",
+          "currency": null
+        }
+      },
+      {
+        "description": "Maintenance visit - Pro",
+        "quantity": 2,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "322.80",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "645.60",
+          "currency": null
+        },
+        "vat": {
+          "amount": "129.12",
+          "currency": null
+        },
+        "gross": {
+          "amount": "774.72",
+          "currency": null
+        }
+      },
+      {
+        "description": "Training session - Plus",
+        "quantity": 2,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "873.75",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1747.50",
+          "currency": null
+        },
+        "vat": {
+          "amount": "349.50",
+          "currency": null
+        },
+        "gross": {
+          "amount": "2097.00",
+          "currency": null
+        }
+      },
+      {
+        "description": "Printed manuals",
+        "quantity": 3,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "604.53",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1813.59",
+          "currency": null
+        },
+        "vat": {
+          "amount": "362.72",
+          "currency": null
+        },
+        "gross": {
+          "amount": "2176.31",
+          "currency": null
+        }
+      },
+      {
+        "description": "Cloud hosting",
+        "quantity": 1,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "1332.49",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1332.49",
+          "currency": null
+        },
+        "vat": {
+          "amount": "266.50",
+          "currency": null
+        },
+        "gross": {
+          "amount": "1598.99",
+          "currency": null
+        }
+      },
+      {
+        "description": "Design review",
+        "quantity": 8,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "756.16",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "6049.28",
+          "currency": null
+        },
+        "vat": {
+          "amount": "1209.86",
+          "currency": null
+        },
+        "gross": {
+          "amount": "7259.14",
+          "currency": null
+        }
+      },
+      {
+        "description": "Maintenance visit",
+        "quantity": 6,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1094.51",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "6567.06",
+          "currency": null
+        },
+        "vat": {
+          "amount": "1313.41",
+          "currency": null
+        },
+        "gross": {
+          "amount": "7880.47",
+          "currency": null
+        }
+      },
+      {
+        "description": "Consulting services - Plus",
+        "quantity": 1,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "134.26",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "134.26",
+          "currency": null
+        },
+        "vat": {
+          "amount": "26.85",
+          "currency": null
+        },
+        "gross": {
+          "amount": "161.11",
+          "currency": null
+        }
+      },
+      {
+        "description": "Consulting services - Pro",
+        "quantity": 12,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "1040.15",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "12481.80",
+          "currency": null
+        },
+        "vat": {
+          "amount": "2496.36",
+          "currency": null
+        },
+        "gross": {
+          "amount": "14978.16",
+          "currency": null
+        }
+      },
+      {
+        "description": "Consulting services - A",
+        "quantity": 2,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "597.90",
+          "currency": null
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "1195.80",
+          "currency": null
+        },
+        "vat": {
+          "amount": "251.12",
+          "currency": null
+        },
+        "gross": {
+          "amount": "1446.92",
+          "currency": null
+        }
+      },
+      {
+        "description": "Training session",
+        "quantity": 4,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "1202.45",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "4809.80",
+          "currency": null
+        },
+        "vat": {
+          "amount": "961.96",
+          "currency": null
+        },
+        "gross": {
+          "amount": "5771.76",
+          "currency": null
+        }
+      },
+      {
+        "description": "Cable set - A",
+        "quantity": 1,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "248.37",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "248.37",
+          "currency": null
+        },
+        "vat": {
+          "amount": "49.67",
+          "currency": null
+        },
+        "gross": {
+          "amount": "298.04",
+          "currency": null
+        }
+      },
+      {
+        "description": "Consulting services - Plus",
+        "quantity": 8,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "1303.05",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "10424.40",
+          "currency": null
+        },
+        "vat": {
+          "amount": "2084.88",
+          "currency": null
+        },
+        "gross": {
+          "amount": "12509.28",
+          "currency": null
+        }
+      },
+      {
+        "description": "Cloud hosting - Plus",
+        "quantity": 1,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "738.71",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "738.71",
+          "currency": null
+        },
+        "vat": {
+          "amount": "147.74",
+          "currency": null
+        },
+        "gross": {
+          "amount": "886.45",
+          "currency": null
+        }
+      },
+      {
+        "description": "Software license - B",
+        "quantity": 12,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "43.63",
+          "currency": null
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "523.56",
+          "currency": null
+        },
+        "vat": {
+          "amount": "109.95",
+          "currency": null
+        },
+        "gross": {
+          "amount": "633.51",
+          "currency": null
+        }
+      },
+      {
+        "description": "Data migration - B",
+        "quantity": 20,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "1143.27",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "22865.40",
+          "currency": null
+        },
+        "vat": {
+          "amount": "4573.08",
+          "currency": null
+        },
+        "gross": {
+          "amount": "27438.48",
+          "currency": null
+        }
+      },
+      {
+        "description": "Training session",
+        "quantity": 15,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "761.47",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "11422.05",
+          "currency": null
+        },
+        "vat": {
+          "amount": "2284.41",
+          "currency": null
+        },
+        "gross": {
+          "amount": "13706.46",
+          "currency": null
+        }
+      },
+      {
+        "description": "Cloud hosting - XL",
+        "quantity": 2,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1320.96",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "2641.92",
+          "currency": null
+        },
+        "vat": {
+          "amount": "528.38",
+          "currency": null
+        },
+        "gross": {
+          "amount": "3170.30",
+          "currency": null
+        }
+      },
+      {
+        "description": "Cloud hosting - XL",
+        "quantity": 2,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "491.06",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "982.12",
+          "currency": null
+        },
+        "vat": {
+          "amount": "196.42",
+          "currency": null
+        },
+        "gross": {
+          "amount": "1178.54",
+          "currency": null
+        }
+      },
+      {
+        "description": "Maintenance visit",
+        "quantity": 1.5,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "124.47",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "186.71",
+          "currency": null
+        },
+        "vat": {
+          "amount": "37.34",
+          "currency": null
+        },
+        "gross": {
+          "amount": "224.05",
+          "currency": null
+        }
+      },
+      {
+        "description": "Design review - A",
+        "quantity": 2.5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "322.05",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "805.13",
+          "currency": null
+        },
+        "vat": {
+          "amount": "161.03",
+          "currency": null
+        },
+        "gross": {
+          "amount": "966.16",
+          "currency": null
+        }
+      },
+      {
+        "description": "Cable set - Plus",
+        "quantity": 6,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "296.18",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1777.08",
+          "currency": null
+        },
+        "vat": {
+          "amount": "355.42",
+          "currency": null
+        },
+        "gross": {
+          "amount": "2132.50",
+          "currency": null
+        }
+      },
+      {
+        "description": "Training session - B",
+        "quantity": 2.5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1368.38",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "3420.95",
+          "currency": null
+        },
+        "vat": {
+          "amount": "684.19",
+          "currency": null
+        },
+        "gross": {
+          "amount": "4105.14",
+          "currency": null
+        }
+      },
+      {
+        "description": "Consulting services - Plus",
+        "quantity": 15,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "1436.34",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "21545.10",
+          "currency": null
+        },
+        "vat": {
+          "amount": "4309.02",
+          "currency": null
+        },
+        "gross": {
+          "amount": "25854.12",
+          "currency": null
+        }
+      },
+      {
+        "description": "Training session - B",
+        "quantity": 1,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "551.41",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "551.41",
+          "currency": null
+        },
+        "vat": {
+          "amount": "110.28",
+          "currency": null
+        },
+        "gross": {
+          "amount": "661.69",
+          "currency": null
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,214 @@
+{
+  "id": "inv-021",
+  "file": "inv-021.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "eur",
+    "date-iso",
+    "lang-es",
+    "layout-c",
+    "computed-not-printed"
+  ],
+  "seed": 10021,
+  "fields": {
+    "supplier_name": "Infraestructuras Valdés y",
+    "supplier_tax_id": "ESx99604927",
+    "invoice_number": "FV-2026-0970",
+    "issue_date": "2025-02-24",
+    "sale_date": "2025-02-22",
+    "due_date": "2025-03-10",
+    "payment_term_days": 14,
+    "net_total": {
+      "amount": "34061.52",
+      "currency": "EUR"
+    },
+    "vat_total": {
+      "amount": "6462.33",
+      "currency": "EUR"
+    },
+    "gross_total": {
+      "amount": "40523.85",
+      "currency": "EUR"
+    },
+    "line_items": [
+      {
+        "description": "Sesión de formación - B",
+        "quantity": 1.5,
+        "unit": "h",
+        "unit_net": {
+          "amount": "1311.79",
+          "currency": "EUR"
+        },
+        "vat_rate": 19,
+        "net": {
+          "amount": "1967.69",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "373.86",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "2341.55",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Juego de cables - B",
+        "quantity": 4,
+        "unit": "h",
+        "unit_net": {
+          "amount": "38.35",
+          "currency": "EUR"
+        },
+        "vat_rate": 19,
+        "net": {
+          "amount": "153.40",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "29.15",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "182.55",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Visita de mantenimiento - A",
+        "quantity": 1,
+        "unit": "mes",
+        "unit_net": {
+          "amount": "120.90",
+          "currency": "EUR"
+        },
+        "vat_rate": 10,
+        "net": {
+          "amount": "120.90",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "12.09",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "132.99",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Sesión de formación - A",
+        "quantity": 3,
+        "unit": "ud",
+        "unit_net": {
+          "amount": "923.36",
+          "currency": "EUR"
+        },
+        "vat_rate": 19,
+        "net": {
+          "amount": "2770.08",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "526.32",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "3296.40",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Revisión de diseño - Pro",
+        "quantity": 0.5,
+        "unit": "mes",
+        "unit_net": {
+          "amount": "100.98",
+          "currency": "EUR"
+        },
+        "vat_rate": 22,
+        "net": {
+          "amount": "50.49",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "11.11",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "61.60",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Alojamiento en la nube - A",
+        "quantity": 1,
+        "unit": "srv",
+        "unit_net": {
+          "amount": "1007.86",
+          "currency": "EUR"
+        },
+        "vat_rate": 19,
+        "net": {
+          "amount": "1007.86",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "191.49",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1199.35",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Alojamiento en la nube - Pro",
+        "quantity": 15,
+        "unit": "ud",
+        "unit_net": {
+          "amount": "937.86",
+          "currency": "EUR"
+        },
+        "vat_rate": 19,
+        "net": {
+          "amount": "14067.90",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "2672.90",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "16740.80",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Revisión de diseño - Pro",
+        "quantity": 20,
+        "unit": "ud",
+        "unit_net": {
+          "amount": "696.16",
+          "currency": "EUR"
+        },
+        "vat_rate": 19,
+        "net": {
+          "amount": "13923.20",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "2645.41",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "16568.61",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

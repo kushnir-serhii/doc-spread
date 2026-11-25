@@ -1,0 +1,60 @@
+{
+  "id": "inv-009",
+  "file": "inv-009.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "scanned",
+    "eur",
+    "date-iso",
+    "lang-es",
+    "layout-c",
+    "computed-not-printed"
+  ],
+  "seed": 10009,
+  "fields": {
+    "supplier_name": "Marí y Yuste S.Coop",
+    "supplier_tax_id": "ESx5048071X",
+    "invoice_number": "INV-2025-8051",
+    "issue_date": "2026-02-21",
+    "sale_date": "2026-02-19",
+    "due_date": "2026-03-23",
+    "payment_term_days": 30,
+    "net_total": {
+      "amount": "3619.25",
+      "currency": "EUR"
+    },
+    "vat_total": {
+      "amount": "760.04",
+      "currency": "EUR"
+    },
+    "gross_total": {
+      "amount": "4379.29",
+      "currency": "EUR"
+    },
+    "line_items": [
+      {
+        "description": "Juego de cables",
+        "quantity": 5,
+        "unit": "ud",
+        "unit_net": {
+          "amount": "723.85",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "3619.25",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "760.04",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "4379.29",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

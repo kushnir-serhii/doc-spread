@@ -1,0 +1,302 @@
+{
+  "description": "A sales or purchase invoice issued by a supplier, with totals and line items.",
+  "fields": [
+    {
+      "id": "tpl-invoice-f-supplier-name",
+      "key": "supplier_name",
+      "label": "Supplier",
+      "type": "text",
+      "required": true,
+      "hint": "Name of the company that issued the invoice (the seller), not the buyer.",
+      "groupable": true,
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-supplier-tax-id",
+      "key": "supplier_tax_id",
+      "label": "Supplier tax ID",
+      "type": "tax_id",
+      "required": false,
+      "hint": "Tax ID of the seller (VAT ID, EIN, NIP … , as printed).",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-invoice-number",
+      "key": "invoice_number",
+      "label": "Invoice number",
+      "type": "text",
+      "required": true,
+      "hint": "The invoice number exactly as printed, for example FV/2026/05/123.",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-issue-date",
+      "key": "issue_date",
+      "label": "Issue date",
+      "type": "date",
+      "required": true,
+      "hint": "Date the invoice was issued, usually labelled \"Issue date\" or \"Invoice date\".",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-sale-date",
+      "key": "sale_date",
+      "label": "Sale date",
+      "type": "date",
+      "required": false,
+      "hint": "Date of sale or delivery, usually labelled \"Data sprzedaży\". Leave empty if absent.",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-due-date",
+      "key": "due_date",
+      "label": "Due date",
+      "type": "date",
+      "required": false,
+      "hint": "Payment deadline, usually labelled \"Termin płatności\".",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-payment-term-days",
+      "key": "payment_term_days",
+      "label": "Payment term (days)",
+      "type": "number",
+      "required": false,
+      "hint": "Calculated from the issue and due dates.",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-net-total",
+      "key": "net_total",
+      "label": "Net total",
+      "type": "money",
+      "required": true,
+      "hint": "Total net amount (netto) of the whole invoice.",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-vat-total",
+      "key": "vat_total",
+      "label": "VAT total",
+      "type": "money",
+      "required": false,
+      "hint": "Total VAT amount of the whole invoice.",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-gross-total",
+      "key": "gross_total",
+      "label": "Gross total",
+      "type": "money",
+      "required": true,
+      "hint": "Total gross amount (brutto) to be paid.",
+      "examples": []
+    },
+    {
+      "id": "tpl-invoice-f-line-items",
+      "key": "line_items",
+      "label": "Line items",
+      "type": "table",
+      "required": false,
+      "hint": "One row per invoiced item or service.",
+      "columns": [
+        {
+          "id": "tpl-invoice-f-line-items-c-description",
+          "key": "description",
+          "label": "Description",
+          "type": "text",
+          "required": false,
+          "hint": "Name or description of the item or service.",
+          "examples": []
+        },
+        {
+          "id": "tpl-invoice-f-line-items-c-quantity",
+          "key": "quantity",
+          "label": "Quantity",
+          "type": "number",
+          "required": false,
+          "hint": "Number of units.",
+          "examples": []
+        },
+        {
+          "id": "tpl-invoice-f-line-items-c-unit",
+          "key": "unit",
+          "label": "Unit",
+          "type": "text",
+          "required": false,
+          "hint": "Unit of measure, for example szt., h, kg.",
+          "examples": []
+        },
+        {
+          "id": "tpl-invoice-f-line-items-c-unit-net",
+          "key": "unit_net",
+          "label": "Unit net price",
+          "type": "money",
+          "required": false,
+          "hint": "Net price of one unit.",
+          "examples": []
+        },
+        {
+          "id": "tpl-invoice-f-line-items-c-vat-rate",
+          "key": "vat_rate",
+          "label": "VAT rate",
+          "type": "number",
+          "required": false,
+          "hint": "VAT rate in percent, for example 23. Use 0 for reverse charge or non-EU.",
+          "examples": []
+        },
+        {
+          "id": "tpl-invoice-f-line-items-c-net",
+          "key": "net",
+          "label": "Net",
+          "type": "money",
+          "required": false,
+          "hint": "Net value of the row.",
+          "examples": []
+        },
+        {
+          "id": "tpl-invoice-f-line-items-c-vat",
+          "key": "vat",
+          "label": "VAT",
+          "type": "money",
+          "required": false,
+          "hint": "VAT amount of the row.",
+          "examples": []
+        },
+        {
+          "id": "tpl-invoice-f-line-items-c-gross",
+          "key": "gross",
+          "label": "Gross",
+          "type": "money",
+          "required": false,
+          "hint": "Calculated from the row's net and VAT.",
+          "examples": []
+        }
+      ],
+      "examples": []
+    }
+  ],
+  "actions": [
+    {
+      "kind": "check",
+      "id": "tpl-invoice-a-gross-check",
+      "label": "Gross = Net + VAT",
+      "left": {
+        "kind": "field",
+        "fieldId": "tpl-invoice-f-gross-total"
+      },
+      "op": "eq",
+      "right": {
+        "kind": "call",
+        "fn": "add",
+        "args": [
+          {
+            "kind": "field",
+            "fieldId": "tpl-invoice-f-net-total"
+          },
+          {
+            "kind": "field",
+            "fieldId": "tpl-invoice-f-vat-total"
+          }
+        ]
+      },
+      "tolerance": 0.01,
+      "severity": "warning"
+    },
+    {
+      "kind": "check",
+      "id": "tpl-invoice-a-net-check",
+      "label": "Net = sum of line nets",
+      "left": {
+        "kind": "field",
+        "fieldId": "tpl-invoice-f-net-total"
+      },
+      "op": "eq",
+      "right": {
+        "kind": "call",
+        "fn": "sum",
+        "args": [
+          {
+            "kind": "column",
+            "fieldId": "tpl-invoice-f-line-items",
+            "columnId": "tpl-invoice-f-line-items-c-net"
+          }
+        ]
+      },
+      "tolerance": 0.01,
+      "severity": "warning"
+    },
+    {
+      "kind": "row_check",
+      "id": "tpl-invoice-a-row-net-check",
+      "tableFieldId": "tpl-invoice-f-line-items",
+      "label": "Net = Quantity × Unit net price",
+      "left": {
+        "kind": "cell",
+        "columnId": "tpl-invoice-f-line-items-c-net"
+      },
+      "op": "eq",
+      "right": {
+        "kind": "call",
+        "fn": "multiply",
+        "args": [
+          {
+            "kind": "cell",
+            "columnId": "tpl-invoice-f-line-items-c-unit-net"
+          },
+          {
+            "kind": "cell",
+            "columnId": "tpl-invoice-f-line-items-c-quantity"
+          }
+        ]
+      },
+      "tolerance": 0.01,
+      "severity": "warning"
+    },
+    {
+      "kind": "row_compute",
+      "id": "tpl-invoice-a-row-gross",
+      "tableFieldId": "tpl-invoice-f-line-items",
+      "columnId": "tpl-invoice-f-line-items-c-gross",
+      "expr": {
+        "kind": "call",
+        "fn": "add",
+        "args": [
+          {
+            "kind": "cell",
+            "columnId": "tpl-invoice-f-line-items-c-net"
+          },
+          {
+            "kind": "cell",
+            "columnId": "tpl-invoice-f-line-items-c-vat"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "compute",
+      "id": "tpl-invoice-a-payment-term",
+      "fieldId": "tpl-invoice-f-payment-term-days",
+      "expr": {
+        "kind": "call",
+        "fn": "days_between",
+        "args": [
+          {
+            "kind": "field",
+            "fieldId": "tpl-invoice-f-issue-date"
+          },
+          {
+            "kind": "field",
+            "fieldId": "tpl-invoice-f-due-date"
+          }
+        ]
+      }
+    }
+  ],
+  "titleFieldId": "tpl-invoice-f-invoice-number",
+  "listColumnIds": [
+    "tpl-invoice-f-supplier-name",
+    "tpl-invoice-f-issue-date",
+    "tpl-invoice-f-gross-total"
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "rcp-011",
+  "file": "rcp-011.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-medium",
+    "jpg",
+    "no-currency",
+    "date-long",
+    "lang-en",
+    "missing-optional"
+  ],
+  "seed": 10011,
+  "fields": {
+    "merchant": "Adams and Sons",
+    "merchant_tax_id": "32-8065101",
+    "receipt_date": "2025-12-04",
+    "total": {
+      "amount": "244.25",
+      "currency": null
+    },
+    "tax_total": {
+      "amount": "25.81",
+      "currency": null
+    },
+    "payment_method": null,
+    "items": [
+      {
+        "description": "USB cable",
+        "quantity": 4,
+        "price": {
+          "amount": "51.56",
+          "currency": null
+        }
+      },
+      {
+        "description": "Milk 1L",
+        "quantity": 1,
+        "price": {
+          "amount": "9.22",
+          "currency": null
+        }
+      },
+      {
+        "description": "Batteries AA",
+        "quantity": 2,
+        "price": {
+          "amount": "41.12",
+          "currency": null
+        }
+      },
+      {
+        "description": "Sandwich",
+        "quantity": 1,
+        "price": {
+          "amount": "31.14",
+          "currency": null
+        }
+      },
+      {
+        "description": "Notebook A5",
+        "quantity": 3,
+        "price": {
+          "amount": "64.41",
+          "currency": null
+        }
+      },
+      {
+        "description": "Bread",
+        "quantity": 1,
+        "price": {
+          "amount": "36.02",
+          "currency": null
+        }
+      },
+      {
+        "description": "Paper bags",
+        "quantity": 1,
+        "price": {
+          "amount": "10.78",
+          "currency": null
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "description": "A retail receipt or till slip (paragon) for a small purchase.",
+  "fields": [
+    {
+      "id": "tpl-receipt-f-merchant",
+      "key": "merchant",
+      "label": "Merchant",
+      "type": "text",
+      "required": true,
+      "hint": "Name of the shop or business that issued the receipt.",
+      "groupable": true,
+      "examples": []
+    },
+    {
+      "id": "tpl-receipt-f-merchant-tax-id",
+      "key": "merchant_tax_id",
+      "label": "Merchant tax ID",
+      "type": "tax_id",
+      "required": false,
+      "hint": "Tax ID of the merchant (VAT ID, EIN, NIP …, as printed), usually near the top.",
+      "examples": []
+    },
+    {
+      "id": "tpl-receipt-f-receipt-date",
+      "key": "receipt_date",
+      "label": "Date",
+      "type": "date",
+      "required": true,
+      "hint": "Date of the purchase.",
+      "examples": []
+    },
+    {
+      "id": "tpl-receipt-f-total",
+      "key": "total",
+      "label": "Total",
+      "type": "money",
+      "required": true,
+      "hint": "Total amount paid, including tax.",
+      "examples": []
+    },
+    {
+      "id": "tpl-receipt-f-tax-total",
+      "key": "tax_total",
+      "label": "Tax total",
+      "type": "money",
+      "required": false,
+      "hint": "Total tax (VAT) amount on the receipt.",
+      "examples": []
+    },
+    {
+      "id": "tpl-receipt-f-payment-method",
+      "key": "payment_method",
+      "label": "Payment method",
+      "type": "select",
+      "required": false,
+      "hint": "How the purchase was paid.",
+      "options": [
+        "Card",
+        "Cash",
+        "Transfer",
+        "Other"
+      ],
+      "examples": []
+    },
+    {
+      "id": "tpl-receipt-f-items",
+      "key": "items",
+      "label": "Items",
+      "type": "table",
+      "required": false,
+      "hint": "One row per purchased item.",
+      "columns": [
+        {
+          "id": "tpl-receipt-f-items-c-description",
+          "key": "description",
+          "label": "Description",
+          "type": "text",
+          "required": false,
+          "hint": "Name of the purchased item.",
+          "examples": []
+        },
+        {
+          "id": "tpl-receipt-f-items-c-quantity",
+          "key": "quantity",
+          "label": "Quantity",
+          "type": "number",
+          "required": false,
+          "hint": "Number of units purchased.",
+          "examples": []
+        },
+        {
+          "id": "tpl-receipt-f-items-c-price",
+          "key": "price",
+          "label": "Price",
+          "type": "money",
+          "required": false,
+          "hint": "Price of the row, including tax.",
+          "examples": []
+        }
+      ],
+      "examples": []
+    }
+  ],
+  "actions": [],
+  "titleFieldId": "tpl-receipt-f-merchant",
+  "listColumnIds": [
+    "tpl-receipt-f-receipt-date",
+    "tpl-receipt-f-total",
+    "tpl-receipt-f-payment-method"
+  ]
+}

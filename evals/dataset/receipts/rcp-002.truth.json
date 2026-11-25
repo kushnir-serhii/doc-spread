@@ -1,0 +1,39 @@
+{
+  "id": "rcp-002",
+  "file": "rcp-002.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-medium",
+    "jpg",
+    "eur",
+    "date-iso",
+    "lang-de"
+  ],
+  "seed": 10002,
+  "fields": {
+    "merchant": "BEIER MUDE GMBH & CO. KG",
+    "merchant_tax_id": "DE673952168",
+    "receipt_date": "2026-09-03",
+    "total": {
+      "amount": "20.86",
+      "currency": "EUR"
+    },
+    "tax_total": {
+      "amount": "3.62",
+      "currency": "EUR"
+    },
+    "payment_method": "Cash",
+    "items": [
+      {
+        "description": "Tüten",
+        "quantity": 1,
+        "price": {
+          "amount": "20.86",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

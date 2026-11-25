@@ -1,0 +1,13 @@
+{
+  "id": "dst-001",
+  "file": "dst-001.pdf",
+  "expectedType": null,
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "contract",
+    "lang-en"
+  ],
+  "seed": 10001,
+  "fields": {}
+}

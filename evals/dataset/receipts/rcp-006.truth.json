@@ -1,0 +1,71 @@
+{
+  "id": "rcp-006",
+  "file": "rcp-006.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-hard",
+    "jpg",
+    "jpy",
+    "date-dmy",
+    "lang-en"
+  ],
+  "seed": 10006,
+  "fields": {
+    "merchant": "POLLARD AND SONS",
+    "merchant_tax_id": "97-3622549",
+    "receipt_date": "2025-06-13",
+    "total": {
+      "amount": "4530",
+      "currency": "JPY"
+    },
+    "tax_total": {
+      "amount": "412",
+      "currency": "JPY"
+    },
+    "payment_method": "Cash",
+    "items": [
+      {
+        "description": "Batteries AA",
+        "quantity": null,
+        "price": {
+          "amount": "910",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Sandwich",
+        "quantity": null,
+        "price": {
+          "amount": "230",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Bread",
+        "quantity": null,
+        "price": {
+          "amount": "1180",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Blueberry muffin",
+        "quantity": null,
+        "price": {
+          "amount": "570",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Milk 1L",
+        "quantity": null,
+        "price": {
+          "amount": "1640",
+          "currency": "JPY"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "rcp-010",
+  "file": "rcp-010.png",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-light",
+    "png",
+    "eur",
+    "date-dmy",
+    "lang-pl",
+    "missing-optional"
+  ],
+  "seed": 10010,
+  "fields": {
+    "merchant": "FUNDACJA WALOSZEK SP.K",
+    "merchant_tax_id": "PL8509152594",
+    "receipt_date": "2025-11-13",
+    "total": {
+      "amount": "329.78",
+      "currency": "EUR"
+    },
+    "tax_total": null,
+    "payment_method": "Cash",
+    "items": [
+      {
+        "description": "Kawa latte",
+        "quantity": 3,
+        "price": {
+          "amount": "96.27",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Sok pomarańczowy",
+        "quantity": 4,
+        "price": {
+          "amount": "47.72",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Chleb",
+        "quantity": 3,
+        "price": {
+          "amount": "88.95",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Torby papierowe",
+        "quantity": 4,
+        "price": {
+          "amount": "96.84",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

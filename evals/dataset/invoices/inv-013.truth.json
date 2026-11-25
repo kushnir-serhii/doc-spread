@@ -1,0 +1,36 @@
+{
+  "id": "inv-013",
+  "file": "inv-013.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "no-currency",
+    "date-mdy",
+    "lang-en",
+    "layout-a"
+  ],
+  "seed": 10013,
+  "fields": {
+    "supplier_name": "Robles, Stevens and Beck",
+    "supplier_tax_id": "95-7452192",
+    "invoice_number": "RE-2026-6499",
+    "issue_date": "2026-10-19",
+    "sale_date": "2026-10-13",
+    "due_date": "2026-11-18",
+    "payment_term_days": 30,
+    "net_total": {
+      "amount": "1318.39",
+      "currency": null
+    },
+    "vat_total": {
+      "amount": "276.86",
+      "currency": null
+    },
+    "gross_total": {
+      "amount": "1595.25",
+      "currency": null
+    },
+    "line_items": null
+  }
+}

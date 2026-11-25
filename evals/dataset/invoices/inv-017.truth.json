@@ -1,0 +1,215 @@
+{
+  "id": "inv-017",
+  "file": "inv-017.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "gbp",
+    "date-mdy",
+    "lang-en",
+    "layout-b",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10017,
+  "fields": {
+    "supplier_name": "Marquez-Kim",
+    "supplier_tax_id": "87-5149697",
+    "invoice_number": "R-2026-7573",
+    "issue_date": "2025-06-19",
+    "sale_date": "2025-06-13",
+    "due_date": null,
+    "payment_term_days": null,
+    "net_total": {
+      "amount": "14018.10",
+      "currency": "GBP"
+    },
+    "vat_total": {
+      "amount": "2731.98",
+      "currency": "GBP"
+    },
+    "gross_total": {
+      "amount": "16750.08",
+      "currency": "GBP"
+    },
+    "line_items": [
+      {
+        "description": "Data migration - Pro",
+        "quantity": 1,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1455.74",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1455.74",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "291.15",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "1746.89",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Maintenance visit - Pro",
+        "quantity": 1,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "477.63",
+          "currency": "GBP"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "477.63",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "23.88",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "501.51",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Cable set - Pro",
+        "quantity": 10,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "68.08",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "680.80",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "136.16",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "816.96",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Data migration",
+        "quantity": 8,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "232.56",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1860.48",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "372.10",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "2232.58",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Maintenance visit - Plus",
+        "quantity": 1.5,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "850.62",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1275.93",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "255.19",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "1531.12",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Maintenance visit - XL",
+        "quantity": 2,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "72.09",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "144.18",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "28.84",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "173.02",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Cable set - A",
+        "quantity": 6,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "1145.92",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "6875.52",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "1375.10",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "8250.62",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Cable set - XL",
+        "quantity": 1,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "1247.82",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1247.82",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "249.56",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "1497.38",
+          "currency": "GBP"
+        }
+      }
+    ]
+  }
+}

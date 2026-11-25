@@ -1,0 +1,55 @@
+{
+  "id": "rcp-001",
+  "file": "rcp-001.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-light",
+    "jpg",
+    "usd",
+    "date-mdy",
+    "lang-en"
+  ],
+  "seed": 10001,
+  "fields": {
+    "merchant": "Herrera-Hunter",
+    "merchant_tax_id": "63-7928782",
+    "receipt_date": "2026-10-22",
+    "total": {
+      "amount": "138.94",
+      "currency": "USD"
+    },
+    "tax_total": {
+      "amount": "9.09",
+      "currency": "USD"
+    },
+    "payment_method": "Card",
+    "items": [
+      {
+        "description": "Blueberry muffin",
+        "quantity": 2,
+        "price": {
+          "amount": "51.62",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Notebook A5",
+        "quantity": 1,
+        "price": {
+          "amount": "25.58",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Latte",
+        "quantity": 2,
+        "price": {
+          "amount": "61.74",
+          "currency": "USD"
+        }
+      }
+    ]
+  }
+}

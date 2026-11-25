@@ -1,0 +1,80 @@
+{
+  "id": "rcp-012",
+  "file": "rcp-012.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-hard",
+    "jpg",
+    "chf",
+    "date-iso",
+    "lang-en",
+    "missing-optional"
+  ],
+  "seed": 10012,
+  "fields": {
+    "merchant": "ROGERS-WATSON",
+    "merchant_tax_id": null,
+    "receipt_date": "2025-04-01",
+    "total": {
+      "amount": "169.26",
+      "currency": "CHF"
+    },
+    "tax_total": {
+      "amount": "4.29",
+      "currency": "CHF"
+    },
+    "payment_method": "Other",
+    "items": [
+      {
+        "description": "USB cable",
+        "quantity": null,
+        "price": {
+          "amount": "11.59",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Paper bags",
+        "quantity": null,
+        "price": {
+          "amount": "29.15",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Batteries AA",
+        "quantity": null,
+        "price": {
+          "amount": "38.34",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Latte",
+        "quantity": null,
+        "price": {
+          "amount": "32.03",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Blueberry muffin",
+        "quantity": null,
+        "price": {
+          "amount": "44.93",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Milk 1L",
+        "quantity": null,
+        "price": {
+          "amount": "13.22",
+          "currency": "CHF"
+        }
+      }
+    ]
+  }
+}

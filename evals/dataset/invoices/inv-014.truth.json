@@ -1,0 +1,568 @@
+{
+  "id": "inv-014",
+  "file": "inv-014.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "scanned",
+    "multi-page",
+    "chf",
+    "date-iso",
+    "lang-de",
+    "layout-b",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10014,
+  "fields": {
+    "supplier_name": "Albers",
+    "supplier_tax_id": "DE291547028",
+    "invoice_number": "F-2025-6852",
+    "issue_date": "2026-06-07",
+    "sale_date": null,
+    "due_date": "2026-06-21",
+    "payment_term_days": 14,
+    "net_total": {
+      "amount": "163645.56",
+      "currency": "CHF"
+    },
+    "vat_total": {
+      "amount": "5037.24",
+      "currency": "CHF"
+    },
+    "gross_total": {
+      "amount": "168682.80",
+      "currency": "CHF"
+    },
+    "line_items": [
+      {
+        "description": "Gedruckte Handbücher - B",
+        "quantity": 2,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "875.32",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "1750.64",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "45.52",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "1796.16",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Designprüfung - Pro",
+        "quantity": 8,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "1075.34",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "8602.72",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "223.67",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "8826.39",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Datenmigration",
+        "quantity": 2,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "1170.07",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "2340.14",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "60.84",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "2400.98",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Gedruckte Handbücher",
+        "quantity": 4,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "1137.16",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "4548.64",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "118.26",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "4666.90",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Datenmigration - Pro",
+        "quantity": 20,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "767.10",
+          "currency": "CHF"
+        },
+        "vat_rate": 7.7,
+        "net": {
+          "amount": "15342.00",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "1181.33",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "16523.33",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Gedruckte Handbücher - Pro",
+        "quantity": 2.5,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "742.24",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "1855.60",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "48.25",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "1903.85",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Wartungseinsatz - Pro",
+        "quantity": 15,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "743.46",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "11151.90",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "289.95",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "11441.85",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Designprüfung - Pro",
+        "quantity": 10,
+        "unit": "Stk",
+        "unit_net": {
+          "amount": "870.22",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "8702.20",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "226.26",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "8928.46",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Designprüfung - XL",
+        "quantity": 2,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "1116.78",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "2233.56",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "58.07",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "2291.63",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Supportvertrag - Plus",
+        "quantity": 12,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "557.97",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "6695.64",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "174.09",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "6869.73",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Kabelsatz - Pro",
+        "quantity": 3,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "1084.05",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "3252.15",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "84.56",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "3336.71",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Cloud-Hosting",
+        "quantity": 6,
+        "unit": "Stk",
+        "unit_net": {
+          "amount": "1439.86",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "8639.16",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "224.62",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "8863.78",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Beratungsleistung",
+        "quantity": 20,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "112.86",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "2257.20",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "58.69",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "2315.89",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Designprüfung - XL",
+        "quantity": 6,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "1035.82",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "6214.92",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "161.59",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "6376.51",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Designprüfung - B",
+        "quantity": 20,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "1012.53",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "20250.60",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "526.52",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "20777.12",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Designprüfung",
+        "quantity": 15,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "1399.92",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "20998.80",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "545.97",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "21544.77",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Softwarelizenz",
+        "quantity": 6,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "1073.35",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "6440.10",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "167.44",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "6607.54",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Schulung vor Ort - A",
+        "quantity": 3,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "162.14",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "486.42",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "12.65",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "499.07",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Supportvertrag - A",
+        "quantity": 15,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "391.71",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "5875.65",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "152.77",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "6028.42",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Gedruckte Handbücher",
+        "quantity": 2,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "1301.59",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "2603.18",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "67.68",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "2670.86",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Cloud-Hosting - Plus",
+        "quantity": 1.5,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "985.91",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "1478.87",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "38.45",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "1517.32",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Schulung vor Ort - Pro",
+        "quantity": 2,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "370.06",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "740.12",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "19.24",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "759.36",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Kabelsatz - B",
+        "quantity": 2,
+        "unit": "Stk",
+        "unit_net": {
+          "amount": "1481.60",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "2963.20",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "77.04",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "3040.24",
+          "currency": "CHF"
+        }
+      },
+      {
+        "description": "Beratungsleistung - A",
+        "quantity": 15,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "1214.81",
+          "currency": "CHF"
+        },
+        "vat_rate": 2.6,
+        "net": {
+          "amount": "18222.15",
+          "currency": "CHF"
+        },
+        "vat": {
+          "amount": "473.78",
+          "currency": "CHF"
+        },
+        "gross": {
+          "amount": "18695.93",
+          "currency": "CHF"
+        }
+      }
+    ]
+  }
+}
