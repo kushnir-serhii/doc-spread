@@ -82,16 +82,20 @@ def call_once(argv: list[str], timeout: float) -> tuple[dict[str, Any] | None, s
         return None, f"timeout after {timeout:g}s"
     except OSError as e:
         return None, f"cannot start: {e.__class__.__name__}"
-    if p.returncode != 0:
-        tail = _last_line(p.stderr)
-        return None, f"exit {p.returncode}" + (f": {tail}" if tail else "")
     try:
         obj = json.loads(p.stdout)
     except json.JSONDecodeError:
+        obj = None
+    # A complete result counts even with a non-zero exit: on Windows, Node can crash while exiting
+    # (libuv `UV_HANDLE_CLOSING` assertion) after the JSON was already written.
+    if isinstance(obj, dict) and "outcome" in obj:
+        return obj, ""
+    if p.returncode != 0:
+        tail = _last_line(p.stderr)
+        return None, f"exit {p.returncode}" + (f": {tail}" if tail else "")
+    if obj is None:
         return None, "stdout is not valid JSON"
-    if not isinstance(obj, dict):
-        return None, "stdout is not a JSON object"
-    return obj, ""
+    return None, "stdout is not a JSON result"
 
 
 def run_one(doc: Doc, alias: str, repeat: int, cfg: dict[str, Any]) -> dict[str, Any]:

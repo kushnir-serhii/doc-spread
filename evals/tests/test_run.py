@@ -148,6 +148,14 @@ def test_crash_is_retried_once_then_recorded_as_error(env, monkeypatch):
     assert json.loads((d / "run.json").read_text())["outcomes"] == {"needs_review": 2, "error": 1}
 
 
+def test_full_result_counts_despite_crash_on_exit(env, monkeypatch):
+    monkeypatch.setenv("FAKE_EXIT_CRASH", "inv-001")
+    assert env("--models", "haiku", "--subset", "inv-001") == 0
+    (rec,) = _lines(_run_dir(env))
+    assert rec["outcome"] == "needs_review"
+    assert len(_calls(env)) == 1  # no retry
+
+
 def test_retry_can_succeed(env, monkeypatch, tmp_path):
     marks = tmp_path / "marks"
     marks.mkdir()

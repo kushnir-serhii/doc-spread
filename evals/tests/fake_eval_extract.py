@@ -3,7 +3,8 @@
 Reads --file and --extract-model, prints canned JSON with a fixed cost.
 Env: FAKE_COST (default 0.004), FAKE_LOG (append one line per call),
 FAKE_CRASH (substring of the file name that always exits 1),
-FAKE_GARBAGE (substring that prints non-JSON), FAKE_FAIL_ONCE_DIR (a call per
+FAKE_GARBAGE (substring that prints non-JSON), FAKE_EXIT_CRASH (substring
+that prints the full result, then exits non-zero, as Node can on Windows), FAKE_FAIL_ONCE_DIR (a call per
 file fails the first time only; marker files go in this dir).
 """
 
@@ -53,3 +54,9 @@ print(json.dumps({
     "ms": {"ocr": 1, "classify": 10, "extract": 20, "total": 31},
     "promptHash": "abc123",
 }))
+
+exit_crash = os.environ.get("FAKE_EXIT_CRASH")
+if exit_crash and exit_crash in name:
+    sys.stdout.flush()
+    print("Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)", file=sys.stderr)
+    sys.exit(3)

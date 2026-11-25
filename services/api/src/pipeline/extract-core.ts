@@ -96,7 +96,7 @@ export const classifyAndExtract = async (input: ClassifyAndExtractInput): Promis
   const chosen = types.find((type) => type.id === answer.typeId)
   const classConfidence = typeof answer.confidence === 'number' && Number.isFinite(answer.confidence) ? Math.min(1, Math.max(0, answer.confidence)) : null
   if (classification.refused || !chosen || classConfidence === null || classConfidence < minConfidence) {
-    const pickedTypeId = typeof answer.typeId === 'string' ? answer.typeId : null
+    const pickedTypeId = typeof answer.typeId === 'string' && answer.typeId !== '' ? answer.typeId : null
     return done({ outcome: 'unclassified', classificationConfidence: classification.refused ? null : classConfidence, pickedTypeId })
   }
 
