@@ -8,6 +8,7 @@
     "seed-demo": "tsx scripts/seed-demo.ts",
     "smoke": "tsx scripts/smoke-api.ts",
     "smoke-pipeline": "tsx scripts/smoke-pipeline.ts",
+    "eval-extract": "tsx scripts/eval-extract.ts",
     "check-env": "tsx scripts/check-env.ts",
     "scan-logs": "tsx scripts/scan-logs.ts"
   },

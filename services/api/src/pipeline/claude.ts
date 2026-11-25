@@ -36,6 +36,13 @@ export interface CallResult {
   answer: unknown
   refused: boolean
   costUsd: number
+  usage: CallUsage
+  /** The model that ran (may differ from the requested one after a server-side fallback). */
+  model: string
+  requestedModel: string
+  stopReason: string | null
+  /** Wall time of the API call (including SDK retries). */
+  ms: number
 }
 
 /** Logs one line per call: ids, token counts and cost only. Never document text, values or keys. */
@@ -92,6 +99,7 @@ export const createClaudeClient = (apiKey: string): ClaudeClient => {
   const client = new Anthropic({ apiKey })
   return {
     classify: async ({ documentId, model, prompt, schema, system }) => {
+      const started = Date.now()
       try {
         const response = await client.messages.create({
           model,
@@ -106,16 +114,19 @@ export const createClaudeClient = (apiKey: string): ClaudeClient => {
           cacheWriteTokens: response.usage.cache_creation_input_tokens ?? 0,
           cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
         }
+        const ms = Date.now() - started
         const costUsd = logCall(documentId, 'classify', model, response.model, usage, response.stop_reason)
+        const call = { costUsd, usage, model: response.model, requestedModel: model, stopReason: response.stop_reason, ms }
         // Haiku has no server-side fallback: a refusal leaves the document unclassified.
-        if (response.stop_reason === 'refusal') return { answer: undefined, refused: true, costUsd }
+        if (response.stop_reason === 'refusal') return { answer: undefined, refused: true, ...call }
         if (response.stop_reason === 'max_tokens') throw new PermanentError('classification answer was cut off')
-        return { answer: parseAnswer(response.content), refused: false, costUsd }
+        return { answer: parseAnswer(response.content), refused: false, ...call }
       } catch (error) {
         return rethrow(error)
       }
     },
     extract: async ({ documentId, model, system, schema, file, tokenList }) => {
+      const started = Date.now()
       try {
         const source =
           file.kind === 'pdf'
@@ -137,10 +148,12 @@ export const createClaudeClient = (apiKey: string): ClaudeClient => {
           cacheWriteTokens: response.usage.cache_creation_input_tokens ?? 0,
           cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
         }
+        const ms = Date.now() - started
         const costUsd = logCall(documentId, 'extract', model, response.model, usage, response.stop_reason)
-        if (response.stop_reason === 'refusal') return { answer: undefined, refused: true, costUsd }
+        const call = { costUsd, usage, model: response.model, requestedModel: model, stopReason: response.stop_reason, ms }
+        if (response.stop_reason === 'refusal') return { answer: undefined, refused: true, ...call }
         if (response.stop_reason === 'max_tokens') throw new PermanentError('extraction answer was cut off')
-        return { answer: parseAnswer(response.content), refused: false, costUsd }
+        return { answer: parseAnswer(response.content), refused: false, ...call }
       } catch (error) {
         return rethrow(error)
       }

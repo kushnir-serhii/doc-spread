@@ -1,6 +1,6 @@
 # 026 — Extraction evals: runner, scoring and analysis
 
-**Status:** ready · **Depends on:** 025 · **Route(s):** —
+**Status:** in-progress · **Depends on:** 025 · **Route(s):** —
 
 ## Goal
 One command runs every document of the golden dataset (025) through the real OCR → classify → extract code and writes a report: accuracy per field and per document type, whether the confidence the model reports can be trusted, cost and latency per document, and Opus against Haiku side by side. After this, a change to a prompt, schema or model comes with numbers instead of a guess. The report's `metrics.json` is what the CI gate (027) compares.
@@ -51,15 +51,15 @@ uv run python -m evals.analyze evals/runs/<run>  → metrics.json, report.md, ch
 
 ## Slices
 
-### [ ] 1. Pure pipeline core and `eval-extract`
+### [x] 1. Pure pipeline core and `eval-extract`
 - **Build:** move classify + extract out of `processDocument` in `extract-handler.ts` into `pipeline/extract-core.ts`: `classifyAndExtract({ pages, file, types, companyCurrency, claude, models, minConfidence })` returns the outcome, the chosen type and version, the mapped values, the overall confidence and the per-call usage. The handler keeps the database reads and writes and calls the core, and its behaviour stays the same. `ClaudeClient` results gain `usage`, `model`, `stopReason` and `ms` (`costUsd` exists); log lines don't change. `services/api/scripts/eval-extract.ts` (+ `eval-extract` script in `package.json`): reads a file and type JSONs, runs `readPages` (exported from `ocr-handler.ts`) and the core, prints the JSON above, and exits non-zero only when it can't run at all (a pipeline `error` is a result, not a crash). Values are keyed by field key in the output.
 - **Files:** `services/api/src/pipeline/{extract-core,extract-handler,claude,ocr-handler}.ts`, `services/api/scripts/eval-extract.ts`, `services/api/package.json`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] `SMOKE_MODE=direct pnpm --filter @docspread/api smoke-pipeline` passes as before (production path unchanged)
-  - [ ] `pnpm --filter @docspread/api eval-extract --file apps/web/public/mock/sample-invoice.pdf --types evals/types/invoice.json,evals/types/receipt.json` prints valid JSON with outcome `needs_review`, values for every invoice field, and calls with cost and ms; `--extract-model claude-haiku-5-5` runs extraction on Haiku
-  - [ ] it needs only `ANTHROPIC_API_KEY` (no Supabase variables); a missing key gives one clear line naming the variable
-  - [ ] the `claude_call` log lines are unchanged; `pnpm --filter @docspread/api typecheck` green
+  - [x] `SMOKE_MODE=direct pnpm --filter @docspread/api smoke-pipeline` passes as before (production path unchanged)
+  - [x] `pnpm --filter @docspread/api eval-extract --file apps/web/public/mock/sample-invoice.pdf --types evals/types/invoice.json,evals/types/receipt.json` prints valid JSON with outcome `needs_review`, values for every invoice field, and calls with cost and ms; `--extract-model claude-haiku-5-5` runs extraction on Haiku
+  - [x] it needs only `ANTHROPIC_API_KEY` (no Supabase variables); a missing key gives one clear line naming the variable
+  - [x] the `claude_call` log lines are unchanged; `pnpm --filter @docspread/api typecheck` green
 
 ### [ ] 2. Runner
 - **Build:** `evals/evals/run.py`: loads the dataset (`--dataset`, default `dataset/`; `--subset` by id glob or tag), runs `eval-extract` for each document × model (`--models opus,haiku`, aliases mapped to model ids in one place) × `--repeat k`, `--concurrency` (default 4), writes `results.jsonl` line by line and `run.json` at the end. `--resume <run>` skips finished lines. `--max-usd` (default 10) stops starting new documents once the summed cost passes it, and says so. A crashed call is retried once, then recorded as `error`. Stdout prints progress and the running cost, never document values.
@@ -114,3 +114,4 @@ No new routes or tables. The refactor in slice 1 must leave `/api/pipeline/extra
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-11-25 | 1 | done: `classifyAndExtract` in `extract-core.ts` shared by the handler and `eval-extract`; `SMOKE_MODE=direct smoke-pipeline` ALL PASS (production path unchanged, $0.28); sample invoice → `needs_review`, 11 fields keyed by key, Opus extract $0.14 / 18.8 s, Haiku extract $0.004; missing key → one line naming `ANTHROPIC_API_KEY`, exit 1. Output adds `classification.pickedTypeKey` (what the classifier named, even below the threshold) for the confusion table. Known gap: a call that ends in `PermanentError` (answer cut off or invalid JSON) is logged but missing from `calls`, so its cost isn't counted in the eval (rare). Checks so far: $0.43. | `services/api/src/pipeline/{extract-core,extract-handler,claude,ocr-handler}.ts`, `services/api/scripts/eval-extract.ts`, `services/api/package.json` |

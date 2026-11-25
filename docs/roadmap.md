@@ -31,7 +31,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 023 | [First real flow](specs/023-first-real-flow.md) | done | 022 |
 | 024 | [UML diagrams: system, user and document flows (dev only)](specs/024-uml-diagrams.md) | done | 021 |
 | 025 | [Golden dataset: invoices and receipts with known answers](specs/025-golden-dataset.md) | done | 023 |
-| 026 | [Extraction evals: runner, scoring and analysis](specs/026-extraction-evals.md) | ready | 025 |
+| 026 | [Extraction evals: runner, scoring and analysis](specs/026-extraction-evals.md) | in-progress | 025 |
 | 027 | [CI eval gate](specs/027-eval-ci-gate.md) | draft | 026 |
 | 028 | [Eval dashboard (optional, FastAPI)](specs/028-eval-dashboard.md) | draft | 026 |
 

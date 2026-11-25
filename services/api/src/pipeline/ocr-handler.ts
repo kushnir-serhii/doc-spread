@@ -5,7 +5,7 @@ import type { OcrPage } from './page-types.js'
 import { servePipeline, type PipelineContext } from './pipeline-http.js'
 import { documentIdOf, PermanentError, sendMessage, type QueueMessage, type WorkResult } from './queue.js'
 
-const readPages = async (fileType: string, bytes: Buffer): Promise<OcrPage[]> => {
+export const readPages = async (fileType: string, bytes: Buffer): Promise<OcrPage[]> => {
   if (fileType === 'pdf') return readPdf(bytes)
   try {
     return [await recognizeImage(bytes, 0)]
