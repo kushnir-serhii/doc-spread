@@ -109,7 +109,7 @@ No new routes or tables. The refactor in slice 1 must leave `/api/pipeline/extra
 - **Output keys.** **Decided:** the pipeline stores values by field **id** (table cells by column id); `eval-extract` re-keys them to field and column **keys**, so they line up with the truth files.
 - **`eval-extract` defaults.** **Decided:** models and the minimum classify confidence come from the environment or `services/api/.env.local` (`ANTHROPIC_MODEL_CLASSIFY`, `ANTHROPIC_MODEL_EXTRACT`, `CLASSIFY_MIN_CONFIDENCE`), falling back to `claude-haiku-5-5`, `claude-opus-5-5` and `0.7`; only `ANTHROPIC_API_KEY` is required. Flags override.
 - **UI check.** **Decided:** at the end of the spec, the Playwright UI check runs on `architecture` (slice 5 changes the diagrams).
-- **Spending (open, to settle before slice 1).** A check that the tool works costs cents: a few documents on Haiku are about $0.01 in total, one document on Opus about $0.10–0.20, so a **$1 cap covers every check in slices 1–4**. Only the full baseline in slice 5 (43 documents × Opus and Haiku × 2 repeats, about 172 extractions) needs about $10–18 (up to $25 with margin), and only that baseline gives 027 its numbers and tolerance. Recommended: development checks capped at $1; the baseline run waits for a separate go-ahead, with its estimate shown first.
+- **Spending.** **Decided (2026-11-25):** checks in slices 1–4 are capped at $1 in total (Haiku runs, at most a few Opus documents); slice 5 runs the full baseline (`--models opus,haiku --repeat 2`) with `--max-usd 20`. A check costs cents; only the baseline costs about $10–18.
 
 ## Log
 | Date | Slice | Result | Notes / files |
