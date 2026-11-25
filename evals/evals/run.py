@@ -4,7 +4,8 @@
     uv run python -m evals.run --resume evals/runs/<run> [--max-usd 20]
 
 Stdout shows progress, ids, outcomes, time and cost only, never document values.
-Exit codes: 0 done, 2 spending cap reached (or bad usage), 130 interrupted.
+Exit codes: 0 done, 2 spending cap reached or 3 identical failures in a row (or bad usage), 130 interrupted.
+With --resume, results that ended in an error without any model call are run again.
 """
 
 from __future__ import annotations
@@ -44,6 +45,8 @@ def _rel_to_evals(path: Path) -> str:
     except ValueError:
         return str(resolved)
 RUNS_DIR = EVALS_DIR / "runs"
+# This many results in a row with the same error and no model calls stop the run (bad key, usage limit).
+STOP_AFTER_FAILURES = 3
 # Flags that define a run; with --resume they come from the run's run.json.
 FIXED_FLAGS = ("models", "repeat", "subset", "dataset", "label", "classify_model")
 
@@ -126,6 +129,20 @@ def run_one(doc: Doc, alias: str, repeat: int, cfg: dict[str, Any]) -> dict[str,
         **result, "id": doc.id, "model": alias, "modelId": model_id,
         "repeat": repeat, "costUsd": cost,
     }
+
+
+def is_callless_error(rec: dict[str, Any]) -> bool:
+    """An `error` result that made no model call: nothing was spent and nothing was learned."""
+    return rec.get("outcome") == "error" and not rec.get("calls")
+
+
+def drop_callless_errors(path: Path, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """On --resume: forget call-less errors (API rejected, crash) so those documents run again."""
+    keep = [r for r in results if not is_callless_error(r)]
+    if len(keep) != len(results):
+        path.write_text("".join(json.dumps(o) + "\n" for o in keep), encoding="utf-8")
+        print(f"Re-running {len(results) - len(keep)} document(s) that ended in an error without a model call")
+    return keep
 
 
 def read_results(path: Path) -> list[dict[str, Any]]:
@@ -247,6 +264,8 @@ def main(argv: list[str] | None = None) -> int:
     run_dir.mkdir(parents=True, exist_ok=True)
     results_path = run_dir / "results.jsonl"
     existing = read_results(results_path)
+    if a.resume:
+        existing = drop_callless_errors(results_path, existing)
     done = {(r["id"], r["model"], r["repeat"]) for r in existing}
 
     # Document-major: all models (and repeats) of a document run next to each other.
@@ -269,6 +288,7 @@ def main(argv: list[str] | None = None) -> int:
     meta.update(maxUsd=a.max_usd, concurrency=a.concurrency)
     meta.setdefault("finished", None)
     meta["capped"] = False
+    meta["stopped"] = None
     meta.update(costUsd=round(total_cost, 6), outcomes=dict(outcomes), promptHash=prompt_hash)
     write_json(run_dir / "run.json", meta)
 
@@ -284,6 +304,8 @@ def main(argv: list[str] | None = None) -> int:
         "classify_model": meta.get("classifyModel"),
     }
     capped = False
+    stop_msg: str | None = None
+    streak: list[str] = []  # error messages of the latest call-less errors, newest last
     finished_n = len(existing)
     not_started = 0
     started_at = {}
@@ -293,7 +315,7 @@ def main(argv: list[str] | None = None) -> int:
     out = results_path.open("a", encoding="utf-8")
 
     def handle(fut: Future) -> None:
-        nonlocal total_cost, finished_n, prompt_hash
+        nonlocal total_cost, finished_n, prompt_hash, stop_msg
         doc, alias, k = pending.pop(fut)
         rec = fut.result()
         out.write(json.dumps(rec) + "\n")
@@ -305,6 +327,13 @@ def main(argv: list[str] | None = None) -> int:
         secs = time.monotonic() - started_at.pop(fut)
         print(f"[{finished_n}/{total_items}] {doc.id} {alias} #{k} {rec['outcome']} "
               f"{secs:.1f}s ${rec['costUsd']:.4f}  total ${total_cost:.4f}", flush=True)
+        if is_callless_error(rec) and rec.get("error"):
+            streak.append(str(rec["error"]))
+            del streak[:-STOP_AFTER_FAILURES]
+        else:
+            streak.clear()
+        if stop_msg is None and len(streak) == STOP_AFTER_FAILURES and len(set(streak)) == 1:
+            stop_msg = streak[0]
 
     try:
         for i, (doc, alias, k) in enumerate(work):
@@ -312,6 +341,8 @@ def main(argv: list[str] | None = None) -> int:
                 finished, _ = wait(pending, return_when=FIRST_COMPLETED)
                 for f in finished:
                     handle(f)
+            if stop_msg is not None:
+                break
             if total_cost >= a.max_usd:
                 capped = True
                 not_started = len(work) - i
@@ -335,12 +366,16 @@ def main(argv: list[str] | None = None) -> int:
         ex.shutdown(wait=False, cancel_futures=True)
 
     meta.update(
-        finished=now_iso(), capped=capped, costUsd=round(total_cost, 6),
+        finished=now_iso(), capped=capped, stopped=stop_msg, costUsd=round(total_cost, 6),
         outcomes=dict(outcomes), promptHash=prompt_hash,
     )
     write_json(run_dir / "run.json", meta)
     counts = ", ".join(f"{k} {v}" for k, v in sorted(outcomes.items(), key=lambda kv: str(kv[0])))
     print(f"Done: {finished_n} of {total_items} results ({counts}), total ${total_cost:.4f}")
+    if stop_msg is not None:
+        print(f'Stopping: {STOP_AFTER_FAILURES} documents in a row failed with "{stop_msg}". '
+              f"Check the API key and its usage limits, then resume with: uv run python -m evals.run --resume {shown}")
+        return 2
     if capped:
         print(f"Spending cap reached: ${total_cost:.2f} of ${a.max_usd:.2f}; {not_started} not started. "
               f"Resume with: uv run python -m evals.run --resume {shown} --max-usd {a.max_usd * 2:g}")

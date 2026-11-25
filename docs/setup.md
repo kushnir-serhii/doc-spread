@@ -119,6 +119,24 @@ The first real path (spec 023) runs with mocks off: sign in, create a type, uplo
 
 Costs: each invoice costs about $0.14 of Claude (classification plus extraction), so upload sparingly. Groups, Settings, onboarding and password reset show "Not available yet" with mocks off. The public demo (Vercel) stays on mocks.
 
+### Run the extraction evals
+
+The evals run the golden dataset (`evals/dataset/`) through the real OCR, classify and extract code, with no database, Storage or queue, and write a report (spec 026). They call Claude, so they cost money (Opus about $0.12 per document, Haiku about $0.004).
+
+Prerequisites: [uv](https://docs.astral.sh/uv/), `pnpm install` done, and `ANTHROPIC_API_KEY` in `services/api/.env.local` (no Supabase variables needed).
+
+```sh
+# one document, from the repo root: prints one JSON result
+pnpm --filter @docspread/api eval-extract --file apps/web/public/mock/sample-invoice.pdf --types evals/types/invoice.json,evals/types/receipt.json
+
+# the dataset (or a subset), from evals/
+cd evals
+uv run python -m evals.run --models opus,haiku --subset 'inv-00*' --max-usd 5
+uv run python -m evals.analyze runs/<run>      # metrics.json, report.md, charts/
+```
+
+More (resume, repeats, comparing runs, updating the baseline): [evals/README.md](../evals/README.md).
+
 ## 7. Deploys
 
 - **App and functions:** Vercel builds every push through its Git integration (previews and production). To deploy by hand from `apps/web`: `vercel deploy --prod`. Production is the demo and uses the `docspread-dev` Supabase project. Preview URLs sit behind Deployment Protection, so the cron job and the smoke scripts use the production URL.

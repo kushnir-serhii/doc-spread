@@ -35,6 +35,43 @@ uv run python -m evals.analyze runs/<run> --out <dir>           # write the outp
 
 Scores every result against its truth file (no API calls). `metrics.json` and `report.md` hold aggregates only, and the report is rendered from `metrics.json`. Metric definitions are in the report's "How to read" section and in `evals/metrics.py`; `LOW_CONFIDENCE` is the constant there, mirroring `apps/web/src/lib/fields/confidence.ts`.
 
+## Extraction evals
+
+What they measure: how well the real OCR, classify and extract code reads the golden dataset. Per field and document type (accuracy, hallucinated and missed values), whether the confidence the model reports can be trusted, cost and latency per document, and Opus against Haiku. A change to a prompt, schema or model comes with these numbers. Spec: `docs/specs/026-extraction-evals.md`.
+
+Run (needs `ANTHROPIC_API_KEY` in `services/api/.env.local`; real runs cost money):
+
+```sh
+uv run python -m evals.run --models opus,haiku [--subset 'inv-00*,scanned'] [--repeat k] [--max-usd 10]
+uv run python -m evals.run --resume runs/<run> [--max-usd 20]   # continue a killed, capped or stopped run
+```
+
+- `--subset` takes comma-separated id globs or tags. `--repeat k` runs each document k times per model, which measures run-to-run noise. `--max-usd` (default 10) stops starting documents past the cap (exit 2).
+- If 3 documents in a row fail with the same error and no model call (a rejected key or an exhausted usage limit), the run stops with a one-line message and exit 2. `--resume` runs those documents again.
+- A run dir `runs/<utc>-<label>/` (git-ignored) holds `results.jsonl` (one line per document, model and repeat, with the extracted values; never commit it) and `run.json` (git sha, dirty flag, models, dataset and prompt hash, cost, outcomes).
+
+Analyze and compare (no API calls):
+
+```sh
+uv run python -m evals.analyze runs/<run>                          # metrics.json, report.md, charts/ in the run dir
+uv run python -m evals.analyze runs/<run> --compare runs/<other>   # also prints a diff table
+```
+
+Reading the report: start with its "How to read" section, which defines every metric. The two numbers the product relies on: **verified precision** is the share of values at or above `LOW_CONFIDENCE` (0.9, shown as fine in the app) that are correct; **error-catch rate** is the share of wrong values that the app flags below 0.9.
+
+Cost: Opus about $0.12 per document on average (up to $0.34 for a scanned 2-page invoice), Haiku about $0.004; the full baseline (`--models opus,haiku --repeat 2`, 43 documents) about $11 to $13.
+
+### Update the baseline
+
+The first baseline is pending. To make or refresh it:
+
+```sh
+uv run python -m evals.run --models opus,haiku --repeat 2 --label baseline --max-usd 20
+uv run python -m evals.analyze runs/<run> --out baseline
+```
+
+Commit `evals/baseline/metrics.json` and `evals/baseline/report.md`, and `evals/baseline/charts/` too when the PNGs are small (a few hundred KB in all); otherwise leave the charts out and keep `metrics.json` and `report.md`. Aggregates only: never commit `results.jsonl` or anything else from `runs/`. The CI gate (027) compares a new run's `metrics.json` with the committed one.
+
 ## What the dataset is
 
 A fixed yardstick for the extraction evals (026) and the CI gate (027): 43 documents, each next to a `<id>.truth.json` with the correct field values.

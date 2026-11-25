@@ -29,7 +29,7 @@ export const DIAGRAMS: DiagramDef[] = [
     kind: 'Package diagram',
     description:
       'Workspaces and the layers inside apps/web/src, with the allowed import directions. The rules live in conventions.md.',
-    sources: ['pnpm-workspace.yaml', 'docs/conventions.md', 'apps/web/src/'],
+    sources: ['pnpm-workspace.yaml', 'docs/conventions.md', 'apps/web/src/', 'evals/', 'services/api/scripts/eval-extract.ts'],
     code: STRUCTURE_DIAGRAM,
     items: STRUCTURE_ITEMS,
   },
@@ -92,7 +92,7 @@ export const DIAGRAMS: DiagramDef[] = [
     label: 'Pipeline',
     kind: 'Sequence diagram',
     description: 'One document from sign-in and upload through OCR and Claude, review and approval to the spreadsheet export, across the browser, Vercel Functions and Supabase.',
-    sources: ['docs/specs/022-vercel-supabase.md', 'docs/specs/023-first-real-flow.md'],
+    sources: ['docs/specs/022-vercel-supabase.md', 'docs/specs/023-first-real-flow.md', 'docs/specs/026-extraction-evals.md'],
     code: PIPELINE_DIAGRAM,
     items: PIPELINE_ITEMS,
   },

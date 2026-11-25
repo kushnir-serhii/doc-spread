@@ -35,7 +35,7 @@ def _make_dataset(root: Path) -> Path:
 def env(tmp_path, monkeypatch):
     monkeypatch.setenv("EVAL_EXTRACT_CMD", json.dumps([sys.executable, str(FAKE)]))
     monkeypatch.setenv("FAKE_LOG", str(tmp_path / "calls.log"))
-    for k in ("FAKE_CRASH", "FAKE_GARBAGE", "FAKE_FAIL_ONCE_DIR", "FAKE_COST"):
+    for k in ("FAKE_CRASH", "FAKE_GARBAGE", "FAKE_FAIL_ONCE_DIR", "FAKE_COST", "FAKE_REJECT"):
         monkeypatch.delenv(k, raising=False)
     ds = _make_dataset(tmp_path / "ds")
     runs = tmp_path / "runs"
@@ -201,3 +201,42 @@ def test_resume_counts_earlier_cost_toward_cap(env):
 
 def test_no_match_is_a_usage_error(env):
     assert env("--subset", "nothing-*") == 2
+
+
+def test_three_identical_rejections_stop_the_run_then_resume_reruns_them(env, monkeypatch, capsys):
+    monkeypatch.setenv("FAKE_REJECT", ".pdf")  # every document is rejected
+    assert env("--models", "haiku") == 2
+    out = capsys.readouterr().out
+    assert ('Stopping: 3 documents in a row failed with "request rejected by the model API (400)". '
+            "Check the API key and its usage limits, then resume with: uv run python -m evals.run --resume") in out
+    d = _run_dir(env)
+    assert len(_lines(d)) == 3  # the other two were never started
+    assert len(_calls(env)) == 3
+    assert json.loads((d / "run.json").read_text())["stopped"] == "request rejected by the model API (400)"
+
+    # key fixed: resume drops the rejected lines and runs all five documents
+    monkeypatch.delenv("FAKE_REJECT")
+    env.log.write_text("")
+    assert _resume(env, d) == 0
+    result = _lines(d)
+    assert len(result) == 5 and {r["outcome"] for r in result} == {"needs_review"}
+    assert len(_calls(env)) == 5
+    assert json.loads((d / "run.json").read_text())["stopped"] is None
+
+
+def test_two_rejections_do_not_stop_the_run(env, monkeypatch):
+    monkeypatch.setenv("FAKE_REJECT", "inv-00")  # only two documents match: not enough to stop
+    assert env("--models", "haiku", "--subset", "inv-001,inv-002,rcp-001") == 0
+    outcomes = {r["id"]: r["outcome"] for r in _lines(_run_dir(env))}
+    assert outcomes == {"inv-001": "error", "inv-002": "error", "rcp-001": "needs_review"}
+
+
+def test_resume_reruns_callless_errors_only(env, monkeypatch):
+    monkeypatch.setenv("FAKE_CRASH", "inv-002")
+    assert env("--models", "haiku", "--subset", "inv-00*") == 0
+    d = _run_dir(env)
+    monkeypatch.delenv("FAKE_CRASH")
+    env.log.write_text("")
+    assert _resume(env, d) == 0
+    assert [c.split()[0] for c in _calls(env)] == ["inv-002.pdf"]
+    assert {r["outcome"] for r in _lines(d)} == {"needs_review"} and len(_lines(d)) == 3

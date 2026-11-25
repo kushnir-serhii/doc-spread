@@ -10,7 +10,10 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
   participant CR as pg_cron + pg_net
   participant O as Vercel Function /api/pipeline/ocr
   participant X as Vercel Function /api/pipeline/extract
+  participant K as classifyAndExtract (extract-core.ts)
   participant C as Claude API
+  participant E as eval-extract (services/api/scripts)
+  participant R as Eval runner (evals/, Python)
 
   B->>AU: sign in (publishable key), then every read below runs with the user's session under RLS
   B->>A: POST /api/uploads
@@ -30,11 +33,13 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
   O->>DB: enqueue in queue extract
   CR->>X: POST with x-pipeline-secret
   X->>DB: read a message from queue extract
-  X->>C: classify (Claude Haiku)
-  C-->>X: document type and confidence
   X->>ST: read the file
-  X->>C: extract fields (Claude Opus, file and words)
-  C-->>X: values, confidence, cited words
+  X->>K: pages, file, the company's types
+  K->>C: classify (Claude Haiku)
+  C-->>K: document type and confidence
+  K->>C: extract fields (Claude Opus, file and words)
+  C-->>K: values, confidence, cited words
+  K-->>X: outcome, values, overall confidence, usage per call
   X->>DB: write status (needs_review, or unclassified when unsure), values
   loop every 3 s until status is needs_review (or unclassified, error)
     B->>DB: read the document row (RLS: own company only)
@@ -49,6 +54,15 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
   A->>DB: export_jobs row, documents become exported
   A-->>B: job id and signed download link (10 min)
   B->>ST: download the file
+
+  Note over R,C: eval path (spec 026): the same core, with no database, Storage or queue
+  R->>E: one process per dataset document: file, types, model overrides
+  E->>E: read the local file, readPages (the OCR step's code)
+  E->>K: pages, file, types
+  K->>C: classify, then extract
+  C-->>K: values, confidence
+  K-->>E: outcome, values, usage per call
+  E-->>R: one JSON result on stdout (the runner scores it against the truth file)
 
   alt a step fails
     Note over O,X: the message stays and is read again after its visibility timeout
@@ -67,5 +81,8 @@ export const PIPELINE_ITEMS: Record<string, GlossaryKey> = {
   CR: 'pgCronPgNet',
   O: 'fnPipelineOcr',
   X: 'fnPipelineExtract',
+  K: 'coreClassifyAndExtract',
+  E: 'scriptEvalExtract',
+  R: 'evalsProject',
   C: 'claudeApi',
 }

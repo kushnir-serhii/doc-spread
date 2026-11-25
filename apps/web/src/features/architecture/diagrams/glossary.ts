@@ -70,6 +70,9 @@ export const GLOSSARY_KEYS = [
   'libFormatLocale',
   'sharedPackage',
   'servicesApi',
+  'evalsProject',
+  'scriptEvalExtract',
+  'coreClassifyAndExtract',
   // domain model
   'typeCompany',
   'typeTeamMember',
@@ -569,6 +572,27 @@ export const GLOSSARY: Record<GlossaryKey, GlossaryEntry> = {
     summary: 'The backend logic, written as plain functions.',
     role: 'Holds the request handlers, the token check, the signed-upload rules and the OCR and extract steps. The Vercel Functions import it by relative path; seed and smoke scripts live here too.',
     where: ['services/api/src/', 'services/api/package.json'],
+  },
+  evalsProject: {
+    title: 'evals/ (Python, uv)',
+    provider: 'app',
+    summary: 'A separate Python project for measuring how well the extraction works.',
+    role: 'Holds the golden dataset with its truth files, the runner (dataset through eval-extract, with a spending cap and resume), the scoring rules and the analysis that writes metrics.json and report.md. It sits outside the pnpm workspaces.',
+    where: ['evals/', 'evals/evals/run.py', 'evals/evals/score.py', 'evals/evals/analyze.py'],
+  },
+  scriptEvalExtract: {
+    title: 'eval-extract (script)',
+    provider: 'app',
+    summary: 'A command that runs one local file through the extraction code and prints the result as JSON.',
+    role: 'Reads the file, runs readPages (the OCR step) and classifyAndExtract in-process, and prints one JSON result with values, confidence, cost and timing. It needs only the Anthropic key: no database, Storage or queue. The eval runner starts one process per document.',
+    where: ['services/api/scripts/eval-extract.ts', 'services/api/package.json'],
+  },
+  coreClassifyAndExtract: {
+    title: 'classifyAndExtract (extract-core.ts)',
+    provider: 'app',
+    summary: 'The pure function that decides the document type and extracts the values.',
+    role: 'Takes the pages, the file and the types; asks Claude to classify, then to extract, maps the answer to stored values and returns the outcome, overall confidence and usage per call. The extract function and eval-extract both call it, so the evals measure production code.',
+    where: ['services/api/src/pipeline/extract-core.ts', 'services/api/src/pipeline/extract-handler.ts', 'services/api/scripts/eval-extract.ts'],
   },
 
   // ---------- domain model ----------

@@ -3,6 +3,7 @@
 Reads --file and --extract-model, prints canned JSON with a fixed cost.
 Env: FAKE_COST (default 0.004), FAKE_LOG (append one line per call),
 FAKE_CRASH (substring of the file name that always exits 1),
+FAKE_REJECT (substring that prints an `error` result "request rejected by the model API (400)", no calls),
 FAKE_GARBAGE (substring that prints non-JSON), FAKE_EXIT_CRASH (substring
 that prints the full result, then exits non-zero, as Node can on Windows), FAKE_FAIL_ONCE_DIR (a call per
 file fails the first time only; marker files go in this dir).
@@ -26,6 +27,13 @@ crash = os.environ.get("FAKE_CRASH")
 if crash and crash in name:
     print("boom: something broke\nsecond line of stderr", file=sys.stderr)
     sys.exit(1)
+reject = os.environ.get("FAKE_REJECT")
+if reject and reject in name:
+    print(json.dumps({
+        "file": name, "outcome": "error", "error": "request rejected by the model API (400)",
+        "classification": None, "values": {}, "overallConfidence": None, "calls": [], "ms": None, "promptHash": None,
+    }))
+    sys.exit(0)
 garbage = os.environ.get("FAKE_GARBAGE")
 if garbage and garbage in name:
     print("this is not json")

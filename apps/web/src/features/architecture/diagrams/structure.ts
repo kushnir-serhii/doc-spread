@@ -33,7 +33,11 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
     extractfn["pipeline/extract.ts"]
   end
   subgraph apisvc["services/api (@docspread/api)"]
-    apisrc["handlers, token check, signup.ts, signed upload, export/ (XLSX, CSV), OCR and extract steps; seed and smoke scripts"]
+    apisrc["handlers, token check, signup.ts, signed upload, export/ (XLSX, CSV), OCR and extract steps (classifyAndExtract in extract-core.ts); seed and smoke scripts"]
+    evalx["scripts/eval-extract (one document, in-process)"]
+  end
+  subgraph evals["evals (Python, uv; outside the pnpm workspaces)"]
+    evalsrc["dataset, runner, scoring, analysis"]
   end
   subgraph supabase["supabase (folder, not a workspace)"]
     migrations["migrations, seed, tests"]
@@ -61,6 +65,8 @@ export const STRUCTURE_DIAGRAM = `flowchart TB
   web -->|workspace dependency| shared
   fn -->|"imports by relative path"| apisvc
   apisvc -->|"secret key, SQL"| supabase
+  evalsrc -->|"runs one process per document"| evalx
+  evalx -->|"imports the pipeline core (extract-core.ts)"| apisrc
 `
 
 /** Mermaid node id → glossary entry. */
@@ -86,5 +92,7 @@ export const STRUCTURE_ITEMS: Record<string, GlossaryKey> = {
   ocrfn: 'fnPipelineOcr',
   extractfn: 'fnPipelineExtract',
   apisrc: 'servicesApi',
+  evalx: 'scriptEvalExtract',
+  evalsrc: 'evalsProject',
   migrations: 'supabaseMigrations',
 }

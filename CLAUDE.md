@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `apps/web` — React 19 + Vite 8 SPA (package name `@docspread/web`), plus the Vercel Functions in `apps/web/api/` (thin wrappers). Product and layout: `docs/product.md`.
 - `packages/shared` — `@docspread/shared`, code shared across apps.
 - `services/api` — `@docspread/api`: the API router and the OCR/extract pipeline. The functions import it by relative path.
-- `evals/` — Python (uv) project outside the pnpm workspaces: the golden dataset for extraction evals (`evals/dataset/`, rebuilt with `uv run python -m generator all --seed 1`), truth validator (`uv run python -m evals.truth dataset/`), `uv run pytest`. See `evals/README.md`.
+- `evals/` — Python (uv) project outside the pnpm workspaces: the golden dataset for extraction evals (`evals/dataset/`, rebuilt with `uv run python -m generator all --seed 1`), truth validator (`uv run python -m evals.truth dataset/`), `uv run pytest`. Extraction evals: `uv run python -m evals.run --models opus,haiku` (costs money; key in `services/api/.env.local`) and `uv run python -m evals.analyze runs/<run>` (metrics.json, report.md). See `evals/README.md`.
 - `supabase/` — migrations, pgTAP tests (`supabase/tests/`), `config.toml`.
 
 ## Commands
@@ -33,6 +33,7 @@ supabase db advisors --local --type security        # must report no issues
 pnpm --filter @docspread/api smoke                  # API smoke test, in-process ("direct" mode)
 SMOKE_API_URL=https://doc-spread.vercel.app/api pnpm --filter @docspread/api smoke   # same, over HTTP
 pnpm --filter @docspread/api smoke-pipeline         # upload -> OCR -> Claude; SMOKE_MODE=direct runs in-process
+pnpm --filter @docspread/api eval-extract --file <doc> --types <type.json,...>   # one document through OCR -> classify -> extract in-process, prints JSON (needs only ANTHROPIC_API_KEY)
 pnpm --filter @docspread/api check-env              # checks the variables in services/api/.env.local
 vercel deploy --prod                                # deploy from apps/web (Claude deploys this way before a merge; Git deploys after)
 ```
