@@ -1,0 +1,126 @@
+{
+  "id": "inv-022",
+  "file": "inv-022.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "scanned",
+    "no-currency",
+    "date-dmy",
+    "lang-en",
+    "layout-a",
+    "missing-optional"
+  ],
+  "seed": 10022,
+  "fields": {
+    "supplier_name": "Thompson-Ali",
+    "supplier_tax_id": "GB531 5248 66 901",
+    "invoice_number": "FV-2026-4298",
+    "issue_date": "2025-02-25",
+    "sale_date": null,
+    "due_date": "2025-04-26",
+    "payment_term_days": 60,
+    "net_total": {
+      "amount": "15153.53",
+      "currency": null
+    },
+    "vat_total": {
+      "amount": "3018.83",
+      "currency": null
+    },
+    "gross_total": {
+      "amount": "18172.36",
+      "currency": null
+    },
+    "line_items": [
+      {
+        "description": "Maintenance visit",
+        "quantity": 12,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "452.34",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "5428.08",
+          "currency": null
+        },
+        "vat": {
+          "amount": "1085.62",
+          "currency": null
+        },
+        "gross": {
+          "amount": "6513.70",
+          "currency": null
+        }
+      },
+      {
+        "description": "Cloud hosting - Plus",
+        "quantity": 10,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "106.30",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1063.00",
+          "currency": null
+        },
+        "vat": {
+          "amount": "212.60",
+          "currency": null
+        },
+        "gross": {
+          "amount": "1275.60",
+          "currency": null
+        }
+      },
+      {
+        "description": "Cable set",
+        "quantity": 2.5,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "475.08",
+          "currency": null
+        },
+        "vat_rate": 19,
+        "net": {
+          "amount": "1187.70",
+          "currency": null
+        },
+        "vat": {
+          "amount": "225.66",
+          "currency": null
+        },
+        "gross": {
+          "amount": "1413.36",
+          "currency": null
+        }
+      },
+      {
+        "description": "Data migration - Pro",
+        "quantity": 5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1494.95",
+          "currency": null
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "7474.75",
+          "currency": null
+        },
+        "vat": {
+          "amount": "1494.95",
+          "currency": null
+        },
+        "gross": {
+          "amount": "8969.70",
+          "currency": null
+        }
+      }
+    ]
+  }
+}

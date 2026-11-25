@@ -1,0 +1,171 @@
+{
+  "id": "inv-018",
+  "file": "inv-018.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "no-currency",
+    "date-localized-month",
+    "lang-fr",
+    "layout-c",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10018,
+  "fields": {
+    "supplier_name": "Faure",
+    "supplier_tax_id": "FR28 614641568",
+    "invoice_number": "FV-2025-0017",
+    "issue_date": "2025-04-09",
+    "sale_date": null,
+    "due_date": "2025-04-23",
+    "payment_term_days": 14,
+    "net_total": {
+      "amount": "26170.57",
+      "currency": null
+    },
+    "vat_total": {
+      "amount": "5495.83",
+      "currency": null
+    },
+    "gross_total": {
+      "amount": "31666.40",
+      "currency": null
+    },
+    "line_items": [
+      {
+        "description": "Revue de conception - XL",
+        "quantity": 15,
+        "unit": "pce",
+        "unit_net": {
+          "amount": "1079.05",
+          "currency": null
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "16185.75",
+          "currency": null
+        },
+        "vat": {
+          "amount": "3399.01",
+          "currency": null
+        },
+        "gross": {
+          "amount": "19584.76",
+          "currency": null
+        }
+      },
+      {
+        "description": "Licence logicielle - Plus",
+        "quantity": 1,
+        "unit": "mois",
+        "unit_net": {
+          "amount": "445.80",
+          "currency": null
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "445.80",
+          "currency": null
+        },
+        "vat": {
+          "amount": "93.62",
+          "currency": null
+        },
+        "gross": {
+          "amount": "539.42",
+          "currency": null
+        }
+      },
+      {
+        "description": "Hébergement cloud - B",
+        "quantity": 1.5,
+        "unit": "h",
+        "unit_net": {
+          "amount": "60.09",
+          "currency": null
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "90.14",
+          "currency": null
+        },
+        "vat": {
+          "amount": "18.93",
+          "currency": null
+        },
+        "gross": {
+          "amount": "109.07",
+          "currency": null
+        }
+      },
+      {
+        "description": "Manuels imprimés",
+        "quantity": 5,
+        "unit": "mois",
+        "unit_net": {
+          "amount": "1098.73",
+          "currency": null
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "5493.65",
+          "currency": null
+        },
+        "vat": {
+          "amount": "1153.67",
+          "currency": null
+        },
+        "gross": {
+          "amount": "6647.32",
+          "currency": null
+        }
+      },
+      {
+        "description": "Hébergement cloud",
+        "quantity": 3,
+        "unit": "pce",
+        "unit_net": {
+          "amount": "997.17",
+          "currency": null
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "2991.51",
+          "currency": null
+        },
+        "vat": {
+          "amount": "628.22",
+          "currency": null
+        },
+        "gross": {
+          "amount": "3619.73",
+          "currency": null
+        }
+      },
+      {
+        "description": "Prestation de conseil - Plus",
+        "quantity": 2,
+        "unit": "h",
+        "unit_net": {
+          "amount": "481.86",
+          "currency": null
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "963.72",
+          "currency": null
+        },
+        "vat": {
+          "amount": "202.38",
+          "currency": null
+        },
+        "gross": {
+          "amount": "1166.10",
+          "currency": null
+        }
+      }
+    ]
+  }
+}

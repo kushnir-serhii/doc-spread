@@ -1,0 +1,147 @@
+{
+  "id": "inv-001",
+  "file": "inv-001.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "usd",
+    "date-mdy",
+    "lang-en",
+    "layout-a"
+  ],
+  "seed": 10001,
+  "fields": {
+    "supplier_name": "Herrera-Hunter",
+    "supplier_tax_id": "63-7928782",
+    "invoice_number": "R-2025-9119",
+    "issue_date": "2025-10-14",
+    "sale_date": "2025-10-13",
+    "due_date": "2025-10-21",
+    "payment_term_days": 7,
+    "net_total": {
+      "amount": "27036.01",
+      "currency": "USD"
+    },
+    "vat_total": {
+      "amount": "1700.18",
+      "currency": "USD"
+    },
+    "gross_total": {
+      "amount": "28736.19",
+      "currency": "USD"
+    },
+    "line_items": [
+      {
+        "description": "Printed manuals - A",
+        "quantity": 1.5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "805.46",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "1208.19",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "60.41",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "1268.60",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Maintenance visit - Pro",
+        "quantity": 15,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "1161.27",
+          "currency": "USD"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "17419.05",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "1219.33",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "18638.38",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Data migration - B",
+        "quantity": 1,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "1286.01",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "1286.01",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "64.30",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "1350.31",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Printed manuals",
+        "quantity": 12,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "316.26",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "3795.12",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "189.76",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "3984.88",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Maintenance visit - Pro",
+        "quantity": 4,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "831.91",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "3327.64",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "166.38",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "3494.02",
+          "currency": "USD"
+        }
+      }
+    ]
+  }
+}

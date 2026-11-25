@@ -1,0 +1,590 @@
+{
+  "id": "inv-023",
+  "file": "inv-023.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "multi-page",
+    "sek",
+    "date-localized-month",
+    "lang-sv",
+    "layout-b",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10023,
+  "fields": {
+    "supplier_name": "Eriksson Forsman HB",
+    "supplier_tax_id": "SE16965242256001",
+    "invoice_number": "FV-2025-8841",
+    "issue_date": "2025-10-25",
+    "sale_date": "2025-10-25",
+    "due_date": null,
+    "payment_term_days": null,
+    "net_total": {
+      "amount": "105831.78",
+      "currency": "SEK"
+    },
+    "vat_total": {
+      "amount": "20781.62",
+      "currency": "SEK"
+    },
+    "gross_total": {
+      "amount": "126613.40",
+      "currency": "SEK"
+    },
+    "line_items": [
+      {
+        "description": "Datamigrering - A",
+        "quantity": 1,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "770.10",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "770.10",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "192.53",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "962.63",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Konsulttjänster - B",
+        "quantity": 3,
+        "unit": "tim",
+        "unit_net": {
+          "amount": "106.37",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "319.11",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "79.78",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "398.89",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Datamigrering - Plus",
+        "quantity": 1.5,
+        "unit": "tim",
+        "unit_net": {
+          "amount": "1280.17",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "1920.26",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "480.07",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "2400.33",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Datamigrering",
+        "quantity": 2,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "791.23",
+          "currency": "SEK"
+        },
+        "vat_rate": 12,
+        "net": {
+          "amount": "1582.46",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "189.90",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "1772.36",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Kabelsats",
+        "quantity": 0.5,
+        "unit": "tjl",
+        "unit_net": {
+          "amount": "824.64",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "412.32",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "24.74",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "437.06",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Molnhotell - A",
+        "quantity": 0.5,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "1043.96",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "521.98",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "130.50",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "652.48",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Supportavtal",
+        "quantity": 6,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "1472.29",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "8833.74",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "2208.44",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "11042.18",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Utbildningstillfälle - XL",
+        "quantity": 15,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "999.71",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "14995.65",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "3748.91",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "18744.56",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Servicebesök - B",
+        "quantity": 2,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "1010.50",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "2021.00",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "121.26",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "2142.26",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Konsulttjänster - Plus",
+        "quantity": 8,
+        "unit": "tim",
+        "unit_net": {
+          "amount": "846.17",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "6769.36",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "1692.34",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "8461.70",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Molnhotell",
+        "quantity": 2,
+        "unit": "st",
+        "unit_net": {
+          "amount": "1462.80",
+          "currency": "SEK"
+        },
+        "vat_rate": 12,
+        "net": {
+          "amount": "2925.60",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "351.07",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "3276.67",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Molnhotell - B",
+        "quantity": 5,
+        "unit": "st",
+        "unit_net": {
+          "amount": "23.48",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "117.40",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "29.35",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "146.75",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Supportavtal - Pro",
+        "quantity": 2,
+        "unit": "tjl",
+        "unit_net": {
+          "amount": "751.60",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "1503.20",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "375.80",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "1879.00",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Molnhotell - Pro",
+        "quantity": 4,
+        "unit": "st",
+        "unit_net": {
+          "amount": "1459.49",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "5837.96",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "1459.49",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "7297.45",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Tryckta manualer - Pro",
+        "quantity": 12,
+        "unit": "st",
+        "unit_net": {
+          "amount": "1416.90",
+          "currency": "SEK"
+        },
+        "vat_rate": 12,
+        "net": {
+          "amount": "17002.80",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "2040.34",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "19043.14",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Tryckta manualer - B",
+        "quantity": 6,
+        "unit": "st",
+        "unit_net": {
+          "amount": "1048.73",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "6292.38",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "1573.10",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "7865.48",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Konsulttjänster - Pro",
+        "quantity": 3,
+        "unit": "st",
+        "unit_net": {
+          "amount": "935.65",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "2806.95",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "701.74",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "3508.69",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Designgranskning",
+        "quantity": 5,
+        "unit": "mån",
+        "unit_net": {
+          "amount": "546.60",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "2733.00",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "683.25",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "3416.25",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Molnhotell",
+        "quantity": 12,
+        "unit": "tim",
+        "unit_net": {
+          "amount": "566.59",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "6799.08",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "407.94",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "7207.02",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Programvarulicens",
+        "quantity": 12,
+        "unit": "tim",
+        "unit_net": {
+          "amount": "408.63",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "4903.56",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "1225.89",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "6129.45",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Tryckta manualer",
+        "quantity": 0.5,
+        "unit": "tim",
+        "unit_net": {
+          "amount": "615.54",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "307.77",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "76.94",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "384.71",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Kabelsats - B",
+        "quantity": 0.5,
+        "unit": "st",
+        "unit_net": {
+          "amount": "1230.69",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "615.35",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "153.84",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "769.19",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Supportavtal",
+        "quantity": 5,
+        "unit": "st",
+        "unit_net": {
+          "amount": "547.03",
+          "currency": "SEK"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "2735.15",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "164.11",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "2899.26",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Utbildningstillfälle - XL",
+        "quantity": 5,
+        "unit": "tjl",
+        "unit_net": {
+          "amount": "932.48",
+          "currency": "SEK"
+        },
+        "vat_rate": 12,
+        "net": {
+          "amount": "4662.40",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "559.49",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "5221.89",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Kabelsats - XL",
+        "quantity": 8,
+        "unit": "st",
+        "unit_net": {
+          "amount": "1055.40",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "8443.20",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "2110.80",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "10554.00",
+          "currency": "SEK"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "id": "inv-004",
+  "file": "inv-004.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "scanned",
+    "gbp",
+    "date-iso",
+    "lang-en",
+    "layout-a",
+    "missing-optional"
+  ],
+  "seed": 10004,
+  "fields": {
+    "supplier_name": "Stokes Group",
+    "supplier_tax_id": null,
+    "invoice_number": "R-2026-6221",
+    "issue_date": "2025-02-07",
+    "sale_date": "2025-02-03",
+    "due_date": "2025-02-21",
+    "payment_term_days": 14,
+    "net_total": {
+      "amount": "23470.29",
+      "currency": "GBP"
+    },
+    "vat_total": {
+      "amount": "4694.06",
+      "currency": "GBP"
+    },
+    "gross_total": {
+      "amount": "28164.35",
+      "currency": "GBP"
+    },
+    "line_items": [
+      {
+        "description": "Cloud hosting - Pro",
+        "quantity": 12,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "822.53",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "9870.36",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "1974.07",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "11844.43",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Printed manuals - XL",
+        "quantity": 12,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1080.59",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "12967.08",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "2593.42",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "15560.50",
+          "currency": "GBP"
+        }
+      },
+      {
+        "description": "Support plan - Pro",
+        "quantity": 1,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "632.85",
+          "currency": "GBP"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "632.85",
+          "currency": "GBP"
+        },
+        "vat": {
+          "amount": "126.57",
+          "currency": "GBP"
+        },
+        "gross": {
+          "amount": "759.42",
+          "currency": "GBP"
+        }
+      }
+    ]
+  }
+}

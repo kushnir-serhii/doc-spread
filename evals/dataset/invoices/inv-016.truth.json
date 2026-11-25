@@ -1,0 +1,302 @@
+{
+  "id": "inv-016",
+  "file": "inv-016.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "jpy",
+    "date-iso",
+    "lang-en",
+    "layout-a",
+    "missing-optional"
+  ],
+  "seed": 10016,
+  "fields": {
+    "supplier_name": "Davis, Bishop and Walker",
+    "supplier_tax_id": null,
+    "invoice_number": "R-2025-2874",
+    "issue_date": "2026-11-22",
+    "sale_date": "2026-11-20",
+    "due_date": "2027-01-06",
+    "payment_term_days": 45,
+    "net_total": {
+      "amount": "1652200",
+      "currency": "JPY"
+    },
+    "vat_total": {
+      "amount": "132176",
+      "currency": "JPY"
+    },
+    "gross_total": {
+      "amount": "1784376",
+      "currency": "JPY"
+    },
+    "line_items": [
+      {
+        "description": "Training session - B",
+        "quantity": 2,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "48250",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "96500",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "7720",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "104220",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Maintenance visit - XL",
+        "quantity": 5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "40030",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "200150",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "16012",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "216162",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Maintenance visit - Plus",
+        "quantity": 3,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "17230",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "51690",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "4135",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "55825",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Software license",
+        "quantity": 1.5,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "35110",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "52665",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "4213",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "56878",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Data migration - XL",
+        "quantity": 1,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "41850",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "41850",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "3348",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "45198",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Software license",
+        "quantity": 10,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "26300",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "263000",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "21040",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "284040",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Cloud hosting - XL",
+        "quantity": 15,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "14310",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "214650",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "17172",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "231822",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Cloud hosting - Pro",
+        "quantity": 8,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "29900",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "239200",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "19136",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "258336",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Printed manuals - Pro",
+        "quantity": 20,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "14620",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "292400",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "23392",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "315792",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Consulting services - XL",
+        "quantity": 12,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "15960",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "191520",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "15322",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "206842",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Cable set - Plus",
+        "quantity": 0.5,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "11350",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "5675",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "454",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "6129",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Printed manuals",
+        "quantity": 5,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "580",
+          "currency": "JPY"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "2900",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "232",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "3132",
+          "currency": "JPY"
+        }
+      }
+    ]
+  }
+}

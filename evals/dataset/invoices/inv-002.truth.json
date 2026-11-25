@@ -1,0 +1,568 @@
+{
+  "id": "inv-002",
+  "file": "inv-002.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "multi-page",
+    "eur",
+    "date-dmy",
+    "lang-en",
+    "layout-b",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10002,
+  "fields": {
+    "supplier_name": "Fowler-Hutchinson",
+    "supplier_tax_id": "GBGD078",
+    "invoice_number": "FV-2025-5139",
+    "issue_date": "2025-01-23",
+    "sale_date": null,
+    "due_date": "2025-02-13",
+    "payment_term_days": 21,
+    "net_total": {
+      "amount": "105979.78",
+      "currency": "EUR"
+    },
+    "vat_total": {
+      "amount": "7597.86",
+      "currency": "EUR"
+    },
+    "gross_total": {
+      "amount": "113577.64",
+      "currency": "EUR"
+    },
+    "line_items": [
+      {
+        "description": "Software license - B",
+        "quantity": 5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "935.09",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "4675.45",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "257.15",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "4932.60",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Consulting services - XL",
+        "quantity": 15,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "665.61",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "9984.15",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "549.13",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "10533.28",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Maintenance visit",
+        "quantity": 2,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "154.06",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "308.12",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "64.71",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "372.83",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Data migration - XL",
+        "quantity": 8,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "336.02",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "2688.16",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "147.85",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "2836.01",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Cloud hosting",
+        "quantity": 8,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "439.84",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "3518.72",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "738.93",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "4257.65",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Consulting services",
+        "quantity": 0.5,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "1041.40",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "520.70",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "28.64",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "549.34",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Cable set - Plus",
+        "quantity": 3,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "437.14",
+          "currency": "EUR"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "1311.42",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "262.28",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1573.70",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Cable set - B",
+        "quantity": 3,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "992.11",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "2976.33",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "625.03",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "3601.36",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Training session",
+        "quantity": 8,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "229.21",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "1833.68",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "100.85",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1934.53",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Consulting services - Pro",
+        "quantity": 6,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "1259.30",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "7555.80",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "415.57",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "7971.37",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Data migration - Pro",
+        "quantity": 2.5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1330.48",
+          "currency": "EUR"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "3326.20",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "665.24",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "3991.44",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Support plan - Pro",
+        "quantity": 15,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "1481.41",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "22221.15",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "1222.16",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "23443.31",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Consulting services - Pro",
+        "quantity": 15,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "986.83",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "14802.45",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "814.13",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "15616.58",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Design review - Pro",
+        "quantity": 2,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "670.02",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "1340.04",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "73.70",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1413.74",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Consulting services - A",
+        "quantity": 4,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "700.51",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "2802.04",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "196.14",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "2998.18",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Cloud hosting - B",
+        "quantity": 2,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "530.21",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "1060.42",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "58.32",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1118.74",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Software license",
+        "quantity": 2.5,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "267.71",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "669.28",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "36.81",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "706.09",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Support plan - B",
+        "quantity": 8,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "697.06",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "5576.48",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "306.71",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "5883.19",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Data migration - Plus",
+        "quantity": 8,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "206.14",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "1649.12",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "90.70",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1739.82",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Printed manuals",
+        "quantity": 1,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "383.76",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "383.76",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "21.11",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "404.87",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Consulting services - Pro",
+        "quantity": 1,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "1138.28",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "1138.28",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "62.61",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1200.89",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Cloud hosting",
+        "quantity": 3,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "559.65",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "1678.95",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "92.34",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1771.29",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Design review - XL",
+        "quantity": 20,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "648.73",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "12974.60",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "713.60",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "13688.20",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Design review - Pro",
+        "quantity": 8,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "123.06",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "984.48",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "54.15",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1038.63",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

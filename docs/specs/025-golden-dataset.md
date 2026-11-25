@@ -66,15 +66,15 @@ A folder of 40 invoice and receipt files, each paired with a JSON of the correct
   - [x] the validator accepts the three truth files and rejects a broken copy of each (unknown key, bad date, bad currency, unknown column) with a message naming the file and field
   - [x] `pnpm build` and `pnpm lint` from the root are unaffected (evals/ isn't a workspace)
 
-### [ ] 2. Invoice generator
+### [x] 2. Invoice generator
 - **Build:** `evals/generator/`: a seeded `random.Random` drives fictional suppliers and buyers (faker, several locales), currencies (USD, EUR, GBP, CHF, JPY, SEK and a "not stated" case), date formats, tax rates, 1–25 line items. Three invoice layouts drawn with reportlab (`invariant=1`, bundled DejaVu fonts; some layouts print the payment term and row gross, others don't); a "scanned" variant rasterizes the page (Pillow: slight rotation, noise) and wraps it in an image-only PDF; long item lists flow to a second page. The generator writes the file and its truth from the same record, then re-reads text PDFs with pypdf and asserts every truth string and amount appears in the page text (catches clipped or wrapped values). `uv run python -m generator invoices --count 24 --seed 1`.
 - **Files:** `evals/generator/{__init__,__main__,common,invoice}.py`, `evals/generator/fonts/` (DejaVu Sans, DejaVu Sans Mono + licence), `evals/tests/test_generator.py`, `evals/dataset/invoices/*`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] 24 invoices: at least 4 scanned, 4 multi-page, 3 with no stated currency, 2 in JPY, 4 non-English
-  - [ ] running the generator twice with the same seed produces byte-identical truth files (and identical PDFs, or the test documents why a timestamp differs)
-  - [ ] the self-check passes for every text PDF; all truth files validate
-  - [ ] five random invoices opened by eye look like plausible invoices (ids and findings in the Log)
+  - [x] 24 invoices: at least 4 scanned, 4 multi-page, 3 with no stated currency, 2 in JPY, 4 non-English
+  - [x] running the generator twice with the same seed produces byte-identical truth files (and identical PDFs, or the test documents why a timestamp differs)
+  - [x] the self-check passes for every text PDF; all truth files validate
+  - [x] five random invoices opened by eye look like plausible invoices (ids and findings in the Log)
 
 ### [ ] 3. Receipts, distractors and coverage
 - **Build:** a receipt generator: a narrow till-slip layout drawn with Pillow (bundled DejaVu Sans Mono), merchant, tax ID, date, items, tax, total, payment method; then a "photo" pass (rotation up to ±8°, perspective, blur, noise, uneven light, JPG quality 60–90, some PNG). Four distractors (a contract page, a delivery note without prices, a bank statement extract, a blank form) with `expectedType: null`. `COVERAGE.md` generated from the truth files: counts per type, tag and field (how often each field is present or null). `evals/README.md`: what the dataset is, how to rebuild it, how to add a private document.
@@ -103,3 +103,4 @@ None. The pipeline is untouched; 026 adds the entry point the evals call.
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-11-25 | 1 | done: 19 pytest tests, validator reports 3 truth files OK, root build and lint green | `evals/{pyproject.toml,uv.lock,README.md,.gitattributes}`, `evals/types/*.json`, `evals/evals/truth.py`, `evals/tests/{test_truth,test_types}.py`, `evals/dataset/**` (3 mock samples + truth), `.gitignore`. Tags: currency as lowercase ISO code (`usd`), date format as `date-iso`/`date-dmy`/… |
+| 2026-11-25 | 2 | done: 24 invoices (5 scanned, 6 multi-page, 4 no-currency, 2 JPY, 11 non-English; layouts a/b/c 8 each); same seed gives byte-identical PDFs and truth (a test diffs the committed files); pypdf self-check passes; 29 pytest tests; 27 truth files OK; invoices 2.7 MB. Checked by eye: inv-005 (JPY), inv-010 (Swedish SEK), inv-013 (mdy, layout a), inv-014 (scanned, 2 pages, CHF, German), inv-022 (scanned, no currency): all read as plausible invoices. That check found ambiguous slash dates (`01/06/2026`); now dmy/mdy dates always have day > 12 and mdy only appears with US suppliers. | `evals/generator/{__init__,__main__,common,invoice}.py`, `evals/generator/fonts/` (DejaVu + licence), `evals/tests/test_generator.py`, `evals/dataset/invoices/inv-001…024.*`, `evals/{pyproject.toml,uv.lock,README.md}` |

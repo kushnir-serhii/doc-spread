@@ -1,0 +1,164 @@
+{
+  "id": "inv-003",
+  "file": "inv-003.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "eur",
+    "date-iso",
+    "lang-de",
+    "layout-c",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10003,
+  "fields": {
+    "supplier_name": "Kraus AG",
+    "supplier_tax_id": "DE370572106",
+    "invoice_number": "RE-2026-6514",
+    "issue_date": "2025-11-08",
+    "sale_date": "2025-11-05",
+    "due_date": "2025-11-29",
+    "payment_term_days": 21,
+    "net_total": {
+      "amount": "31828.73",
+      "currency": "EUR"
+    },
+    "vat_total": null,
+    "gross_total": {
+      "amount": "31828.73",
+      "currency": "EUR"
+    },
+    "line_items": [
+      {
+        "description": "Beratungsleistung - Pro",
+        "quantity": 15,
+        "unit": "Mon",
+        "unit_net": {
+          "amount": "266.01",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "3990.15",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Datenmigration - XL",
+        "quantity": 2,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "819.13",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "1638.26",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Designprüfung",
+        "quantity": 12,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "1367.55",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "16410.60",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Wartungseinsatz",
+        "quantity": 1,
+        "unit": "Psch",
+        "unit_net": {
+          "amount": "251.79",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "251.79",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Kabelsatz - Plus",
+        "quantity": 6,
+        "unit": "Stk",
+        "unit_net": {
+          "amount": "516.21",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "3097.26",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Beratungsleistung - XL",
+        "quantity": 2,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "1079.28",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "2158.56",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Designprüfung - Pro",
+        "quantity": 15,
+        "unit": "Stk",
+        "unit_net": {
+          "amount": "243.20",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "3648.00",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      },
+      {
+        "description": "Gedruckte Handbücher - Plus",
+        "quantity": 1,
+        "unit": "Std",
+        "unit_net": {
+          "amount": "634.11",
+          "currency": "EUR"
+        },
+        "vat_rate": null,
+        "net": {
+          "amount": "634.11",
+          "currency": "EUR"
+        },
+        "vat": null,
+        "gross": null
+      }
+    ]
+  }
+}

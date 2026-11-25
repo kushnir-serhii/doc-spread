@@ -1,0 +1,149 @@
+{
+  "id": "inv-006",
+  "file": "inv-006.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "eur",
+    "date-localized-month",
+    "lang-fr",
+    "layout-c",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10006,
+  "fields": {
+    "supplier_name": "Blin Guillaume S.A",
+    "supplier_tax_id": "FR80 258798739",
+    "invoice_number": "R-2025-2561",
+    "issue_date": "2025-04-13",
+    "sale_date": null,
+    "due_date": "2025-04-20",
+    "payment_term_days": 7,
+    "net_total": {
+      "amount": "33707.70",
+      "currency": "EUR"
+    },
+    "vat_total": {
+      "amount": "2318.84",
+      "currency": "EUR"
+    },
+    "gross_total": {
+      "amount": "36026.54",
+      "currency": "EUR"
+    },
+    "line_items": [
+      {
+        "description": "Licence logicielle - Pro",
+        "quantity": 3,
+        "unit": "pce",
+        "unit_net": {
+          "amount": "1199.89",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "3599.67",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "251.98",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "3851.65",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Revue de conception",
+        "quantity": 1,
+        "unit": "mois",
+        "unit_net": {
+          "amount": "559.62",
+          "currency": "EUR"
+        },
+        "vat_rate": 20,
+        "net": {
+          "amount": "559.62",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "111.92",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "671.54",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Migration de données - B",
+        "quantity": 8,
+        "unit": "h",
+        "unit_net": {
+          "amount": "945.49",
+          "currency": "EUR"
+        },
+        "vat_rate": 5.5,
+        "net": {
+          "amount": "7563.92",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "416.02",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "7979.94",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Prestation de conseil - A",
+        "quantity": 0.5,
+        "unit": "mois",
+        "unit_net": {
+          "amount": "1406.77",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "703.39",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "49.24",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "752.63",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Revue de conception - Plus",
+        "quantity": 15,
+        "unit": "prest",
+        "unit_net": {
+          "amount": "1418.74",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "21281.10",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "1489.68",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "22770.78",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

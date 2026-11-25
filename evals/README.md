@@ -6,6 +6,7 @@ Python project (outside the pnpm workspaces) for the golden dataset and, later, 
 uv sync                                  # create .venv from uv.lock
 uv run pytest                            # tests (truth validator, type drift)
 uv run python -m evals.truth dataset/    # validate every *.truth.json
+uv run python -m generator invoices --count 24 --seed 1   # rebuild dataset/invoices/inv-001..024 (+ truth)
 ```
 
 ## Layout
@@ -13,6 +14,7 @@ uv run python -m evals.truth dataset/    # validate every *.truth.json
 - `types/invoice.json`, `types/receipt.json`: frozen copies of the product templates. A test fails when the source changes; update the copies deliberately.
 - `dataset/`: documents (`invoices/`, `receipts/`, `distractors/`), each with a `<id>.truth.json` next to it.
 - `evals/truth.py`: truth model and validator.
+- `generator/`: seeded generator (`invoice.py` for invoices; `common.py` for fonts, renderers, formatting). Bundled DejaVu fonts in `generator/fonts/` keep the bytes identical across OSes. Each document's seed is `base_seed * 10000 + index` and is stored in its truth file, so one document can be rebuilt alone (`generate_invoice(seed, out_dir)`). Generating also runs a self-check: every truth value must appear in the text of the PDF.
 
 ## Truth format
 

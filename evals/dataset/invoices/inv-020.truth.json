@@ -1,0 +1,568 @@
+{
+  "id": "inv-020",
+  "file": "inv-020.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "multi-page",
+    "usd",
+    "date-iso",
+    "lang-en",
+    "layout-b",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10020,
+  "fields": {
+    "supplier_name": "Douglas LLC",
+    "supplier_tax_id": null,
+    "invoice_number": "FV-2025-4452",
+    "issue_date": "2025-07-25",
+    "sale_date": "2025-07-25",
+    "due_date": "2025-08-24",
+    "payment_term_days": 30,
+    "net_total": {
+      "amount": "111200.33",
+      "currency": "USD"
+    },
+    "vat_total": {
+      "amount": "6089.38",
+      "currency": "USD"
+    },
+    "gross_total": {
+      "amount": "117289.71",
+      "currency": "USD"
+    },
+    "line_items": [
+      {
+        "description": "Design review",
+        "quantity": 1,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "946.48",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "946.48",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "47.32",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "993.80",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Maintenance visit - XL",
+        "quantity": 2,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "170.92",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "341.84",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "17.09",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "358.93",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Support plan - Pro",
+        "quantity": 20,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "607.50",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "12150.00",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "607.50",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "12757.50",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Training session - B",
+        "quantity": 1,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "246.09",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "246.09",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "12.30",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "258.39",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Consulting services - XL",
+        "quantity": 20,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "658.82",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "13176.40",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "658.82",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "13835.22",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Support plan",
+        "quantity": 8,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "1036.64",
+          "currency": "USD"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "8293.12",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "580.52",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "8873.64",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Cloud hosting",
+        "quantity": 10,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1043.48",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "10434.80",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "521.74",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "10956.54",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Cloud hosting",
+        "quantity": 2,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1311.67",
+          "currency": "USD"
+        },
+        "vat_rate": 8.25,
+        "net": {
+          "amount": "2623.34",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "216.43",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "2839.77",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Consulting services - XL",
+        "quantity": 2,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "520.20",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "1040.40",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "52.02",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "1092.42",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Cable set",
+        "quantity": 2,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "948.67",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "1897.34",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "94.87",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "1992.21",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Printed manuals - XL",
+        "quantity": 20,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "687.72",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "13754.40",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "687.72",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "14442.12",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Software license - B",
+        "quantity": 1,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "367.12",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "367.12",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "18.36",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "385.48",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Cloud hosting - Plus",
+        "quantity": 3,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "207.40",
+          "currency": "USD"
+        },
+        "vat_rate": 6,
+        "net": {
+          "amount": "622.20",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "37.33",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "659.53",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Cloud hosting - A",
+        "quantity": 5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1117.97",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "5589.85",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "279.49",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "5869.34",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Cloud hosting - Pro",
+        "quantity": 2.5,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "970.39",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "2425.98",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "121.30",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "2547.28",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Design review - Plus",
+        "quantity": 1,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1194.34",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "1194.34",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "59.72",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "1254.06",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Support plan - Pro",
+        "quantity": 20,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "178.93",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "3578.60",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "178.93",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "3757.53",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Software license - Plus",
+        "quantity": 0.5,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "898.59",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "449.30",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "22.47",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "471.77",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Printed manuals",
+        "quantity": 0.5,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "989.17",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "494.59",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "24.73",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "519.32",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Support plan - Pro",
+        "quantity": 2,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1110.40",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "2220.80",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "111.04",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "2331.84",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Cloud hosting",
+        "quantity": 3,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1162.94",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "3488.82",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "174.44",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "3663.26",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Maintenance visit - B",
+        "quantity": 8,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "1232.26",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "9858.08",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "492.90",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "10350.98",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Training session - A",
+        "quantity": 12,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "453.37",
+          "currency": "USD"
+        },
+        "vat_rate": 10,
+        "net": {
+          "amount": "5440.44",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "544.04",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "5984.48",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Design review - XL",
+        "quantity": 20,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "528.30",
+          "currency": "USD"
+        },
+        "vat_rate": 5,
+        "net": {
+          "amount": "10566.00",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "528.30",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "11094.30",
+          "currency": "USD"
+        }
+      }
+    ]
+  }
+}

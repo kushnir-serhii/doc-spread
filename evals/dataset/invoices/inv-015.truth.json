@@ -1,0 +1,82 @@
+{
+  "id": "inv-015",
+  "file": "inv-015.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "sek",
+    "date-long",
+    "lang-en",
+    "layout-c",
+    "computed-not-printed"
+  ],
+  "seed": 10015,
+  "fields": {
+    "supplier_name": "Schmitt, Robertson and Rodriguez",
+    "supplier_tax_id": "76-7657250",
+    "invoice_number": "FA-2025-9719",
+    "issue_date": "2025-08-10",
+    "sale_date": "2025-08-08",
+    "due_date": "2025-10-09",
+    "payment_term_days": 60,
+    "net_total": {
+      "amount": "2438.82",
+      "currency": "SEK"
+    },
+    "vat_total": {
+      "amount": "609.71",
+      "currency": "SEK"
+    },
+    "gross_total": {
+      "amount": "3048.53",
+      "currency": "SEK"
+    },
+    "line_items": [
+      {
+        "description": "Maintenance visit - XL",
+        "quantity": 2,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "1078.54",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "2157.08",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "539.27",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "2696.35",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Consulting services - XL",
+        "quantity": 2,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "140.87",
+          "currency": "SEK"
+        },
+        "vat_rate": 25,
+        "net": {
+          "amount": "281.74",
+          "currency": "SEK"
+        },
+        "vat": {
+          "amount": "70.44",
+          "currency": "SEK"
+        },
+        "gross": {
+          "amount": "352.18",
+          "currency": "SEK"
+        }
+      }
+    ]
+  }
+}

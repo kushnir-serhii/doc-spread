@@ -1,0 +1,259 @@
+{
+  "id": "inv-024",
+  "file": "inv-024.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "eur",
+    "date-localized-month",
+    "lang-pl",
+    "layout-c",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10024,
+  "fields": {
+    "supplier_name": "Grupa Greszta-Bak i syn s.c",
+    "supplier_tax_id": null,
+    "invoice_number": "FV-2025-7602",
+    "issue_date": "2026-01-10",
+    "sale_date": "2026-01-08",
+    "due_date": "2026-01-17",
+    "payment_term_days": 7,
+    "net_total": {
+      "amount": "74500.57",
+      "currency": "EUR"
+    },
+    "vat_total": {
+      "amount": "12795.77",
+      "currency": "EUR"
+    },
+    "gross_total": {
+      "amount": "87296.34",
+      "currency": "EUR"
+    },
+    "line_items": [
+      {
+        "description": "Zestaw kabli - B",
+        "quantity": 8,
+        "unit": "mies",
+        "unit_net": {
+          "amount": "504.82",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "4038.56",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "848.10",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "4886.66",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Licencja na oprogramowanie - XL",
+        "quantity": 2,
+        "unit": "mies",
+        "unit_net": {
+          "amount": "813.64",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "1627.28",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "341.73",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1969.01",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Migracja danych",
+        "quantity": 15,
+        "unit": "usł",
+        "unit_net": {
+          "amount": "1356.83",
+          "currency": "EUR"
+        },
+        "vat_rate": 7,
+        "net": {
+          "amount": "20352.45",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "1424.67",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "21777.12",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Wizyta serwisowa - B",
+        "quantity": 4,
+        "unit": "usł",
+        "unit_net": {
+          "amount": "994.42",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "3977.68",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "835.31",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "4812.99",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Licencja na oprogramowanie - B",
+        "quantity": 2,
+        "unit": "szt",
+        "unit_net": {
+          "amount": "501.50",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "1003.00",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "210.63",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "1213.63",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Przegląd projektu - Pro",
+        "quantity": 12,
+        "unit": "szt",
+        "unit_net": {
+          "amount": "613.68",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "7364.16",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "1546.47",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "8910.63",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Przegląd projektu - B",
+        "quantity": 8,
+        "unit": "godz",
+        "unit_net": {
+          "amount": "1117.80",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "8942.40",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "1877.90",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "10820.30",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Pakiet wsparcia - Pro",
+        "quantity": 20,
+        "unit": "szt",
+        "unit_net": {
+          "amount": "1022.85",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "20457.00",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "4295.97",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "24752.97",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Wizyta serwisowa - B",
+        "quantity": 2,
+        "unit": "szt",
+        "unit_net": {
+          "amount": "1346.90",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "2693.80",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "565.70",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "3259.50",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Zestaw kabli",
+        "quantity": 6,
+        "unit": "usł",
+        "unit_net": {
+          "amount": "674.04",
+          "currency": "EUR"
+        },
+        "vat_rate": 21,
+        "net": {
+          "amount": "4044.24",
+          "currency": "EUR"
+        },
+        "vat": {
+          "amount": "849.29",
+          "currency": "EUR"
+        },
+        "gross": {
+          "amount": "4893.53",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

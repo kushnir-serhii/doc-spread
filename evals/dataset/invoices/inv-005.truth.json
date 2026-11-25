@@ -1,0 +1,83 @@
+{
+  "id": "inv-005",
+  "file": "inv-005.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "jpy",
+    "date-mdy",
+    "lang-en",
+    "layout-b",
+    "computed-not-printed",
+    "missing-optional"
+  ],
+  "seed": 10005,
+  "fields": {
+    "supplier_name": "Browning PLC",
+    "supplier_tax_id": "70-7288568",
+    "invoice_number": "R-2025-5933",
+    "issue_date": "2026-06-13",
+    "sale_date": "2026-06-13",
+    "due_date": null,
+    "payment_term_days": null,
+    "net_total": {
+      "amount": "115965",
+      "currency": "JPY"
+    },
+    "vat_total": {
+      "amount": "11597",
+      "currency": "JPY"
+    },
+    "gross_total": {
+      "amount": "127562",
+      "currency": "JPY"
+    },
+    "line_items": [
+      {
+        "description": "Printed manuals - B",
+        "quantity": 1.5,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "11830",
+          "currency": "JPY"
+        },
+        "vat_rate": 10,
+        "net": {
+          "amount": "17745",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "1775",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "19520",
+          "currency": "JPY"
+        }
+      },
+      {
+        "description": "Software license - Plus",
+        "quantity": 6,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "16370",
+          "currency": "JPY"
+        },
+        "vat_rate": 10,
+        "net": {
+          "amount": "98220",
+          "currency": "JPY"
+        },
+        "vat": {
+          "amount": "9822",
+          "currency": "JPY"
+        },
+        "gross": {
+          "amount": "108042",
+          "currency": "JPY"
+        }
+      }
+    ]
+  }
+}
