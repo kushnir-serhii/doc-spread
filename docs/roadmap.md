@@ -30,6 +30,10 @@ The single source of truth for what is done, what is next, and in which order. `
 | 022 | [Off AWS: Vercel and Supabase only](specs/022-vercel-supabase.md) | done | 020 |
 | 023 | [First real flow](specs/023-first-real-flow.md) | done | 022 |
 | 024 | [UML diagrams: system, user and document flows (dev only)](specs/024-uml-diagrams.md) | done | 021 |
+| 025 | [Golden dataset: invoices and receipts with known answers](specs/025-golden-dataset.md) | ready | 023 |
+| 026 | [Extraction evals: runner, scoring and analysis](specs/026-extraction-evals.md) | draft | 025 |
+| 027 | [CI eval gate](specs/027-eval-ci-gate.md) | draft | 026 |
+| 028 | [Eval dashboard (optional, FastAPI)](specs/028-eval-dashboard.md) | draft | 026 |
 
 Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 
@@ -50,6 +54,9 @@ Read top to bottom; the next spec is the first one that isn't `done`. Specs in o
 | 9 | 022 |
 | 10 | 023 |
 | 11 | 024 |
+| 12 | 025 |
+| 13 | 026 |
+| 14 | 027, 028 |
 
 - To change the order, edit this table.
 - To make a spec buildable, review it and set it to `ready` here and in the spec.
