@@ -1,0 +1,69 @@
+{
+  "id": "rcp-mock",
+  "file": "rcp-mock.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "mock-sample",
+    "photo",
+    "usd",
+    "date-iso"
+  ],
+  "seed": null,
+  "fields": {
+    "merchant": "MAPLE CORNER CAFE LLC",
+    "merchant_tax_id": "47-1234567",
+    "receipt_date": "2026-10-14",
+    "total": {
+      "amount": "42.74",
+      "currency": "USD"
+    },
+    "tax_total": {
+      "amount": "3.17",
+      "currency": "USD"
+    },
+    "payment_method": "Card",
+    "items": [
+      {
+        "description": "Latte",
+        "quantity": 2,
+        "price": {
+          "amount": "9.00",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Blueberry muffin",
+        "quantity": 1,
+        "price": {
+          "amount": "3.25",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Turkey sandwich",
+        "quantity": 1,
+        "price": {
+          "amount": "9.50",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Iced tea",
+        "quantity": 2,
+        "price": {
+          "amount": "6.00",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Coffee beans 12oz",
+        "quantity": 1,
+        "price": {
+          "amount": "14.99",
+          "currency": "USD"
+        }
+      }
+    ]
+  }
+}

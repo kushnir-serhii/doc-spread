@@ -1,0 +1,125 @@
+{
+  "id": "inv-mock",
+  "file": "inv-mock.pdf",
+  "expectedType": "invoice",
+  "source": "synthetic",
+  "tags": [
+    "mock-sample",
+    "text-pdf",
+    "multi-page",
+    "usd",
+    "date-iso"
+  ],
+  "seed": null,
+  "fields": {
+    "supplier_name": "Brightline Software Inc.",
+    "supplier_tax_id": "84-1234567",
+    "invoice_number": "INV-2026-0042",
+    "issue_date": "2026-10-14",
+    "sale_date": "2026-10-14",
+    "due_date": "2026-10-28",
+    "payment_term_days": 14,
+    "net_total": {
+      "amount": "3447.00",
+      "currency": "USD"
+    },
+    "vat_total": {
+      "amount": "275.76",
+      "currency": "USD"
+    },
+    "gross_total": {
+      "amount": "3722.76",
+      "currency": "USD"
+    },
+    "line_items": [
+      {
+        "description": "Implementation consulting - phase 1",
+        "quantity": 10,
+        "unit": "hrs",
+        "unit_net": {
+          "amount": "150.00",
+          "currency": "USD"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "1500.00",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "120.00",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "1620.00",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Demo Suite license - 5 users",
+        "quantity": 5,
+        "unit": "pcs",
+        "unit_net": {
+          "amount": "200.00",
+          "currency": "USD"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "1000.00",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "80.00",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "1080.00",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Online team training",
+        "quantity": 1,
+        "unit": "svc",
+        "unit_net": {
+          "amount": "800.00",
+          "currency": "USD"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "800.00",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "64.00",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "864.00",
+          "currency": "USD"
+        }
+      },
+      {
+        "description": "Hosting - monthly subscription",
+        "quantity": 3,
+        "unit": "mo",
+        "unit_net": {
+          "amount": "49.00",
+          "currency": "USD"
+        },
+        "vat_rate": 8,
+        "net": {
+          "amount": "147.00",
+          "currency": "USD"
+        },
+        "vat": {
+          "amount": "11.76",
+          "currency": "USD"
+        },
+        "gross": {
+          "amount": "158.76",
+          "currency": "USD"
+        }
+      }
+    ]
+  }
+}

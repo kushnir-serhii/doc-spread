@@ -1,6 +1,6 @@
 # 025 — Golden dataset: invoices and receipts with known answers
 
-**Status:** ready · **Depends on:** 023 · **Route(s):** —
+**Status:** in-progress · **Depends on:** 023 · **Route(s):** —
 
 ## Goal
 A folder of 40 invoice and receipt files, each paired with a JSON of the correct field values, that anyone can rebuild from a seed. It is the fixed yardstick for the extraction evals (026) and the CI gate (027): without known answers there is no way to tell whether a prompt, schema or model change made extraction better or worse.
@@ -57,14 +57,14 @@ A folder of 40 invoice and receipt files, each paired with a JSON of the correct
 
 ## Slices
 
-### [ ] 1. Project, types and truth format
+### [x] 1. Project, types and truth format
 - **Build:** `evals/pyproject.toml` (uv, Python 3.12, dev group with pytest), `.gitignore` entries (`evals/.venv/`, `evals/runs/`, `evals/dataset-private/`). `types/invoice.json` and `types/receipt.json` copied from the sources above, plus a test that fails when a source template changes and the copy doesn't (the eval types are pinned on purpose; the test makes the drift visible). `evals/truth.py`: pydantic models for the truth file and `validate(dataset_dir)`, which checks that every field key exists in the type, every value fits its field type (date `YYYY-MM-DD`, money with a decimal string and a 3-letter code or null, select within its options, table rows with known columns), and that every `file` exists. `uv run python -m evals.truth dataset/` validates. The three existing mock samples copied in as `invoices/inv-mock.pdf` (from `apps/web/public/mock/sample-invoice.pdf`), `receipts/rcp-mock.jpg` (`sample-receipt.jpg`) and `distractors/dst-mock.pdf` (`sample-long.pdf`, a service agreement), each with a hand-made truth file (tag `mock-sample`), so the format is tried on real layouts first.
 - **Files:** `evals/{pyproject.toml,README.md}`, `evals/types/*.json`, `evals/evals/truth.py`, `evals/tests/test_truth.py`, `.gitignore`, `evals/dataset/**` (3 files + 3 truth files)
 - **Model:** sonnet
 - **Accept:**
-  - [ ] `uv sync` then `uv run pytest` pass from `evals/`
-  - [ ] the validator accepts the three truth files and rejects a broken copy of each (unknown key, bad date, bad currency, unknown column) with a message naming the file and field
-  - [ ] `pnpm build` and `pnpm lint` from the root are unaffected (evals/ isn't a workspace)
+  - [x] `uv sync` then `uv run pytest` pass from `evals/`
+  - [x] the validator accepts the three truth files and rejects a broken copy of each (unknown key, bad date, bad currency, unknown column) with a message naming the file and field
+  - [x] `pnpm build` and `pnpm lint` from the root are unaffected (evals/ isn't a workspace)
 
 ### [ ] 2. Invoice generator
 - **Build:** `evals/generator/`: a seeded `random.Random` drives fictional suppliers and buyers (faker, several locales), currencies (USD, EUR, GBP, CHF, JPY, SEK and a "not stated" case), date formats, tax rates, 1–25 line items. Three invoice layouts drawn with reportlab (`invariant=1`, bundled DejaVu fonts; some layouts print the payment term and row gross, others don't); a "scanned" variant rasterizes the page (Pillow: slight rotation, noise) and wraps it in an image-only PDF; long item lists flow to a second page. The generator writes the file and its truth from the same record, then re-reads text PDFs with pypdf and asserts every truth string and amount appears in the page text (catches clipped or wrapped values). `uv run python -m generator invoices --count 24 --seed 1`.
@@ -102,3 +102,4 @@ None. The pipeline is untouched; 026 adds the entry point the evals call.
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-11-25 | 1 | done: 19 pytest tests, validator reports 3 truth files OK, root build and lint green | `evals/{pyproject.toml,uv.lock,README.md,.gitattributes}`, `evals/types/*.json`, `evals/evals/truth.py`, `evals/tests/{test_truth,test_types}.py`, `evals/dataset/**` (3 mock samples + truth), `.gitignore`. Tags: currency as lowercase ISO code (`usd`), date format as `date-iso`/`date-dmy`/… |

@@ -27,3 +27,10 @@ CLAUDE.local.md
 
 # vercel link (project ids, local only)
 .vercel
+
+# evals (Python)
+evals/.venv/
+evals/runs/
+evals/dataset-private/
+__pycache__/
+.pytest_cache/
