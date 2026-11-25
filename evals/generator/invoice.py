@@ -53,6 +53,7 @@ PLAN: list[tuple[str, str | None]] = [
     ("de", "EUR"), ("en", "USD"), ("es", "EUR"), ("en", None), ("sv", "SEK"), ("pl", "EUR"),
 ]
 SCANNED = {4, 9, 14, 19, 22}
+NO_TABLE = {13}  # totals only, no line items (line_items null in the truth)
 MULTI_PAGE = {2, 7, 11, 14, 20, 23}  # long item lists; the page count decides the tag
 LAYOUTS = "abc"
 LAYOUT_PRINTS_TERM = {"a": True, "b": False, "c": False}
@@ -255,6 +256,8 @@ def build_invoice(doc_seed: int) -> Invoice:
     term = rng.choice(TERMS)
 
     n_rows = (25 if index % 2 else 24) if index in MULTI_PAGE else rng.randint(1, 14)
+    if index in NO_TABLE:
+        n_rows = 0
     has_vat = index % 8 != 3
     rates = [Decimal(str(r)) for r in RATES[ccy]]
     main_rate = rng.choice(rates)
@@ -271,8 +274,12 @@ def build_invoice(doc_seed: int) -> Invoice:
         rows.append(Row(desc, qty, rng.choice(UNITS[lang]), price,
                         rate if has_vat else None, net, vat,
                         net + vat if vat is not None else None))
-    net_total = sum((r.net for r in rows), Decimal(0))
-    vat_total = sum((r.vat for r in rows if r.vat is not None), Decimal(0)) if has_vat else None
+    if rows:
+        net_total = sum((r.net for r in rows), Decimal(0))
+        vat_total = sum((r.vat for r in rows if r.vat is not None), Decimal(0)) if has_vat else None
+    else:
+        net_total = quantize(Decimal(rng.randint(20000, 900000)) / 100, ccy)
+        vat_total = quantize(net_total * main_rate / 100, ccy) if has_vat else None
     gross_total = net_total + (vat_total or Decimal(0))
 
     has_sale = index % 4 != 2
@@ -521,7 +528,8 @@ def build_pages(inv: Invoice) -> Pages:
     st = STYLES[inv.layout]
     pages: Pages = [[]]
     y = {"a": header_a, "b": header_b, "c": header_c}[inv.layout](pages[0], inv)
-    y = _table_header(pages[0], inv, y)
+    if inv.rows:
+        y = _table_header(pages[0], inv, y)
     for n, row in enumerate(inv.rows):
         if y + st.row_h > BOTTOM:
             pages.append([])
@@ -571,7 +579,7 @@ def to_truth(inv: Invoice, n_pages: int) -> dict[str, Any]:
         "net_total": _money_truth(inv, inv.net_total),
         "vat_total": _money_truth(inv, inv.vat_total),
         "gross_total": _money_truth(inv, inv.gross_total),
-        "line_items": rows,
+        "line_items": rows or None,
     }
     tags = ["scanned" if inv.scanned else "text-pdf"]
     if n_pages > 1:

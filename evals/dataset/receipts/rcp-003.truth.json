@@ -1,0 +1,95 @@
+{
+  "id": "rcp-003",
+  "file": "rcp-003.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-hard",
+    "jpg",
+    "no-currency",
+    "date-long",
+    "lang-en"
+  ],
+  "seed": 10003,
+  "fields": {
+    "merchant": "Cruz Ltd",
+    "merchant_tax_id": "31-8062517",
+    "receipt_date": "2026-02-12",
+    "total": {
+      "amount": "205.04",
+      "currency": null
+    },
+    "tax_total": {
+      "amount": "35.15",
+      "currency": null
+    },
+    "payment_method": "Transfer",
+    "items": [
+      {
+        "description": "Sandwich",
+        "quantity": null,
+        "price": {
+          "amount": "10.79",
+          "currency": null
+        }
+      },
+      {
+        "description": "Batteries AA",
+        "quantity": null,
+        "price": {
+          "amount": "36.67",
+          "currency": null
+        }
+      },
+      {
+        "description": "Blueberry muffin",
+        "quantity": null,
+        "price": {
+          "amount": "27.19",
+          "currency": null
+        }
+      },
+      {
+        "description": "Latte",
+        "quantity": null,
+        "price": {
+          "amount": "12.35",
+          "currency": null
+        }
+      },
+      {
+        "description": "USB cable",
+        "quantity": null,
+        "price": {
+          "amount": "8.51",
+          "currency": null
+        }
+      },
+      {
+        "description": "Milk 1L",
+        "quantity": null,
+        "price": {
+          "amount": "40.64",
+          "currency": null
+        }
+      },
+      {
+        "description": "Paper bags",
+        "quantity": null,
+        "price": {
+          "amount": "35.70",
+          "currency": null
+        }
+      },
+      {
+        "description": "Bread",
+        "quantity": null,
+        "price": {
+          "amount": "33.19",
+          "currency": null
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "id": "rcp-009",
+  "file": "rcp-009.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-hard",
+    "jpg",
+    "sek",
+    "date-iso",
+    "lang-sv"
+  ],
+  "seed": 10009,
+  "fields": {
+    "merchant": "Lindblad Svensson HB",
+    "merchant_tax_id": "SE16754548720401",
+    "receipt_date": "2025-04-24",
+    "total": {
+      "amount": "162.65",
+      "currency": "SEK"
+    },
+    "tax_total": {
+      "amount": "17.43",
+      "currency": "SEK"
+    },
+    "payment_method": "Card",
+    "items": [
+      {
+        "description": "USB-kabel",
+        "quantity": null,
+        "price": {
+          "amount": "7.45",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Mjölk 1L",
+        "quantity": null,
+        "price": {
+          "amount": "6.88",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Kaffe latte",
+        "quantity": null,
+        "price": {
+          "amount": "20.30",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Mineralvatten",
+        "quantity": null,
+        "price": {
+          "amount": "37.34",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Apelsinjuice",
+        "quantity": null,
+        "price": {
+          "amount": "37.64",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Kanelbulle",
+        "quantity": null,
+        "price": {
+          "amount": "13.94",
+          "currency": "SEK"
+        }
+      },
+      {
+        "description": "Bröd",
+        "quantity": null,
+        "price": {
+          "amount": "39.10",
+          "currency": "SEK"
+        }
+      }
+    ]
+  }
+}

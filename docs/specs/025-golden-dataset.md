@@ -1,6 +1,6 @@
 # 025 — Golden dataset: invoices and receipts with known answers
 
-**Status:** in-progress · **Depends on:** 023 · **Route(s):** —
+**Status:** done · **Depends on:** 023 · **Route(s):** —
 
 ## Goal
 A folder of 40 invoice and receipt files, each paired with a JSON of the correct field values, that anyone can rebuild from a seed. It is the fixed yardstick for the extraction evals (026) and the CI gate (027): without known answers there is no way to tell whether a prompt, schema or model change made extraction better or worse.
@@ -76,15 +76,15 @@ A folder of 40 invoice and receipt files, each paired with a JSON of the correct
   - [x] the self-check passes for every text PDF; all truth files validate
   - [x] five random invoices opened by eye look like plausible invoices (ids and findings in the Log)
 
-### [ ] 3. Receipts, distractors and coverage
+### [x] 3. Receipts, distractors and coverage
 - **Build:** a receipt generator: a narrow till-slip layout drawn with Pillow (bundled DejaVu Sans Mono), merchant, tax ID, date, items, tax, total, payment method; then a "photo" pass (rotation up to ±8°, perspective, blur, noise, uneven light, JPG quality 60–90, some PNG). Four distractors (a contract page, a delivery note without prices, a bank statement extract, a blank form) with `expectedType: null`. `COVERAGE.md` generated from the truth files: counts per type, tag and field (how often each field is present or null). `evals/README.md`: what the dataset is, how to rebuild it, how to add a private document.
 - **Files:** `evals/generator/{receipt,distractor,coverage}.py`, `evals/dataset/{receipts,distractors}/*`, `evals/dataset/COVERAGE.md`, `evals/README.md`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] 12 receipts (varied photo quality, 3 with no stated currency, all four payment methods) and 4 distractors; 43 documents in total with the 3 from slice 1
-  - [ ] every truth file validates; `COVERAGE.md` shows each invoice and receipt field present in at least 3 documents and absent in at least 1 (where the field is optional)
-  - [ ] the dataset is under 20 MB in git
-  - [ ] five random receipts checked by eye; the hardest still readable by a person
+  - [x] 12 receipts (varied photo quality, 3 with no stated currency, all four payment methods) and 4 distractors; 43 documents in total with the 3 from slice 1
+  - [x] every truth file validates; `COVERAGE.md` shows each invoice and receipt field present in at least 3 documents and absent in at least 1 (where the field is optional)
+  - [x] the dataset is under 20 MB in git
+  - [x] five random receipts checked by eye; the hardest still readable by a person
 
 ## Backend needs
 None. The pipeline is untouched; 026 adds the entry point the evals call.
@@ -104,3 +104,4 @@ None. The pipeline is untouched; 026 adds the entry point the evals call.
 | --- | --- | --- | --- |
 | 2026-11-25 | 1 | done: 19 pytest tests, validator reports 3 truth files OK, root build and lint green | `evals/{pyproject.toml,uv.lock,README.md,.gitattributes}`, `evals/types/*.json`, `evals/evals/truth.py`, `evals/tests/{test_truth,test_types}.py`, `evals/dataset/**` (3 mock samples + truth), `.gitignore`. Tags: currency as lowercase ISO code (`usd`), date format as `date-iso`/`date-dmy`/… |
 | 2026-11-25 | 2 | done: 24 invoices (5 scanned, 6 multi-page, 4 no-currency, 2 JPY, 11 non-English; layouts a/b/c 8 each); same seed gives byte-identical PDFs and truth (a test diffs the committed files); pypdf self-check passes; 29 pytest tests; 27 truth files OK; invoices 2.7 MB. Checked by eye: inv-005 (JPY), inv-010 (Swedish SEK), inv-013 (mdy, layout a), inv-014 (scanned, 2 pages, CHF, German), inv-022 (scanned, no currency): all read as plausible invoices. That check found ambiguous slash dates (`01/06/2026`); now dmy/mdy dates always have day > 12 and mdy only appears with US suppliers. | `evals/generator/{__init__,__main__,common,invoice}.py`, `evals/generator/fonts/` (DejaVu + licence), `evals/tests/test_generator.py`, `evals/dataset/invoices/inv-001…024.*`, `evals/{pyproject.toml,uv.lock,README.md}` |
+| 2026-11-25 | 3 | done: 12 receipts (4 each light/medium/hard photo, 2 PNG, 3 no-currency, all four payment methods), 4 distractors (NDA, German delivery note without prices, bank statement scan, blank expense form); 43 truth files OK; COVERAGE.md shows every optional field present in ≥3 and null in ≥1 (inv-013 is now a totals-only invoice so `line_items` can be null); dataset 4.0 MB; 39 pytest tests. Checked by eye: rcp-003 (hardest: 8° tilt, q62, mixed tax rates), rcp-006 (JPY), rcp-008 (no items, no currency), rcp-009 (Swedish), rcp-010 (Polish PNG), plus dst-003: all readable, item prices add up to the total. Nit: the bank statement's descriptions don't always match the sign ("Transfer in" negative); harmless for a distractor. No UI change, so no Playwright check (step 8) and no diagram update (evals/ is not a workspace). | `evals/generator/{receipt,distractor,coverage,common,invoice,__main__}.py`, `evals/dataset/{receipts,distractors}/*`, `evals/dataset/invoices/inv-013.*`, `evals/dataset/COVERAGE.md`, `evals/README.md`, `evals/tests/test_generator.py`, `CLAUDE.md` |

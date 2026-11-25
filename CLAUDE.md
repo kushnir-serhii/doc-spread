@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `apps/web` — React 19 + Vite 8 SPA (package name `@docspread/web`), plus the Vercel Functions in `apps/web/api/` (thin wrappers). Product and layout: `docs/product.md`.
 - `packages/shared` — `@docspread/shared`, code shared across apps.
 - `services/api` — `@docspread/api`: the API router and the OCR/extract pipeline. The functions import it by relative path.
+- `evals/` — Python (uv) project outside the pnpm workspaces: the golden dataset for extraction evals (`evals/dataset/`, rebuilt with `uv run python -m generator all --seed 1`), truth validator (`uv run python -m evals.truth dataset/`), `uv run pytest`. See `evals/README.md`.
 - `supabase/` — migrations, pgTAP tests (`supabase/tests/`), `config.toml`.
 
 ## Commands

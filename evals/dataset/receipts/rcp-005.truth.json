@@ -1,0 +1,77 @@
+{
+  "id": "rcp-005",
+  "file": "rcp-005.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-medium",
+    "jpg",
+    "eur",
+    "date-dmy",
+    "lang-fr",
+    "missing-optional"
+  ],
+  "seed": 10005,
+  "fields": {
+    "merchant": "Allain Regnier S.A",
+    "merchant_tax_id": "FRyq 648750169",
+    "receipt_date": "2026-04-28",
+    "total": {
+      "amount": "240.93",
+      "currency": "EUR"
+    },
+    "tax_total": null,
+    "payment_method": null,
+    "items": [
+      {
+        "description": "Sacs papier",
+        "quantity": 1,
+        "price": {
+          "amount": "7.17",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Croissant",
+        "quantity": 4,
+        "price": {
+          "amount": "147.68",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Piles AA",
+        "quantity": 1,
+        "price": {
+          "amount": "16.87",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Café crème",
+        "quantity": 1,
+        "price": {
+          "amount": "35.40",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Jus d'orange",
+        "quantity": 3,
+        "price": {
+          "amount": "16.98",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Cahier A5",
+        "quantity": 3,
+        "price": {
+          "amount": "16.83",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

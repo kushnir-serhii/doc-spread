@@ -156,10 +156,10 @@ def _gray(color: Color) -> int:
     return round(255 * (0.299 * r + 0.587 * g + 0.114 * b))
 
 
-def rasterize_page(ops: list[Op], dpi: int) -> Image.Image:
-    """Draw the same ops with Pillow (grayscale)."""
+def rasterize_ops(ops: list[Op], w_pt: float, h_pt: float, dpi: int) -> Image.Image:
+    """Draw ops with Pillow (grayscale) onto a canvas of w_pt x h_pt points."""
     k = dpi / 72
-    img = Image.new("L", (round(PAGE_W * k), round(PAGE_H * k)), 255)
+    img = Image.new("L", (round(w_pt * k), round(h_pt * k)), 255)
     d = ImageDraw.Draw(img)
     for op in ops:
         if isinstance(op, Text):
@@ -177,6 +177,10 @@ def rasterize_page(ops: list[Op], dpi: int) -> Image.Image:
                 width=max(1, round(op.width * k)),
             )
     return img
+
+
+def rasterize_page(ops: list[Op], dpi: int) -> Image.Image:
+    return rasterize_ops(ops, PAGE_W, PAGE_H, dpi)
 
 
 def scan_effects(img: Image.Image, rng: random.Random) -> Image.Image:

@@ -1,0 +1,87 @@
+{
+  "id": "rcp-007",
+  "file": "rcp-007.jpg",
+  "expectedType": "receipt",
+  "source": "synthetic",
+  "tags": [
+    "photo",
+    "photo-light",
+    "jpg",
+    "eur",
+    "date-localized-month",
+    "lang-es"
+  ],
+  "seed": 10007,
+  "fields": {
+    "merchant": "Alimentación Zabala & Asociados",
+    "merchant_tax_id": "ESl35409754",
+    "receipt_date": "2025-05-30",
+    "total": {
+      "amount": "253.19",
+      "currency": "EUR"
+    },
+    "tax_total": {
+      "amount": "31.55",
+      "currency": "EUR"
+    },
+    "payment_method": "Transfer",
+    "items": [
+      {
+        "description": "Cable USB",
+        "quantity": 4,
+        "price": {
+          "amount": "33.84",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Leche 1L",
+        "quantity": 1,
+        "price": {
+          "amount": "2.66",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Agua mineral",
+        "quantity": 1,
+        "price": {
+          "amount": "42.52",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Tostada",
+        "quantity": 1,
+        "price": {
+          "amount": "27.94",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Zumo de naranja",
+        "quantity": 3,
+        "price": {
+          "amount": "114.60",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Pan",
+        "quantity": 1,
+        "price": {
+          "amount": "19.53",
+          "currency": "EUR"
+        }
+      },
+      {
+        "description": "Café con leche",
+        "quantity": 1,
+        "price": {
+          "amount": "12.10",
+          "currency": "EUR"
+        }
+      }
+    ]
+  }
+}

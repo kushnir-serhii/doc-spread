@@ -20,150 +20,17 @@
     "due_date": "2026-11-18",
     "payment_term_days": 30,
     "net_total": {
-      "amount": "33644.88",
+      "amount": "1318.39",
       "currency": null
     },
     "vat_total": {
-      "amount": "6953.05",
+      "amount": "276.86",
       "currency": null
     },
     "gross_total": {
-      "amount": "40597.93",
+      "amount": "1595.25",
       "currency": null
     },
-    "line_items": [
-      {
-        "description": "Data migration",
-        "quantity": 2,
-        "unit": "mo",
-        "unit_net": {
-          "amount": "510.83",
-          "currency": null
-        },
-        "vat_rate": 10,
-        "net": {
-          "amount": "1021.66",
-          "currency": null
-        },
-        "vat": {
-          "amount": "102.17",
-          "currency": null
-        },
-        "gross": {
-          "amount": "1123.83",
-          "currency": null
-        }
-      },
-      {
-        "description": "Design review",
-        "quantity": 8,
-        "unit": "pcs",
-        "unit_net": {
-          "amount": "1434.95",
-          "currency": null
-        },
-        "vat_rate": 21,
-        "net": {
-          "amount": "11479.60",
-          "currency": null
-        },
-        "vat": {
-          "amount": "2410.72",
-          "currency": null
-        },
-        "gross": {
-          "amount": "13890.32",
-          "currency": null
-        }
-      },
-      {
-        "description": "Software license",
-        "quantity": 8,
-        "unit": "pcs",
-        "unit_net": {
-          "amount": "1131.85",
-          "currency": null
-        },
-        "vat_rate": 21,
-        "net": {
-          "amount": "9054.80",
-          "currency": null
-        },
-        "vat": {
-          "amount": "1901.51",
-          "currency": null
-        },
-        "gross": {
-          "amount": "10956.31",
-          "currency": null
-        }
-      },
-      {
-        "description": "Training session - Pro",
-        "quantity": 8,
-        "unit": "hrs",
-        "unit_net": {
-          "amount": "1116.50",
-          "currency": null
-        },
-        "vat_rate": 21,
-        "net": {
-          "amount": "8932.00",
-          "currency": null
-        },
-        "vat": {
-          "amount": "1875.72",
-          "currency": null
-        },
-        "gross": {
-          "amount": "10807.72",
-          "currency": null
-        }
-      },
-      {
-        "description": "Printed manuals",
-        "quantity": 1,
-        "unit": "pcs",
-        "unit_net": {
-          "amount": "646.78",
-          "currency": null
-        },
-        "vat_rate": 21,
-        "net": {
-          "amount": "646.78",
-          "currency": null
-        },
-        "vat": {
-          "amount": "135.82",
-          "currency": null
-        },
-        "gross": {
-          "amount": "782.60",
-          "currency": null
-        }
-      },
-      {
-        "description": "Maintenance visit - B",
-        "quantity": 12,
-        "unit": "hrs",
-        "unit_net": {
-          "amount": "209.17",
-          "currency": null
-        },
-        "vat_rate": 21,
-        "net": {
-          "amount": "2510.04",
-          "currency": null
-        },
-        "vat": {
-          "amount": "527.11",
-          "currency": null
-        },
-        "gross": {
-          "amount": "3037.15",
-          "currency": null
-        }
-      }
-    ]
+    "line_items": null
   }
 }

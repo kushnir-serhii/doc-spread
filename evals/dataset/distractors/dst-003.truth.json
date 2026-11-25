@@ -1,0 +1,14 @@
+{
+  "id": "dst-003",
+  "file": "dst-003.jpg",
+  "expectedType": null,
+  "source": "synthetic",
+  "tags": [
+    "scanned",
+    "jpg",
+    "bank-statement",
+    "lang-en"
+  ],
+  "seed": 10003,
+  "fields": {}
+}

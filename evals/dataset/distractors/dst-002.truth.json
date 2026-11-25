@@ -1,0 +1,14 @@
+{
+  "id": "dst-002",
+  "file": "dst-002.pdf",
+  "expectedType": null,
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "delivery-note",
+    "no-prices",
+    "lang-de"
+  ],
+  "seed": 10002,
+  "fields": {}
+}

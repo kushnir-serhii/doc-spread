@@ -1,0 +1,13 @@
+{
+  "id": "dst-004",
+  "file": "dst-004.pdf",
+  "expectedType": null,
+  "source": "synthetic",
+  "tags": [
+    "text-pdf",
+    "blank-form",
+    "lang-en"
+  ],
+  "seed": 10004,
+  "fields": {}
+}
