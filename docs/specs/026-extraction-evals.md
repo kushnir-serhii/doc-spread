@@ -1,6 +1,6 @@
 # 026 — Extraction evals: runner, scoring and analysis
 
-**Status:** draft · **Depends on:** 025 · **Route(s):** —
+**Status:** ready · **Depends on:** 025 · **Route(s):** —
 
 ## Goal
 One command runs every document of the golden dataset (025) through the real OCR → classify → extract code and writes a report: accuracy per field and per document type, whether the confidence the model reports can be trusted, cost and latency per document, and Opus against Haiku side by side. After this, a change to a prompt, schema or model comes with numbers instead of a guess. The report's `metrics.json` is what the CI gate (027) compares.
@@ -100,13 +100,16 @@ uv run python -m evals.analyze evals/runs/<run>  → metrics.json, report.md, ch
 No new routes or tables. The refactor in slice 1 must leave `/api/pipeline/extract` behaving exactly as before.
 
 ## Open questions
-- **How do the evals reach the pipeline?** (a) a local entry point running the same code in-process, no database (`eval-extract`); (b) upload through the deployed API and poll the `documents` rows, like smoke-pipeline.
-  - Recommended: (a). It's fast and cheap, CI needs only the Anthropic key, model overrides are a flag, nothing pollutes `docspread-dev`, and latency is measured per step without queue waits. It runs the same OCR and extract code; what it skips (upload, queue, cron) is covered by smoke-pipeline. (b) can come later as `--via api`.
-- **Refactor `extract-handler.ts`?** (a) is impossible without it. Recommended: yes, a pure `classifyAndExtract` used by both, checked by smoke-pipeline.
-- **What does "Haiku vs Opus" compare?** Recommended: the extraction model (classification is already Haiku in production). Classification on Opus can be an extra `--classify-model` run if Haiku's classification turns out weak.
-- **Repeats?** Recommended: `--repeat 2` for the baseline (to measure noise), 1 for normal runs.
-- **Python libraries?** `pandas`, `matplotlib`, `rapidfuzz`, `jinja2`. Recommended: approve.
-- **Branch?** `extraction-evals-026`, after 025 is merged.
+- **How do the evals reach the pipeline?** **Decided (2026-11-25):** (a) a local entry point running the same code in-process, no database (`eval-extract`). It's fast and cheap, CI needs only the Anthropic key, model overrides are a flag, nothing pollutes `docspread-dev`, and latency is measured per step without queue waits. What it skips (upload, queue, cron) is covered by smoke-pipeline; `--via api` can come later.
+- **Refactor `extract-handler.ts`?** **Decided:** yes, a pure `classifyAndExtract` used by both the handler and the eval, checked by smoke-pipeline.
+- **What does "Haiku vs Opus" compare?** **Decided:** the extraction model; classification stays on Haiku as in production. `--classify-model` exists for an extra run if Haiku's classification turns out weak.
+- **Repeats?** **Decided:** `--repeat 2` for the baseline (to measure noise), 1 for normal runs.
+- **Python libraries?** **Decided:** approved: `pandas`, `matplotlib`, `rapidfuzz`, `jinja2`.
+- **Branch?** **Decided:** `extraction-evals-026` from `main`, only after the 025 PR (`evals-dataset-025`) is merged. 026 doesn't start before that.
+- **Output keys.** **Decided:** the pipeline stores values by field **id** (table cells by column id); `eval-extract` re-keys them to field and column **keys**, so they line up with the truth files.
+- **`eval-extract` defaults.** **Decided:** models and the minimum classify confidence come from the environment or `services/api/.env.local` (`ANTHROPIC_MODEL_CLASSIFY`, `ANTHROPIC_MODEL_EXTRACT`, `CLASSIFY_MIN_CONFIDENCE`), falling back to `claude-haiku-5-5`, `claude-opus-5-5` and `0.7`; only `ANTHROPIC_API_KEY` is required. Flags override.
+- **UI check.** **Decided:** at the end of the spec, the Playwright UI check runs on `architecture` (slice 5 changes the diagrams).
+- **Spending (open, to settle before slice 1).** A check that the tool works costs cents: a few documents on Haiku are about $0.01 in total, one document on Opus about $0.10–0.20, so a **$1 cap covers every check in slices 1–4**. Only the full baseline in slice 5 (43 documents × Opus and Haiku × 2 repeats, about 172 extractions) needs about $10–18 (up to $25 with margin), and only that baseline gives 027 its numbers and tolerance. Recommended: development checks capped at $1; the baseline run waits for a separate go-ahead, with its estimate shown first.
 
 ## Log
 | Date | Slice | Result | Notes / files |
