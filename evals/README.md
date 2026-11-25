@@ -13,6 +13,18 @@ uv run python -m generator distractors --seed 1           # dataset/distractors/
 uv run python -m generator coverage                       # dataset/COVERAGE.md from the truth files
 ```
 
+## Run the evals
+
+Spec: `docs/specs/026-extraction-evals.md`. Needs `ANTHROPIC_API_KEY` in `services/api/.env.local`; real runs cost money.
+
+```sh
+uv run python -m evals.run --subset 'inv-00*' --models haiku        # 9 invoices on Haiku, about $0.04
+uv run python -m evals.run --models opus,haiku --repeat 2 --max-usd 20
+uv run python -m evals.run --resume runs/<run> --max-usd 20         # continue a killed or capped run
+```
+
+`--subset` takes comma-separated id globs or tags; `--concurrency` defaults to 4, `--max-usd` to 10 (the run stops starting documents past the cap and exits with code 2). Each run writes `runs/<utc>-<label>/results.jsonl` (one line per document, model and repeat) and `run.json`; `runs/` is git-ignored. Model aliases live in `evals/models.py`. Tests use a fake `eval-extract` (`EVAL_EXTRACT_CMD`), so `uv run pytest` costs nothing.
+
 ## What the dataset is
 
 A fixed yardstick for the extraction evals (026) and the CI gate (027): 43 documents, each next to a `<id>.truth.json` with the correct field values.

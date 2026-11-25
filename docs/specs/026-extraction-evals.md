@@ -61,14 +61,14 @@ uv run python -m evals.analyze evals/runs/<run>  → metrics.json, report.md, ch
   - [x] it needs only `ANTHROPIC_API_KEY` (no Supabase variables); a missing key gives one clear line naming the variable
   - [x] the `claude_call` log lines are unchanged; `pnpm --filter @docspread/api typecheck` green
 
-### [ ] 2. Runner
+### [x] 2. Runner
 - **Build:** `evals/evals/run.py`: loads the dataset (`--dataset`, default `dataset/`; `--subset` by id glob or tag), runs `eval-extract` for each document × model (`--models opus,haiku`, aliases mapped to model ids in one place) × `--repeat k`, `--concurrency` (default 4), writes `results.jsonl` line by line and `run.json` at the end. `--resume <run>` skips finished lines. `--max-usd` (default 10) stops starting new documents once the summed cost passes it, and says so. A crashed call is retried once, then recorded as `error`. Stdout prints progress and the running cost, never document values.
 - **Files:** `evals/evals/{run,models,dataset}.py`, `evals/tests/test_run.py` (uses a fake `eval-extract`)
 - **Model:** sonnet
 - **Accept:**
-  - [ ] `uv run python -m evals.run --subset 'inv-00*' --models haiku` finishes and writes one line per document
-  - [ ] killing it halfway and running `--resume` finishes without redoing finished documents
-  - [ ] a cap of `--max-usd 0.01` stops early with a clear message; the tests pass without spending money
+  - [x] `uv run python -m evals.run --subset 'inv-00*' --models haiku` finishes and writes one line per document
+  - [x] killing it halfway and running `--resume` finishes without redoing finished documents
+  - [x] a cap of `--max-usd 0.01` stops early with a clear message; the tests pass without spending money
 
 ### [ ] 3. Scoring
 - **Build:** `evals/evals/score.py`: compares one result with its truth and returns, per field (and per table cell), one of `correct`, `wrong`, `missed` (truth has a value, prediction null), `hallucinated` (truth null, prediction has a value), `correct_absent` (both null), plus the predicted confidence. Rules: text — NFKC, casefold, collapsed whitespace, trimmed punctuation at the ends, then exact (a `near` flag from rapidfuzz ≥ 90 is reported, never counted as correct); tax ID — letters and digits only, uppercase; date — exact ISO; number — equal within 1e-6; select and boolean — exact; money — amount in minor units equal **and** currency equal; when the truth says the currency isn't stated, the amount must match and the confidence must be ≤ 0.5 (flagged, the no-guess rule), and any currency value is accepted. Tables: predicted rows matched to truth rows greedily by description similarity and amount, then cells scored; unmatched truth rows count as missed cells, extra rows as hallucinated cells. Classification: the predicted type key against `expectedType` (`null` must give `unclassified`). Documents ending in `error` or `refused` score every field as missed.
@@ -115,3 +115,4 @@ No new routes or tables. The refactor in slice 1 must leave `/api/pipeline/extra
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-11-25 | 1 | done: `classifyAndExtract` in `extract-core.ts` shared by the handler and `eval-extract`; `SMOKE_MODE=direct smoke-pipeline` ALL PASS (production path unchanged, $0.28); sample invoice → `needs_review`, 11 fields keyed by key, Opus extract $0.14 / 18.8 s, Haiku extract $0.004; missing key → one line naming `ANTHROPIC_API_KEY`, exit 1. Output adds `classification.pickedTypeKey` (what the classifier named, even below the threshold) for the confusion table. Known gap: a call that ends in `PermanentError` (answer cut off or invalid JSON) is logged but missing from `calls`, so its cost isn't counted in the eval (rare). Checks so far: $0.43. | `services/api/src/pipeline/{extract-core,extract-handler,claude,ocr-handler}.ts`, `services/api/scripts/eval-extract.ts`, `services/api/package.json` |
+| 2026-11-25 | 2 | done: `evals.run` (document-major order, `--concurrency 4`, retry once then `error`, `--resume` repairs a truncated last line, `--max-usd` exits 2 with a resume hint; `--timeout` 300 s; flags that define a run are refused with `--resume`). `--subset 'inv-00*' --models haiku`: 9 of 9 `needs_review`, $0.043; kill after 3 lines + `--resume` ran only the other 3; `--max-usd 0.01` stopped at 6 of 9 (in-flight calls finish, so the cap can overshoot by up to `concurrency` documents). 51 pytest tests with a fake `eval-extract` (`EVAL_EXTRACT_CMD`). `run.json` keeps the dataset path relative to `evals/`. Real spend $0.10 (Haiku); checks so far $0.53. | `evals/evals/{run,models,dataset}.py`, `evals/tests/{test_run,fake_eval_extract}.py`, `evals/README.md` |
