@@ -158,5 +158,7 @@ export const useUploadDocument = () => {
         queryClient.invalidateQueries({ queryKey: documentKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: planKeys.all }),
       ]),
+    // a refused upload (limit_reached) means the usage changed under us
+    onError: () => queryClient.invalidateQueries({ queryKey: planKeys.all }),
   })
 }

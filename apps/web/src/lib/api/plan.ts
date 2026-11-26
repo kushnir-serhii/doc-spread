@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { USE_MOCKS } from '@/lib/env'
-import { notAvailableYet } from '@/lib/real/not-available'
-import { getPlanUsage } from '@/lib/mock'
+import { getPlanUsage as mockGetPlanUsage } from '@/lib/mock'
+import { getPlanUsage as realGetPlanUsage } from '@/lib/real/plan'
 
 export const planKeys = {
   all: ['plan'] as const,
@@ -11,5 +11,5 @@ export const planKeys = {
 export const usePlan = () =>
   useQuery({
     queryKey: planKeys.usage(),
-    queryFn: USE_MOCKS ? getPlanUsage : () => Promise.reject(notAvailableYet('The plan')),
+    queryFn: USE_MOCKS ? mockGetPlanUsage : realGetPlanUsage,
   })

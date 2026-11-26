@@ -510,7 +510,9 @@ export async function uploadDocument(file: File, options: UploadOptions = {}): P
   const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
   const fileType = FILE_TYPE_BY_EXTENSION[extension]
   if (!fileType) throw new Error(`Unsupported file type: ${file.name}`)
+  assertUnderLimit()
   await simulateTransfer(file, onProgress)
+  assertUnderLimit() // uploads overlap: check again right before storing
   const id = `doc-${String(nextDocumentNumber()).padStart(3, '0')}`
   const doc: Document = {
     id,
@@ -756,13 +758,23 @@ export async function inviteTeamMember(input: { email: string; role: InviteRole 
 // ---------- plan ----------
 export async function getPlanUsage(): Promise<PlanUsage> {
   await delay()
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), 1)
-  const documentsThisMonth = db.documents.filter((doc) => new Date(doc.uploadedAt) >= start).length
+  const start = monthStart()
   return {
     plan: copy(PLANS[db.planId]),
-    documentsThisMonth,
+    documentsThisMonth: documentsSince(start),
     types: currentVersions().length,
     periodStart: start.toISOString(),
   }
 }
+
+/** First day of the current month, UTC (the same period the server counts). */
+const monthStart = (): Date => {
+  const now = new Date()
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+}
+
+const assertUnderLimit = () => {
+  if (documentsSince(monthStart()) >= PLANS[db.planId].documentsPerMonth) throw new Error('Monthly limit reached')
+}
+
+const documentsSince = (start: Date): number => db.documents.filter((doc) => new Date(doc.uploadedAt) >= start).length

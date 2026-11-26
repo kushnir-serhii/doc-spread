@@ -10,11 +10,16 @@ import { classifyFiles, describeResult } from '@/features/upload/upload-entries'
 import type { RejectedFile } from '@/features/upload/upload-entries'
 import { useFileStates } from '@/features/upload/use-file-states'
 import { useUploadQueue } from '@/features/upload/use-upload-queue'
-import { useDocumentTypes } from '@/lib/api'
+import { UsageNotice } from '@/features/upload/usage-notice'
+import { describeUsage } from '@/features/upload/usage-state'
+import { useDocumentTypes, usePlan } from '@/lib/api'
+import { useFormatLocale } from '@/lib/format-locale/use-format-locale'
 
 const UploadPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const types = useDocumentTypes()
+  const plan = usePlan()
+  const locale = useFormatLocale()
   const [rejected, setRejected] = useState<RejectedFile[]>([])
   const [announcement, setAnnouncement] = useState('')
 
@@ -26,6 +31,9 @@ const UploadPage = () => {
   const items = useFileStates(queue.entries)
   const counts = countStates(items.map((item) => item.state))
   const statusSummary = isSettled(counts) ? `Upload finished: ${describeCounts(counts)}` : describeCounts(counts)
+
+  const usage = plan.data ? describeUsage(plan.data, locale) : undefined
+  const limitResetsOn = usage?.level === 'limit' ? usage.resetsOn : undefined
 
   const handleTypeChange = (next: string) => {
     setSearchParams(
@@ -51,7 +59,10 @@ const UploadPage = () => {
       <PageHeader title="Upload" description="Drop PDF, JPG or PNG files. We detect the type of each one." />
       <div className="flex flex-col gap-6">
         <TypeSelect value={typeId} onChange={handleTypeChange} />
-        <DropZone onFiles={handleFiles} />
+        <div className="flex flex-col gap-3">
+          <UsageNotice />
+          <DropZone onFiles={handleFiles} limitResetsOn={limitResetsOn} />
+        </div>
         <p role="status" className="sr-only">
           {[announcement, statusSummary].filter(Boolean).join('. ')}
         </p>

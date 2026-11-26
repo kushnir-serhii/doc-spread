@@ -18,8 +18,13 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
   B->>AU: sign in (publishable key), then every read below runs with the user's session under RLS
   B->>A: POST /api/uploads
   A->>A: verify token, scope to the caller's company
-  A->>DB: create the document row (status uploaded)
-  A-->>B: document id and signed upload URL
+  A->>DB: create the document row (status uploaded; a database trigger checks the monthly limit)
+  alt the company is at its monthly document limit (spec 031)
+    DB-->>A: error limit_reached
+    A-->>B: 409 limit_reached with limit, used and resetsAt (nothing stored)
+  else under the limit
+    A-->>B: document id and signed upload URL
+  end
   B->>ST: upload the file
   B->>A: POST /api/uploads/:id/complete
   A->>DB: status processing, enqueue in pgmq queue ocr
