@@ -1,6 +1,6 @@
 import { mapActionIds } from '@/lib/fields/action-ids'
 import type { ColumnDef, CreateDocumentTypeInput, DocumentType, FieldDef } from '@/lib/mock/types'
-import type { DocumentTemplate } from '@/lib/mock/templates'
+import type { DocumentTemplate } from '@/lib/fields/templates'
 
 /** An unsaved document type. Slice 6 passes it to `useCreateDocumentType()`. */
 export type TypeDraft = CreateDocumentTypeInput

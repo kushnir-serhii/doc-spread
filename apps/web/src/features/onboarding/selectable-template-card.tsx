@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { DocumentTemplate } from '@/lib/mock/templates'
+import type { DocumentTemplate } from '@/lib/fields/templates'
 
 const SHOWN_FIELDS = 4
 

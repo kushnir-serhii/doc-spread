@@ -1,4 +1,4 @@
-import type { ColumnDef, DocumentType, FieldAction, FieldDef, ScalarFieldType } from './types'
+import type { ColumnDef, DocumentType, FieldAction, FieldDef, ScalarFieldType } from '@/lib/mock/types'
 
 export type DocumentTemplate = Omit<DocumentType, 'version' | 'updatedAt'>
 

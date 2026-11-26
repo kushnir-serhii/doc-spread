@@ -1,6 +1,6 @@
 import { FilePlus2, LayoutTemplate, ScanSearch } from 'lucide-react'
 
-/** `needsAi`: templates and samples have no backend yet, so they are disabled with mocks off. */
+/** `needsAi`: creating a type from a sample has no backend yet, so it is disabled with mocks off. */
 export const NEW_TYPE_OPTIONS = [
   {
     id: 'template',
@@ -8,7 +8,7 @@ export const NEW_TYPE_OPTIONS = [
     hint: 'Invoice, receipt, contract and more',
     to: '/types/new?from=template',
     icon: LayoutTemplate,
-    needsAi: true,
+    needsAi: false,
   },
   {
     id: 'sample',
