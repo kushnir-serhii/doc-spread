@@ -1,6 +1,6 @@
 # 027 — CI eval gate: a PR that lowers extraction accuracy fails
 
-**Status:** draft · **Depends on:** 026 · **Route(s):** —
+**Status:** postponed · **Depends on:** 026 · **Route(s):** —
 
 ## Goal
 When a pull request changes a prompt, the extraction schema, the value mapping or the dataset, GitHub runs the extraction evals (026) and compares the result with the committed baseline. If accuracy, calibration or classification drop beyond the measured noise, the check fails and the PR shows a table of what got worse. Prompt work becomes safe to merge without re-checking everything by hand.

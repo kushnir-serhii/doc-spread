@@ -1,6 +1,6 @@
 # 028 — Eval dashboard (optional): a small FastAPI service over the runs
 
-**Status:** draft · **Depends on:** 026 · **Route(s):** — (separate local service)
+**Status:** postponed · **Depends on:** 026 · **Route(s):** — (separate local service)
 
 ## Goal
 A local web page and a small JSON API for the eval runs: list runs, open one, compare two, and see accuracy, calibration and cost over time. It makes the history easier to browse than Markdown files. It is optional: 026's `report.md` and 027's PR comment already carry the numbers, so this spec can be dropped without loss.

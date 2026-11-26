@@ -32,15 +32,17 @@ The single source of truth for what is done, what is next, and in which order. `
 | 024 | [UML diagrams: system, user and document flows (dev only)](specs/024-uml-diagrams.md) | done | 021 |
 | 025 | [Golden dataset: invoices and receipts with known answers](specs/025-golden-dataset.md) | done | 023 |
 | 026 | [Extraction evals: runner, scoring and analysis](specs/026-extraction-evals.md) | in-progress | 025 |
-| 027 | [CI eval gate](specs/027-eval-ci-gate.md) | draft | 026 |
-| 028 | [Eval dashboard (optional, FastAPI)](specs/028-eval-dashboard.md) | draft | 026 |
-| 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | draft | 026 |
+| 027 | [CI eval gate](specs/027-eval-ci-gate.md) | postponed | 026 |
+| 028 | [Eval dashboard (optional, FastAPI)](specs/028-eval-dashboard.md) | postponed | 026 |
+| 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | postponed | 026 |
+| 030 | [Templates in the real app](specs/030-real-templates.md) | draft | 023 |
+| 031 | [Usage limits: no company can run up the AI bill](specs/031-usage-limits.md) | draft | 023 |
 
-Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
+Statuses: `draft` → `ready` → `in-progress` → `done`, or `postponed` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 
 ## Plan
 
-Read top to bottom; the next spec is the first one that isn't `done`. Specs in one wave don't depend on each other and can run in parallel; otherwise they are built in the listed order.
+Read top to bottom; the next spec is the first one that isn't `done`. **Goal of the current stretch (decided 2026-11-26): a production version real customers can use, on Haiku, with the AI bill protected.** Specs in **Postponed** are not in this table and are never picked. Specs in one wave don't depend on each other and can run in parallel; otherwise they are built in the listed order.
 
 | Wave | Specs (in order) |
 | --- | --- |
@@ -56,8 +58,34 @@ Read top to bottom; the next spec is the first one that isn't `done`. Specs in o
 | 10 | 023 |
 | 11 | 024 |
 | 12 | 025 |
-| 13 | 026 |
-| 14 | 027, 029, 028 |
+| 13 | 030 |
+| 14 | 031 |
+| 15 | 026 (last slice only: the Haiku baseline, about $1, once the Anthropic usage limit is lifted; it blocks nothing above) |
+
+### Next, after 031 (specs not written yet; drafted one at a time, in this order)
+
+| Order | Spec to write | Why |
+| --- | --- | --- |
+| 032 | Change a document's type, and work the Unclassified bucket | a wrongly typed document can't be fixed with mocks off |
+| 033 | Email: password reset and editing the company | needs an email service (Supabase Auth email or a provider) |
+| 034 | Groups with real data | today mock-only |
+| 035 | Team and invites | needs 033's email |
+| 036 | Launch: mocks off on production, error monitoring, Privacy and Terms | the switch to real customers |
+| 037 | Billing: paid plans (only once you decide to charge) | raises the 031 limits for paying companies; brings 029 back |
+
+## Postponed
+
+Decided not now. The loop never picks these; only the owner moves one back into the Plan, when its condition holds.
+
+| # | Spec | Why postponed (decided) | Comes back when |
+| --- | --- | --- | --- |
+| 027 | [CI eval gate](specs/027-eval-ci-gate.md) | not needed for launch; prompts don't change often (2026-11-26) | after 036, once prompt changes are frequent |
+| 028 | [Eval dashboard](specs/028-eval-dashboard.md) | optional; `report.md` is enough (2026-11-26) | evals are run often by more than one person |
+| 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | Opus and Sonnet cost 20–40× Haiku and no customer pays for that; Haiku already costs about $0.004 per document (2026-11-26) | billing exists (a paid plan can include the stronger tiers); slices 1–3 only if Haiku cost matters |
+
+Dropped for good (don't bring back without a new reason): an Opus baseline for the evals ($11–13; 2026-11-26, 026 runs on Haiku only); a test run just to price Sonnet (its price is published: $2 / $10 per million tokens).
+
+## Editing the plan
 
 - To change the order, edit this table.
 - To make a spec buildable, review it and set it to `ready` here and in the spec.

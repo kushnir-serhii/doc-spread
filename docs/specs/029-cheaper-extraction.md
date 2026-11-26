@@ -1,6 +1,6 @@
 # 029 — Cheaper extraction and an accuracy choice per type
 
-**Status:** draft · **Depends on:** 026 · **Route(s):** `/types/:typeId`, `/documents/:documentId`, `/settings`
+**Status:** postponed · **Depends on:** 026 · **Route(s):** `/types/:typeId`, `/documents/:documentId`, `/settings`
 
 ## Goal
 A typical document costs **under $0.01** to extract instead of $0.06–0.34 today, with no metric of the extraction evals (026) getting worse beyond their measured noise. Every change in this spec is measured against the 026 baseline before it ships, so the savings are numbers, not hopes.

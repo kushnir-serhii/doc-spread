@@ -6,12 +6,13 @@ Every task gets one spec file in [specs/](specs/). Every spec is split into **sl
 
 ## Statuses
 
-**Spec:** `draft` → `ready` → `in-progress` → `done`
+**Spec:** `draft` → `ready` → `in-progress` → `done`, or `postponed`
 
 - `draft`: still being shaped. Not built.
 - `ready`: you have approved the scope and slices. It can be built.
 - `in-progress`: at least one slice is done.
 - `done`: every slice is done and the Definition of Done holds.
+- `postponed`: decided not now. It sits in the roadmap's **Postponed** table with the reason and what brings it back, never in the **Plan**, so the loop doesn't pick it. Only the owner moves it back into the Plan.
 
 **Slices and acceptance criteria:** `[ ]` not done · `[x]` done. A slice is `[x]` only when every one of its criteria is `[x]`. To drop a slice, delete it and say why in the log.
 
