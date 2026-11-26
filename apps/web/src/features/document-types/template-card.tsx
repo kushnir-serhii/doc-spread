@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import type { DocumentTemplate } from '@/lib/mock/templates'
+import type { DocumentTemplate } from '@/lib/fields/templates'
 
 const SHOWN_FIELDS = 4
 

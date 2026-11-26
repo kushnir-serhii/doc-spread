@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { draftFromTemplate } from '@/features/document-types/type-draft'
 import { useCreateDocumentTypes, useTemplates } from '@/lib/api'
+import { USE_MOCKS } from '@/lib/env'
 import { cn } from '@/lib/utils'
 import { CreatedTypesList } from './created-types-list'
 import { TemplatePicker } from './template-picker'
@@ -56,7 +57,9 @@ export const TypesStep = () => {
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm text-muted-foreground">
-        Pick the templates that match your documents, or show us a sample. You can change this later.
+        {USE_MOCKS
+          ? 'Pick the templates that match your documents, or show us a sample. You can change this later.'
+          : 'Pick the templates that match your documents. You can change this later.'}
       </p>
       <TemplatePicker
         selected={selected}
@@ -87,15 +90,20 @@ export const TypesStep = () => {
       {/* Mobile: navigation row on top, then full-width actions with Finish last (thumb zone).
           sm+: one row, navigation left, actions right. DOM order = visual order on both. */}
       <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
-        <Button asChild variant="ghost" className={cn(touch, 'justify-self-start')}>
-          <Link to="/onboarding?step=company">Back</Link>
-        </Button>
-        <Button asChild variant="ghost" className={cn(touch, 'justify-self-end')}>
+        {/* the company step and "from a sample" have no backend yet (mocks off) */}
+        {USE_MOCKS && (
+          <Button asChild variant="ghost" className={cn(touch, 'justify-self-start')}>
+            <Link to="/onboarding?step=company">Back</Link>
+          </Button>
+        )}
+        <Button asChild variant="ghost" className={cn(touch, USE_MOCKS ? 'justify-self-end' : 'col-span-2 sm:col-span-1 justify-self-start')}>
           <Link to="/inbox">Skip for now</Link>
         </Button>
-        <Button asChild variant="outline" className={cn(touch, 'col-span-2 sm:ml-auto')}>
-          <Link to={sampleTo}>From a sample</Link>
-        </Button>
+        {USE_MOCKS && (
+          <Button asChild variant="outline" className={cn(touch, 'col-span-2 sm:ml-auto')}>
+            <Link to={sampleTo}>From a sample</Link>
+          </Button>
+        )}
         <Button
           type="button"
           className={cn(touch, 'col-span-2')}

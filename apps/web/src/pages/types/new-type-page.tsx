@@ -12,12 +12,12 @@ const NewTypePage = () => {
   const templateId = params.get('template')
   const documentId = params.get('documentId')
 
-  const needsAi = params.get('from') === 'template' || templateId || params.get('from') === 'sample' || documentId
+  const needsAi = params.get('from') === 'sample' || documentId
   if (!USE_MOCKS && needsAi) {
     return (
       <NotAvailableYet
         title="Not available yet"
-        description="Templates and creating a type from a sample are not available yet. Start with a blank type and add the fields yourself."
+        description="Creating a type from a sample is not available yet. Start with a blank type and add the fields yourself."
         backTo="/types/new"
         backLabel="Start blank"
       />

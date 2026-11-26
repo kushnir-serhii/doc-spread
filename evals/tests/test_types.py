@@ -7,7 +7,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 TYPES = REPO / "evals" / "types"
 INVOICE_SRC = REPO / "services" / "api" / "scripts" / "invoice-template.json"
-TEMPLATES_TS = REPO / "apps" / "web" / "src" / "lib" / "mock" / "templates.ts"
+TEMPLATES_TS = REPO / "apps" / "web" / "src" / "lib" / "fields" / "templates.ts"
 
 HOW_TO_FIX = (
     "The eval types are pinned on purpose. If the product template changed, update "

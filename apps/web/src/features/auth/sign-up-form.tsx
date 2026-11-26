@@ -58,8 +58,8 @@ export const SignUpForm = () => {
     }
     signUp.mutate(
       { name: name.trim(), email: email.trim(), password },
-      // with mocks off the company name is already given, so onboarding is skipped
-      { onSuccess: () => void navigate(USE_MOCKS ? '/onboarding' : '/types') },
+      // with mocks off the company name is already given, so onboarding starts at its types step
+      { onSuccess: () => void navigate(USE_MOCKS ? '/onboarding' : '/onboarding?step=types') },
     )
   }
 

@@ -46,8 +46,8 @@ import {
   seedPlanId,
   seedTeam,
 } from './data'
-import { DOCUMENT_TEMPLATES } from './templates'
-import type { DocumentTemplate } from './templates'
+import { DOCUMENT_TEMPLATES } from '@/lib/fields/templates'
+import type { DocumentTemplate } from '@/lib/fields/templates'
 import { majorText } from '@/lib/fields/currency-digits'
 import { parseFieldValue } from '@/lib/fields/parse-field-value'
 import { getAllComputedColumnIds, getComputedFieldIds } from '@/lib/fields/computed-fields'

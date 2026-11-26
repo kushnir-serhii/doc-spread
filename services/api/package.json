@@ -10,6 +10,7 @@
     "smoke-pipeline": "tsx scripts/smoke-pipeline.ts",
     "eval-extract": "tsx scripts/eval-extract.ts",
     "check-env": "tsx scripts/check-env.ts",
+    "check-templates": "tsx scripts/check-templates.ts",
     "scan-logs": "tsx scripts/scan-logs.ts"
   },
   "dependencies": {

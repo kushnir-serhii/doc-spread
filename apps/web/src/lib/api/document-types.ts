@@ -5,10 +5,11 @@ import {
   createDocumentTypes as mockCreateDocumentTypes,
   getDocumentType as mockGetDocumentType,
   listDocumentTypes as mockListDocumentTypes,
-  listTemplates,
+  listTemplates as mockListTemplates,
   updateDocumentType as mockUpdateDocumentType,
 } from '@/lib/mock'
-import type { DocumentTemplate } from '@/lib/mock'
+import { DOCUMENT_TEMPLATES } from '@/lib/fields/templates'
+import type { DocumentTemplate } from '@/lib/fields/templates'
 import {
   createDocumentType as realCreateDocumentType,
   createDocumentTypes as realCreateDocumentTypes,
@@ -92,11 +93,11 @@ export const useUpdateDocumentType = () => {
   })
 }
 
-/** Templates have no backend yet: with mocks off the list is empty. */
-const noTemplates = async (): Promise<DocumentTemplate[]> => []
+/** Templates are product data, the same in both modes: real mode resolves the shared list (no backend). */
+const realListTemplates = async (): Promise<DocumentTemplate[]> => structuredClone([...DOCUMENT_TEMPLATES])
 
 export const useTemplates = () =>
   useQuery({
     queryKey: templateKeys.list(),
-    queryFn: USE_MOCKS ? listTemplates : noTemplates,
+    queryFn: USE_MOCKS ? mockListTemplates : realListTemplates,
   })
