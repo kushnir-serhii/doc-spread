@@ -26,7 +26,6 @@ export const LIFECYCLE_DIAGRAM = `stateDiagram-v2
   approved --> exported : export job created (createExportJob)
   approved --> processing : user changes the type (POST /api/documents/:id/type)
   rejected --> processing : user changes the type (POST /api/documents/:id/type)
-  error --> processing : user assigns a type (reassignDocumentType)
   exported --> [*]
 `
 

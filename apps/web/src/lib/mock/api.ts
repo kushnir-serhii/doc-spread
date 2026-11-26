@@ -103,10 +103,14 @@ const db = {
   company: copy(seedCompany),
   team: copy(seedTeam),
   planId: seedPlanId,
+  /** type changes used per document id (the API allows MAX_TYPE_CHANGES) */
+  typeChanges: {} as Record<string, number>,
 
   /** lower-cased emails signed up in this session */
   signedUpEmails: new Set<string>(),
 }
+
+const MAX_TYPE_CHANGES = 3
 
 function delay(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 300 + Math.floor(Math.random() * 300)))
@@ -420,10 +424,15 @@ function applyExtraction(doc: Document, type: DocumentType, classificationConfid
 export async function reassignDocumentType(id: string, typeId: string): Promise<Document> {
   await delay()
   const doc = findDocument(id)
-  if (doc.status === 'uploaded' || doc.status === 'processing' || doc.status === 'exported') {
-    throw new Error(`Document type can't be changed in status ${doc.status}`)
+  if (!['needs_review', 'unclassified', 'approved', 'rejected'].includes(doc.status)) {
+    throw new Error("The type can't be changed while the document is in this status")
   }
-  const type = findCurrentType(typeId)
+  const type = db.documentTypes.some((t) => t.id === typeId) ? findCurrentType(typeId) : undefined
+  if (!type) throw new Error('That type no longer exists')
+  if (doc.typeId === type.id) throw new Error('The document already has this type')
+  const changes = db.typeChanges[id] ?? 0
+  if (changes >= MAX_TYPE_CHANGES) throw new Error(`This document's type was already changed ${MAX_TYPE_CHANGES} times`)
+  db.typeChanges[id] = changes + 1
   doc.status = 'processing'
   doc.typeId = type.id
   doc.typeVersion = type.version

@@ -1,6 +1,7 @@
 import type { Document, FieldValue, ListDocumentsParams } from '@/lib/mock/types'
 import { findValueMismatches } from '@/lib/fields/value-check'
 import { confirm, overallConfidence } from '@/lib/fields/value-confidence'
+import { ApiError, apiFetch } from './api-fetch'
 import { getSupabase } from './client'
 import { getDocumentType } from './document-types'
 import { getSignedFileUrl } from './file-url'
@@ -80,6 +81,30 @@ export const updateDocumentValues = async (id: string, patch: Record<string, Fie
   if (error) throw new Error(`Couldn't save the values: ${error.message}`)
   if (data.length === 0) throw new Error(CONFLICT)
   return load(data[0] as DocumentRow)
+}
+
+/** What the API's refusals of a type change mean for the user. */
+const REASSIGN_MESSAGES: Record<string, string> = {
+  too_many_changes: "This document's type was already changed 3 times",
+  wrong_status: "The type can't be changed while the document is in this status",
+  type_not_found: 'That type no longer exists',
+  same_type: 'The document already has this type',
+  conflict: CONFLICT,
+  not_found: 'This document no longer exists',
+}
+
+/**
+ * Asks the API to extract the document again as the chosen type (status processing, at most 3 changes per document),
+ * then returns the fresh row; the polling picks it up until it is needs_review again.
+ */
+export const reassignDocumentType = async (id: string, typeId: string): Promise<Document> => {
+  try {
+    await apiFetch(`/documents/${encodeURIComponent(id)}/type`, { body: { typeId } })
+  } catch (error) {
+    if (error instanceof ApiError) throw new Error(REASSIGN_MESSAGES[error.code] ?? error.message, { cause: error })
+    throw error
+  }
+  return getDocument(id)
 }
 
 /** needs_review | rejected -> approved (the rejection reason is cleared); other statuses are left as they are. */

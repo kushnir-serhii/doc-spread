@@ -920,7 +920,7 @@ export const GLOSSARY: Record<GlossaryKey, GlossaryEntry> = {
     title: 'Status: error',
     provider: 'app',
     summary: 'Processing failed.',
-    role: 'Set when a pipeline step gives up (an unreadable file, or a queue message read 3 times without finishing). The user can assign a type to try again.',
+    role: 'Set when a pipeline step gives up (an unreadable file, or a queue message read 3 times without finishing). Its type cannot be changed; retrying is a later feature.',
     where: [TYPES, 'services/api/src/pipeline/queue.ts'],
   },
 
@@ -1006,7 +1006,7 @@ export const GLOSSARY: Record<GlossaryKey, GlossaryEntry> = {
     title: 'Decision: which status?',
     provider: 'app',
     summary: 'The status the polling reads decides what the user can do.',
-    role: 'uploaded or processing: keep waiting. needs_review: review. unclassified: can only be rejected for now, because assigning a type has no backend yet. error: processing failed.',
+    role: 'uploaded or processing: keep waiting. needs_review: review. unclassified: assign a type or reject. error: processing failed.',
     where: ['apps/web/src/lib/api/documents.ts', TYPES],
   },
   flowSaveReview: {

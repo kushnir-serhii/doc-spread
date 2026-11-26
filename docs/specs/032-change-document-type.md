@@ -30,13 +30,13 @@ With mocks off, a user can fix a document the classifier got wrong (Review → *
   - [x] wrong status, foreign document or type, and the change limit are refused with the codes above and change nothing
   - [x] `supabase test db`, advisors and `pnpm --filter @docspread/api smoke` clean on the local stack
 
-### [ ] 2. Change type and Choose a type with mocks off
+### [x] 2. Change type and Choose a type with mocks off
 - **Build:** real `reassignDocumentType`; error codes mapped to messages; the document polls while `processing` and comes back as `needs_review` with the new type.
 - **Files:** `apps/web/src/lib/real/documents.ts`, `apps/web/src/lib/api/documents.ts`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] mocks off against the local stack: Review → Change type and Unclassified → Assign type move the document to `processing` with the new type; errors are shown with `role="alert"`
-  - [ ] mock mode keeps working
+  - [x] mocks off against the local stack: Review → Change type and Unclassified → Assign type move the document to `processing` with the new type; errors are shown with `role="alert"`
+  - [x] mock mode keeps working
 
 ### [ ] 3. Assign one type to several unclassified documents
 - **Build:** checkboxes in the Unclassified bucket, a bar "Assign N to [type]" (one request per document; per-row result; failures stay selected with the reason).
@@ -59,3 +59,4 @@ With mocks off, a user can fix a document the classifier got wrong (Review → *
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-11-26 | 1 | done on the local stack: migration `20261126130000_type_changes.sql` (`documents.type_changes`, default 0, >= 0; trigger `private.forbid_type_changes_update` refuses changes from `authenticated`/`anon` with `42501`); `POST /api/documents/:id/type` (`documents/change-type.ts`): `400 invalid_body`, `404 not_found` / `type_not_found`, `409 wrong_status` / `too_many_changes` / `same_type` (doesn't use a change) / `conflict`; a conditional claim sets the type and latest version, empty values, `overall_confidence` 0 (the column is not null), `processing`, counter + 1, then enqueues `extract` (rolled back if the enqueue fails); the extract step skips the classifier when a `processing` document has a `type_id`, and a type deleted in the meantime ends `unclassified`. `supabase test db` 95 tests (6 new), advisors clean, the new smoke checks pass (the 8 older local `42P10` storage failures are unchanged). Diagrams: pipeline, lifecycle, document flow, glossary. Note: the first two smoke runs went to `docspread-dev` because `services/api/.env.local` points there (only the older self-cleaning checks ran; the new ones skipped without the migration). | `supabase/migrations/20261126130000_type_changes.sql`, `supabase/tests/change_type.test.sql`, `services/api/src/{handler,documents/change-type}.ts`, `services/api/src/pipeline/{extract-core,extract-handler}.ts`, `services/api/scripts/smoke-api.ts`, `apps/web/src/features/architecture/diagrams/{pipeline,lifecycle,document-flow,glossary}.ts` |
+| 2026-11-26 | 2 | done: real `reassignDocumentType` (`apiFetch` to `POST /api/documents/:id/type`, then the fresh document; API codes mapped to messages: too many changes, wrong status, type gone, same type, conflict, not found); the mock follows the same rules (allowed statuses, same type refused, 3 changes per document). Lifecycle diagram: `error --> processing` removed (error documents can't be retyped). No UI changes needed. Checked: typecheck, lint, build; **real mode against the local stack** (Playwright, throwaway company, process env only): Review → Change type and Unclassified → Assign type set `processing`, the new type and `type_changes = 1`; at 3 changes the dialog shows the message in `role="alert"`. Not seen locally: the document coming back as `needs_review` (no cron or Anthropic call locally). | `apps/web/src/lib/real/documents.ts`, `apps/web/src/lib/api/documents.ts`, `apps/web/src/lib/mock/api.ts`, `apps/web/src/features/architecture/diagrams/{lifecycle,glossary}.ts` |
