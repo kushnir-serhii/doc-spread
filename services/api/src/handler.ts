@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { AuthError, createVerifier } from './auth.js'
+import { ChangeTypeError, changeDocumentType, validateChangeType } from './documents/change-type.js'
 import { loadEnv } from './env.js'
 import { ExportError, createExport, validateExport } from './export/create-export.js'
 import type { Env } from './env.js'
@@ -177,6 +178,15 @@ const completeUpload = async (request: Request, ctx: Context, documentId: string
   return json(202, { documentId, status: 'processing' })
 }
 
+/** Gives a document another type and queues its extraction again; see `documents/change-type.ts`. */
+const changeType = async (request: Request, ctx: Context, documentId: string): Promise<Response> => {
+  const { supabase, verifyToken } = ctx
+  const { userId } = await verifyToken(request.headers.get('authorization') ?? undefined)
+  const companyId = await companyOf(ctx, userId)
+  const typeId = validateChangeType(await parseBody(request))
+  return json(202, await changeDocumentType(supabase, companyId, documentId, typeId))
+}
+
 /** Builds a spreadsheet of approved documents of one type; see `export/create-export.ts`. */
 const createExportFile = async (request: Request, ctx: Context): Promise<Response> => {
   const { env, supabase, verifyToken } = ctx
@@ -207,10 +217,13 @@ export const handle = async (request: Request): Promise<Response> => {
     if (method === 'POST' && path === '/signup') return await createAccount(request, getContext())
     const complete = /^\/uploads\/([^/]+)\/complete$/.exec(path)
     if (method === 'POST' && complete?.[1]) return await completeUpload(request, getContext(), complete[1])
+    const typeChange = /^\/documents\/([^/]+)\/type$/.exec(path)
+    if (method === 'POST' && typeChange?.[1]) return await changeType(request, getContext(), typeChange[1])
     return json(404, { error: 'not_found', message: 'Unknown route' })
   } catch (error) {
     if (error instanceof AuthError) return json(401, { error: 'unauthorized', message: 'Missing or invalid token' })
     if (error instanceof ExportError) return json(error.status, { error: error.code, message: error.message })
+    if (error instanceof ChangeTypeError) return json(error.status, { error: error.code, message: error.message })
     if (error instanceof SignupError) return json(error.status, { error: error.code, message: error.message })
     if (error instanceof LimitReachedError) {
       return json(409, { error: 'limit_reached', message: error.message, limit: error.limit, used: error.used, resetsAt: nextMonthStart() })

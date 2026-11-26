@@ -30,11 +30,12 @@ export type ExtractOutcome =
   /** `pickedTypeId`: the type the classifier named, kept for diagnosis even when it was unknown or below the threshold. */
   | { outcome: 'unclassified'; classificationConfidence: number | null; pickedTypeId: string | null }
   /** The extraction model declined; the type had been chosen. */
-  | { outcome: 'refused'; type: TypeChoice; classificationConfidence: number }
+  | { outcome: 'refused'; type: TypeChoice; classificationConfidence: number | null }
   | {
       outcome: 'needs_review'
       type: TypeChoice
-      classificationConfidence: number
+      /** Null when the user chose the type (no classification ran). */
+      classificationConfidence: number | null
       /** Keyed by field id (table cells by column id), as the handler stores them. */
       values: Record<string, StoredValue>
       overallConfidence: number
@@ -53,6 +54,8 @@ export interface ClassifyAndExtractInput {
   claude: ClaudeClient
   models: { classify: string; extract: string }
   minConfidence: number
+  /** The user chose this type (spec 032): classification is skipped. Not among `types` (deleted meanwhile): unclassified. */
+  chosenTypeId?: string
   /** Every call made is pushed here, also when the core ends in a refusal or throws. */
   calls?: CallRecord[]
 }
@@ -79,25 +82,32 @@ export const classifyAndExtract = async (input: ClassifyAndExtractInput): Promis
     calls,
     costUsd: calls.reduce((sum, call) => sum + call.costUsd, 0),
   })
-  const firstPageText = (pages[0]?.tokens ?? []).map((token) => token.text).join(' ').slice(0, CLASSIFY_TEXT_CHARS)
-  if (types.length === 0 || firstPageText.trim() === '') return done({ outcome: 'unclassified', classificationConfidence: null, pickedTypeId: null })
+  let chosen: TypeChoice | undefined
+  let classConfidence: number | null = null
+  if (input.chosenTypeId !== undefined) {
+    chosen = types.find((type) => type.id === input.chosenTypeId)
+    if (!chosen) return done({ outcome: 'unclassified', classificationConfidence: null, pickedTypeId: null })
+  } else {
+    const firstPageText = (pages[0]?.tokens ?? []).map((token) => token.text).join(' ').slice(0, CLASSIFY_TEXT_CHARS)
+    if (types.length === 0 || firstPageText.trim() === '') return done({ outcome: 'unclassified', classificationConfidence: null, pickedTypeId: null })
 
-  // 1. Classify (Haiku, effort low).
-  const typeList = types.map((type) => `- id: ${type.id}\n  name: ${type.name}\n  description: ${type.description}`).join('\n')
-  const classification = await claude.classify({
-    documentId,
-    model: models.classify,
-    system: CLASSIFY_SYSTEM,
-    schema: CLASSIFY_SCHEMA,
-    prompt: `Document types:\n${typeList}\n\nText of the first page:\n${firstPageText}`,
-  })
-  record(calls, 'classify', classification)
-  const answer = isObject(classification.answer) ? classification.answer : {}
-  const chosen = types.find((type) => type.id === answer.typeId)
-  const classConfidence = typeof answer.confidence === 'number' && Number.isFinite(answer.confidence) ? Math.min(1, Math.max(0, answer.confidence)) : null
-  if (classification.refused || !chosen || classConfidence === null || classConfidence < minConfidence) {
-    const pickedTypeId = typeof answer.typeId === 'string' && answer.typeId !== '' ? answer.typeId : null
-    return done({ outcome: 'unclassified', classificationConfidence: classification.refused ? null : classConfidence, pickedTypeId })
+    // 1. Classify (Haiku, effort low).
+    const typeList = types.map((type) => `- id: ${type.id}\n  name: ${type.name}\n  description: ${type.description}`).join('\n')
+    const classification = await claude.classify({
+      documentId,
+      model: models.classify,
+      system: CLASSIFY_SYSTEM,
+      schema: CLASSIFY_SCHEMA,
+      prompt: `Document types:\n${typeList}\n\nText of the first page:\n${firstPageText}`,
+    })
+    record(calls, 'classify', classification)
+    const answer = isObject(classification.answer) ? classification.answer : {}
+    chosen = types.find((type) => type.id === answer.typeId)
+    classConfidence = typeof answer.confidence === 'number' && Number.isFinite(answer.confidence) ? Math.min(1, Math.max(0, answer.confidence)) : null
+    if (classification.refused || !chosen || classConfidence === null || classConfidence < minConfidence) {
+      const pickedTypeId = typeof answer.typeId === 'string' && answer.typeId !== '' ? answer.typeId : null
+      return done({ outcome: 'unclassified', classificationConfidence: classification.refused ? null : classConfidence, pickedTypeId })
+    }
   }
 
   // 2. Extract (Opus, effort medium, server-side fallback).

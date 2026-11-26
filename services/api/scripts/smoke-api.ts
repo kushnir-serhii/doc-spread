@@ -298,7 +298,7 @@ let keptStatusBefore: string | undefined
 const KEPT_INVOICE_ID = '1ca2f69a-bd05-4c74-9790-be62a5ff4e81'
 const exportsBucket = process.env.STORAGE_EXPORTS_BUCKET || apiEnv.STORAGE_EXPORTS_BUCKET || 'exports'
 {
-  const exportCall = (body: unknown, token: string | undefined = accessToken) => call('/exports', { method: 'POST', token, body })
+  const exportCall = (body: unknown, token = accessToken) => call('/exports', { method: 'POST', token, body })
   check('POST /exports without a token returns 401', (await call('/exports', { method: 'POST', body: {} })).status === 401)
   check('POST /exports with a garbage token returns 401', (await exportCall({}, 'not.a.jwt')).status === 401)
 
@@ -530,6 +530,115 @@ if (exportJobIds.length > 0 || exportDocumentIds.length > 0) {
     await admin.from('companies').update({ monthly_document_limit: originalLimit }).eq('id', demoCompanyId)
     const { data: restored } = await admin.from('companies').select('monthly_document_limit').eq('id', demoCompanyId).single()
     check('the company limit is restored', restored?.monthly_document_limit === originalLimit)
+  }
+}
+
+// ---------- change a document's type (spec 032, slice 1) ----------
+{
+  const demoCompanyId = documentId ? ((await admin.from('documents').select('company_id').eq('id', documentId).maybeSingle()).data?.company_id ?? '') : ''
+  const columnProbe = demoCompanyId ? await admin.from('documents').select('type_changes').limit(1) : undefined
+  if (!demoCompanyId || !columnProbe || columnProbe.error || !queueReady) {
+    skip('change type', 'the type_changes migration or the queues are not applied on this database, or no demo company')
+  } else {
+    const typeCall = (id: string, body: unknown, token = accessToken) => call(`/documents/${id}/type`, { method: 'POST', token, body })
+    const changeTypeDocumentIds: string[] = []
+    const newDoc = async (status: string, extra: Record<string, unknown> = {}): Promise<string> => {
+      const id = randomUUID()
+      const { error } = await admin.from('documents').insert({ id, company_id: demoCompanyId, file_name: 'change-type.pdf', file_type: 'pdf', status, ...extra })
+      if (error) throw new Error(`insert failed: ${error.message}`)
+      changeTypeDocumentIds.push(id)
+      return id
+    }
+    type QueueRow = { msg_id: number; message: { documentId?: string } } // pgmq rows from queue_read
+    const readExtract = async (visibilityTimeout: number): Promise<QueueRow[]> => {
+      const read = await admin.rpc('queue_read', { queue_name: 'extract', visibility_timeout: visibilityTimeout, quantity: 200 })
+      return Array.isArray(read.data) ? (read.data as QueueRow[]) : []
+    }
+    const mineIn = (rows: QueueRow[]): QueueRow[] => rows.filter((row) => changeTypeDocumentIds.includes(row.message.documentId ?? ''))
+    let foreignCompanyId = ''
+    try {
+      const { data: types } = await admin.from('document_types').select('id').eq('company_id', demoCompanyId).limit(1)
+      const typeId = types?.[0]?.id as string | undefined // our own table
+      const { data: versions } = typeId
+        ? await admin.from('document_type_versions').select('version').eq('type_id', typeId).order('version', { ascending: false }).limit(1)
+        : { data: null }
+      const latestVersion = versions?.[0]?.version as number | undefined
+      if (!typeId || latestVersion === undefined) {
+        skip('change type', 'the demo company has no document type')
+      } else {
+        const state = async (id: string) =>
+          (await admin.from('documents').select('status, type_id, type_version, values, overall_confidence, type_changes').eq('id', id).single()).data
+
+        check('POST /documents/:id/type without a token returns 401', (await typeCall(randomUUID(), { typeId }, '')).status === 401)
+        const unclassified = await newDoc('unclassified')
+        const noBody = await typeCall(unclassified, {})
+        const badId = await typeCall(unclassified, { typeId: 'x' })
+        check('a body without a valid typeId returns 400 invalid_body', noBody.status === 400 && errorCode(noBody.body) === 'invalid_body' && badId.status === 400)
+        const unknownDoc = await typeCall(randomUUID(), { typeId })
+        check('an unknown document returns 404 not_found', unknownDoc.status === 404 && errorCode(unknownDoc.body) === 'not_found')
+
+        // a change from needs_review
+        const review = await newDoc('needs_review', { values: { x: { type: 'text', value: 'old', confidence: 1 } }, overall_confidence: 0.9 })
+        const changed = await typeCall(review, { typeId })
+        const changedBody = changed.body as { documentId?: string; status?: string; typeId?: string; typeVersion?: number } // our API's response shape
+        check(
+          'a change returns 202 with documentId, status processing, typeId and typeVersion',
+          changed.status === 202 && changedBody.documentId === review && changedBody.status === 'processing' && changedBody.typeId === typeId && changedBody.typeVersion === latestVersion,
+          `status ${changed.status} ${errorCode(changed.body)}`,
+        )
+        const row = await state(review)
+        check(
+          'the row is processing with the new type and version, no values and type_changes 1',
+          row?.status === 'processing' && row.type_id === typeId && row.type_version === latestVersion && JSON.stringify(row.values) === '{}' && Number(row.overall_confidence) === 0 && row.type_changes === 1,
+          JSON.stringify(row),
+        )
+        const queued = mineIn(await readExtract(1))
+        check('exactly one extract message was enqueued', queued.filter((message) => message.message.documentId === review).length === 1, `${queued.length}`)
+        for (const message of queued) await admin.rpc('queue_delete', { queue_name: 'extract', message_id: message.msg_id })
+
+        // refused: wrong status (the row is now processing)
+        const processing = await typeCall(review, { typeId })
+        check('a document being processed returns 409 wrong_status', processing.status === 409 && errorCode(processing.body) === 'wrong_status', `status ${processing.status} ${errorCode(processing.body)}`)
+        const uploaded = await newDoc('uploaded')
+        check('an uploaded document returns 409 wrong_status', errorCode((await typeCall(uploaded, { typeId })).body) === 'wrong_status')
+
+        // refused: the same type
+        await admin.from('documents').update({ status: 'needs_review' }).eq('id', review)
+        const same = await typeCall(review, { typeId })
+        check('the same type returns 409 same_type', same.status === 409 && errorCode(same.body) === 'same_type', `status ${same.status} ${errorCode(same.body)}`)
+
+        // refused: another company's type and document, nothing changes
+        const { data: other } = await admin.from('companies').insert({ name: `smoke-type-${randomUUID().slice(0, 8)}`, default_currency: 'USD' }).select('id').single()
+        if (other) {
+          foreignCompanyId = other.id
+          const { data: foreignType } = await admin.from('document_types').insert({ company_id: other.id, name: 'Foreign' }).select('id').single()
+          if (foreignType) await admin.from('document_type_versions').insert({ type_id: foreignType.id, version: 1, company_id: other.id, fields: [] })
+          const foreignDoc = randomUUID()
+          await admin.from('documents').insert({ id: foreignDoc, company_id: other.id, file_name: 'foreign.pdf', file_type: 'pdf', status: 'unclassified' })
+          const beforeForeign = await state(unclassified)
+          const foreignTypeResponse = await typeCall(unclassified, { typeId: foreignType?.id })
+          check('the type of another company returns 404 type_not_found', foreignTypeResponse.status === 404 && errorCode(foreignTypeResponse.body) === 'type_not_found', `status ${foreignTypeResponse.status} ${errorCode(foreignTypeResponse.body)}`)
+          const randomType = await typeCall(unclassified, { typeId: randomUUID() })
+          check('an unknown type returns 404 type_not_found', randomType.status === 404 && errorCode(randomType.body) === 'type_not_found')
+          check('the refused type changes leave the document as it was', JSON.stringify(await state(unclassified)) === JSON.stringify(beforeForeign))
+          const foreignDocResponse = await typeCall(foreignDoc, { typeId })
+          check('a document of another company returns 404 not_found', foreignDocResponse.status === 404 && errorCode(foreignDocResponse.body) === 'not_found')
+          check('the document of the other company is untouched', (await state(foreignDoc))?.status === 'unclassified')
+        }
+
+        // refused: the limit of 3 changes
+        await admin.from('documents').update({ type_changes: 3 }).eq('id', unclassified)
+        const tooMany = await typeCall(unclassified, { typeId })
+        check('a fourth change returns 409 too_many_changes', tooMany.status === 409 && errorCode(tooMany.body) === 'too_many_changes', `status ${tooMany.status} ${errorCode(tooMany.body)}`)
+        const afterTooMany = await state(unclassified)
+        check('the refused change leaves status and counter as they were', afterTooMany?.status === 'unclassified' && afterTooMany.type_changes === 3)
+        check('no extract message was enqueued by the refused calls', mineIn(await readExtract(0)).length === 0)
+      }
+    } finally {
+      for (const message of mineIn(await readExtract(0))) await admin.rpc('queue_delete', { queue_name: 'extract', message_id: message.msg_id })
+      if (changeTypeDocumentIds.length > 0) await admin.from('documents').delete().in('id', changeTypeDocumentIds)
+      if (foreignCompanyId) await admin.from('companies').delete().eq('id', foreignCompanyId)
+    }
   }
 }
 

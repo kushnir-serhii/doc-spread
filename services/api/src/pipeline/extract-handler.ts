@@ -29,7 +29,7 @@ const loadTypes = async (supabase: SupabaseClient, companyId: string): Promise<T
 const processDocument = async ({ env, supabase }: PipelineContext, documentId: string): Promise<WorkResult> => {
   const { data: doc, error } = await supabase
     .from('documents')
-    .select('id, company_id, file_type, storage_path, status')
+    .select('id, company_id, file_type, storage_path, status, type_id')
     .eq('id', documentId)
     .maybeSingle()
   failOn('document lookup', error)
@@ -46,6 +46,8 @@ const processDocument = async ({ env, supabase }: PipelineContext, documentId: s
   failOn('load pages', pagesError)
   const pages = (pageRows ?? []).map((row) => ({ index: Number(row.page_index), tokens: Array.isArray(row.tokens) ? (row.tokens as Token[]) : [] })) // our own OCR output
 
+  // A change of type (spec 032) sets type_id and `processing` before queueing; a normal upload has no type_id yet.
+  const chosenTypeId = doc.status === 'processing' && typeof doc.type_id === 'string' ? doc.type_id : undefined
   const types = await loadTypes(supabase, companyId)
   const fileKind = doc.file_type === 'png' ? 'png' : doc.file_type === 'jpg' ? 'jpg' : 'pdf'
   const { result, costUsd } = await classifyAndExtract({
@@ -55,6 +57,7 @@ const processDocument = async ({ env, supabase }: PipelineContext, documentId: s
     claude,
     models: { classify: env.modelClassify, extract: env.modelExtract },
     minConfidence: env.classifyMinConfidence,
+    chosenTypeId,
     companyCurrency: async () => {
       const { data: company, error: companyError } = await supabase.from('companies').select('default_currency').eq('id', companyId).single()
       failOn('load company', companyError)

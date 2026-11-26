@@ -13,6 +13,7 @@ export const DOCUMENT_FLOW_DIAGRAM = `flowchart TB
     b5["Review: edit values, approve or reject"]
     b6["POST /api/exports: xlsx or csv"]
     b7["Download from the signed link (10 min)"]
+    b8["Change type: POST /api/documents/:id/type"]
   end
 
   subgraph fns["Vercel Functions"]
@@ -21,6 +22,7 @@ export const DOCUMENT_FLOW_DIAGRAM = `flowchart TB
     f3["pipeline/ocr: PDF text layer, or tesseract.js for scans"]
     f4["pipeline/extract: classify, then extract"]
     f5["api/router: build XLSX or CSV from the type's export mapping"]
+    f6["api/router: check status, type and 3-change limit, set processing, enqueue extract"]
   end
 
   subgraph supa["Supabase"]
@@ -59,7 +61,7 @@ export const DOCUMENT_FLOW_DIAGRAM = `flowchart TB
   f3 -->|"enqueue"| s7
   f3 -->|"unreadable file, or 3 failed reads"| s10
   s7 -->|"read a message"| f4
-  f4 <-->|"first page text, types: type, confidence"| a1
+  f4 <-->|"first page text, types: type, confidence (skipped when the type was chosen)"| a1
   f4 <-->|"file and words: values, cited words"| a2
   f4 --> s8
   f4 -->|"no type matched"| s9
@@ -75,6 +77,10 @@ export const DOCUMENT_FLOW_DIAGRAM = `flowchart TB
   f5 --> s13
   f5 -->|"signed link"| b7
   b7 --> s12
+  b5 --> b8
+  b8 --> f6
+  f6 -->|"type set, values cleared"| s3
+  f6 -->|"enqueue (no OCR)"| s7
 `
 
 /** Mermaid node id → glossary entry. */
@@ -86,11 +92,13 @@ export const DOCUMENT_FLOW_ITEMS: Record<string, GlossaryKey> = {
   b5: 'screenReview',
   b6: 'flowExportRequest',
   b7: 'flowDownload',
+  b8: 'flowChangeType',
   f1: 'fnApiRouter',
   f2: 'fnApiRouter',
   f3: 'fnPipelineOcr',
   f4: 'fnPipelineExtract',
   f5: 'flowExportApi',
+  f6: 'fnApiRouter',
   s1: 'statusUploaded',
   s2: 'storageDocuments',
   s3: 'statusProcessing',

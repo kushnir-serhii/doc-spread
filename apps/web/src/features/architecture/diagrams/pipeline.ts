@@ -60,6 +60,21 @@ export const PIPELINE_DIAGRAM = `sequenceDiagram
   A-->>B: job id and signed download link (10 min)
   B->>ST: download the file
 
+  Note over B,K: change of type (spec 032): from needs_review, unclassified, approved or rejected
+  B->>A: POST /api/documents/:id/type (type id)
+  A->>DB: check company, status, type and the 3-change limit
+  alt wrong status, foreign document or type, or the limit is reached
+    A-->>B: 404 not_found, 404 type_not_found, 409 wrong_status or 409 too_many_changes
+  else allowed
+    A->>DB: status processing, new type and version, values cleared, changes + 1
+    A->>DB: enqueue in queue extract (OCR is not run again)
+    A-->>B: 202 processing
+    X->>DB: read the message, the document already has a type
+    X->>K: pages, file, the chosen type (no classify)
+    K->>C: extract fields (Claude Opus, file and words)
+    X->>DB: write status needs_review, values (unclassified if the type was deleted meanwhile)
+  end
+
   Note over R,C: eval path (spec 026): the same core, with no database, Storage or queue
   R->>E: one process per dataset document: file, types, model overrides
   E->>E: read the local file, readPages (the OCR step's code)

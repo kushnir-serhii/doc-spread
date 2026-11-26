@@ -1,6 +1,6 @@
 # 032 — Change a document's type, and work the Unclassified bucket
 
-**Status:** ready · **Depends on:** 023, 031 (branched from it) · **Route(s):** `/documents/:documentId`, `/inbox?type=unclassified`
+**Status:** in-progress · **Depends on:** 023, 031 (branched from it) · **Route(s):** `/documents/:documentId`, `/inbox?type=unclassified`
 
 ## Goal
 With mocks off, a user can fix a document the classifier got wrong (Review → **Change type**) and give a type to a document that landed in **Unclassified** (Inbox bucket and Review → **Choose a type**). The document is then extracted again with the chosen type. Today both controls exist and work on mocks, but with real data they fail with "not available yet", so a wrongly typed document is stuck for real customers.
@@ -21,14 +21,14 @@ With mocks off, a user can fix a document the classifier got wrong (Review → *
 
 ## Slices
 
-### [ ] 1. Change the type through the API
+### [x] 1. Change the type through the API
 - **Build:** migration (`type_changes`, column kept out of the members' update grant); the endpoint (`404` for another company's document or type, `409 wrong_status`, `409 too_many_changes`); the extract step honors a chosen type; the API smoke test covers a change (the extract call is stubbed or skipped without `ANTHROPIC_API_KEY`), the wrong status and another company's type; the Pipeline and Document lifecycle diagrams show the branch.
 - **Files:** `supabase/migrations/*`, `supabase/tests/*`, `services/api/src/handler.ts` (or `services/api/src/documents/change-type.ts`), `services/api/src/pipeline/{extract-handler,extract-core}.ts`, `services/api/scripts/smoke-api.ts`, `apps/web/src/features/architecture/diagrams/{pipeline,lifecycle,document-flow,glossary}.ts`
 - **Model:** sonnet
 - **Accept:**
-  - [ ] a change sets `processing`, the new type and version, clears the values and enqueues `extract`; the extract step doesn't call the classifier for it
-  - [ ] wrong status, foreign document or type, and the change limit are refused with the codes above and change nothing
-  - [ ] `supabase test db`, advisors and `pnpm --filter @docspread/api smoke` clean on the local stack
+  - [x] a change sets `processing`, the new type and version, clears the values and enqueues `extract`; the extract step doesn't call the classifier for it
+  - [x] wrong status, foreign document or type, and the change limit are refused with the codes above and change nothing
+  - [x] `supabase test db`, advisors and `pnpm --filter @docspread/api smoke` clean on the local stack
 
 ### [ ] 2. Change type and Choose a type with mocks off
 - **Build:** real `reassignDocumentType`; error codes mapped to messages; the document polls while `processing` and comes back as `needs_review` with the new type.
@@ -58,3 +58,4 @@ With mocks off, a user can fix a document the classifier got wrong (Review → *
 ## Log
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
+| 2026-11-26 | 1 | done on the local stack: migration `20261126130000_type_changes.sql` (`documents.type_changes`, default 0, >= 0; trigger `private.forbid_type_changes_update` refuses changes from `authenticated`/`anon` with `42501`); `POST /api/documents/:id/type` (`documents/change-type.ts`): `400 invalid_body`, `404 not_found` / `type_not_found`, `409 wrong_status` / `too_many_changes` / `same_type` (doesn't use a change) / `conflict`; a conditional claim sets the type and latest version, empty values, `overall_confidence` 0 (the column is not null), `processing`, counter + 1, then enqueues `extract` (rolled back if the enqueue fails); the extract step skips the classifier when a `processing` document has a `type_id`, and a type deleted in the meantime ends `unclassified`. `supabase test db` 95 tests (6 new), advisors clean, the new smoke checks pass (the 8 older local `42P10` storage failures are unchanged). Diagrams: pipeline, lifecycle, document flow, glossary. Note: the first two smoke runs went to `docspread-dev` because `services/api/.env.local` points there (only the older self-cleaning checks ran; the new ones skipped without the migration). | `supabase/migrations/20261126130000_type_changes.sql`, `supabase/tests/change_type.test.sql`, `services/api/src/{handler,documents/change-type}.ts`, `services/api/src/pipeline/{extract-core,extract-handler}.ts`, `services/api/scripts/smoke-api.ts`, `apps/web/src/features/architecture/diagrams/{pipeline,lifecycle,document-flow,glossary}.ts` |
