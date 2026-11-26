@@ -36,7 +36,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 028 | [Eval dashboard (optional, FastAPI)](specs/028-eval-dashboard.md) | postponed | 026 |
 | 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | postponed | 026 |
 | 030 | [Templates in the real app](specs/030-real-templates.md) | in-progress | 023 |
-| 031 | [Usage limits: no company can run up the AI bill](specs/031-usage-limits.md) | ready | 023 |
+| 031 | [Usage limits: no company can run up the AI bill](specs/031-usage-limits.md) | in-progress | 023 |
 
 Statuses: `draft` → `ready` → `in-progress` → `done`, or `postponed` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 

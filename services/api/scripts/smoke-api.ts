@@ -497,6 +497,42 @@ if (exportJobIds.length > 0 || exportDocumentIds.length > 0) {
   check('export test jobs and documents removed', (jobsLeft ?? 0) === 0 && (docsLeft ?? 0) === 0)
 }
 
+// ---------- monthly document limit (spec 031, slice 1) ----------
+{
+  const demoCompanyId = documentId ? ((await admin.from('documents').select('company_id').eq('id', documentId).maybeSingle()).data?.company_id ?? '') : ''
+  const limitProbe = demoCompanyId ? await admin.from('companies').select('monthly_document_limit').eq('id', demoCompanyId).single() : undefined
+  if (!limitProbe || limitProbe.error) {
+    skip('monthly document limit', 'the usage_limits migration is not applied on this database or no demo company')
+  } else {
+    const originalLimit = limitProbe.data.monthly_document_limit
+    const now = new Date()
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+    const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
+    const countThisMonth = async (): Promise<number> =>
+      (await admin.from('documents').select('id', { count: 'exact', head: true }).eq('company_id', demoCompanyId).gte('uploaded_at', monthStart.toISOString())).count ?? 0
+    const used = await countThisMonth()
+    await admin.from('companies').update({ monthly_document_limit: used + 1 }).eq('id', demoCompanyId)
+
+    const underLimit = await call('/uploads', { method: 'POST', token: accessToken, body: uploadRequest })
+    check('an upload under the limit returns 200', underLimit.status === 200, `status ${underLimit.status} ${errorCode(underLimit.body)}`)
+    const underId = asUpload(underLimit.body).documentId
+    if (underId) createdDocumentIds.push(underId)
+    const underPath = asUpload(underLimit.body).upload?.path
+    if (underPath) createdPaths.push(underPath)
+
+    const before = await countThisMonth()
+    const atLimit = await call('/uploads', { method: 'POST', token: accessToken, body: uploadRequest })
+    const refused = atLimit.body as { error?: string; message?: string; limit?: number; used?: number; resetsAt?: string } // our API's response shape
+    check('an upload at the limit returns 409 limit_reached', atLimit.status === 409 && refused.error === 'limit_reached', `status ${atLimit.status} ${errorCode(atLimit.body)}`)
+    check('the 409 carries limit, used and resetsAt', refused.limit === used + 1 && refused.used === used + 1 && refused.resetsAt === nextMonth.toISOString(), JSON.stringify({ limit: refused.limit, used: refused.used, resetsAt: refused.resetsAt }))
+    check('the refused upload stores no document', (await countThisMonth()) === before)
+
+    await admin.from('companies').update({ monthly_document_limit: originalLimit }).eq('id', demoCompanyId)
+    const { data: restored } = await admin.from('companies').select('monthly_document_limit').eq('id', demoCompanyId).single()
+    check('the company limit is restored', restored?.monthly_document_limit === originalLimit)
+  }
+}
+
 // Cleanup: test objects, documents rows and the throwaway company (the demo user, company and type stay).
 if (createdPaths.length > 0) await admin.storage.from(bucket).remove(createdPaths)
 if (createdDocumentIds.length > 0) await admin.from('documents').delete().in('id', createdDocumentIds)

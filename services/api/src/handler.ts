@@ -22,6 +22,35 @@ class HttpError extends Error {
 
 const json = (status: number, body: unknown): Response => Response.json(body, { status })
 
+/** The documents trigger raises this SQLSTATE with detail `{"limit":N,"used":M}` (migration usage_limits). */
+const LIMIT_ERROR_CODE = 'DS001'
+
+class LimitReachedError extends Error {
+  readonly limit?: number
+  readonly used?: number
+  constructor(limit?: number, used?: number) {
+    super('The monthly document limit is reached')
+    this.limit = limit
+    this.used = used
+  }
+}
+
+const limitReached = (detail: string | null | undefined): LimitReachedError => {
+  try {
+    const parsed: unknown = JSON.parse(detail ?? '')
+    if (typeof parsed === 'object' && parsed !== null) {
+      const { limit, used } = parsed as { limit?: unknown; used?: unknown }
+      return new LimitReachedError(typeof limit === 'number' ? limit : undefined, typeof used === 'number' ? used : undefined)
+    }
+  } catch {
+    // detail missing or not JSON: answer with what is known
+  }
+  return new LimitReachedError()
+}
+
+/** First day of the next month, 00:00 UTC. */
+const nextMonthStart = (now = new Date()): string => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString()
+
 interface Context {
   env: Env
   verifyToken: ReturnType<typeof createVerifier>
@@ -90,6 +119,8 @@ const createUpload = async (request: Request, ctx: Context): Promise<Response> =
   const { error } = await supabase
     .from('documents')
     .insert({ id: documentId, company_id: companyId, file_name: fileName, file_type: fileType, status: 'uploaded', storage_path: path })
+  // The database refuses the insert at the company's monthly limit (trigger, SQLSTATE DS001; spec 031).
+  if (error?.code === LIMIT_ERROR_CODE) throw limitReached(error.details)
   if (error) throw new Error(`document insert failed: ${error.message}`)
 
   try {
@@ -181,6 +212,9 @@ export const handle = async (request: Request): Promise<Response> => {
     if (error instanceof AuthError) return json(401, { error: 'unauthorized', message: 'Missing or invalid token' })
     if (error instanceof ExportError) return json(error.status, { error: error.code, message: error.message })
     if (error instanceof SignupError) return json(error.status, { error: error.code, message: error.message })
+    if (error instanceof LimitReachedError) {
+      return json(409, { error: 'limit_reached', message: error.message, limit: error.limit, used: error.used, resetsAt: nextMonthStart() })
+    }
     if (error instanceof HttpError) return json(error.status, { error: error.code, message: error.message })
     // Only the error name and message are logged: never tokens, headers or environment values.
     console.error(JSON.stringify({ route: `${method} ${path}`, error: error instanceof Error ? `${error.name}: ${error.message}` : 'unknown' }))
