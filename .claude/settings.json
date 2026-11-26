@@ -1,6 +1,36 @@
 {
   "permissions": {
-    "allow": []
+    "allow": [],
+    "deny": [
+      "Bash(git push origin main)",
+      "Bash(git push origin main *)",
+      "Bash(git push * main)",
+      "Bash(git push * main *)",
+      "Bash(git push *:main)",
+      "Bash(git push *:main *)",
+      "Bash(git push *refs/heads/main*)",
+      "Bash(git checkout -b * origin/*)",
+      "Bash(git checkout -B * origin/*)",
+      "Bash(git switch -c * origin/*)",
+      "Bash(git switch -C * origin/*)",
+      "Bash(git branch --set-upstream-to=origin/main*)",
+      "Bash(git branch --set-upstream-to origin/main*)",
+      "Bash(git branch -u origin/main*)",
+      "PowerShell(git push origin main)",
+      "PowerShell(git push origin main *)",
+      "PowerShell(git push * main)",
+      "PowerShell(git push * main *)",
+      "PowerShell(git push *:main)",
+      "PowerShell(git push *:main *)",
+      "PowerShell(git push *refs/heads/main*)",
+      "PowerShell(git checkout -b * origin/*)",
+      "PowerShell(git checkout -B * origin/*)",
+      "PowerShell(git switch -c * origin/*)",
+      "PowerShell(git switch -C * origin/*)",
+      "PowerShell(git branch --set-upstream-to=origin/main*)",
+      "PowerShell(git branch --set-upstream-to origin/main*)",
+      "PowerShell(git branch -u origin/main*)"
+    ]
   },
   "hooks": {
     "Stop": [

@@ -1,6 +1,6 @@
 # 030 — Templates in the real app: a new company starts with ready types
 
-**Status:** draft · **Depends on:** 023 · **Route(s):** `/onboarding`, `/types`, `/types/new`
+**Status:** ready · **Depends on:** 023 · **Route(s):** `/onboarding?step=types`, `/types/new?from=template`, `/sign-up`
 
 ## Goal
 A company that signs up for real (mocks off) can pick ready document types (Invoice, Receipt, Contract) in onboarding and in the type list, exactly as the demo does, instead of starting from an empty list and building every field by hand. Today the real mode returns no templates at all (`noTemplates` in `src/lib/api/document-types.ts`), so a new customer can't do anything useful until they learn the builder: the biggest obstacle on a first visit.
@@ -28,12 +28,12 @@ A company that signs up for real (mocks off) can pick ready document types (Invo
   - [ ] `uv run pytest` in `evals/` still passes (the eval type copies match their sources)
   - [ ] typecheck, lint and build green
 
-### [ ] 2. Create types from templates for real
-- **Build:** onboarding's types step and the gallery create the chosen types through the real create functions; the new company lands in the Inbox with those types ready. A failed create shows an error with retry and doesn't leave half the types created without saying so.
-- **Files:** `apps/web/src/features/onboarding/*`, `apps/web/src/features/document-types/{template-gallery,template-builder}.tsx`, `apps/web/src/lib/real/*` (only if a gap shows up)
+### [ ] 2. Onboarding's types step in the real app
+- **Build:** with mocks off, `/onboarding?step=types` shows the real types step (the company step and a bare `/onboarding` keep the "Not available yet" page until 033: sign-up already created the company). Real sign-up sends the new user to `/onboarding?step=types` instead of `/types`. The "show us a sample" link in the types step is hidden with mocks off (type from a sample has no backend yet). Creating the chosen types already goes through the real, all-or-nothing `createDocumentTypes`; the user lands in the Inbox with those types ready. The gallery in `/types/new?from=template` works the same way.
+- **Files:** `apps/web/src/pages/onboarding/onboarding-page.tsx`, `apps/web/src/features/onboarding/types-step.tsx`, `apps/web/src/features/auth/sign-up-form.tsx`, `apps/web/src/features/document-types/{template-gallery,template-builder}.tsx` (only if a gap shows up)
 - **Model:** sonnet
 - **Accept:**
-  - [ ] a new real company picks Invoice and Receipt in onboarding, uploads the sample invoice and gets it classified and extracted (`needs_review`)
+  - [ ] a new real company signs up, lands on the types step, picks Invoice and Receipt and lands in the Inbox with both types (checked locally with `vercel dev` and mocks off); uploading the sample invoice gets it to `needs_review` (needs the Anthropic API: deferred to when its usage limit is lifted, noted in the Log)
   - [ ] the same from `/types/new` for an existing company
   - [ ] error state with retry; 375px and 1280px, light and dark
 
@@ -41,8 +41,10 @@ A company that signs up for real (mocks off) can pick ready document types (Invo
 None new: types and versions are created through the existing RLS-protected tables.
 
 ## Open questions
-- **Which templates?** Recommended: the three that exist (Invoice, Receipt, Contract); more later from what customers ask for.
-- **Branch?** `real-templates-030` from `main`.
+- **Which templates?** **Decided (2026-11-26):** the three that exist (Invoice, Receipt, Contract).
+- **Where does a new real customer go after sign-up?** **Decided:** `/onboarding?step=types`; the company step stays demo-only until 033 (editing the company).
+- **The "show us a sample" link with mocks off?** **Decided:** hidden until the AI builder has a backend.
+- **Branch?** **Decided:** `real-templates-030` from `main` (`--no-track`); its first commit also carries the `.claude/settings.json` deny rules (no push to `main`, no branch tracking `origin/*`).
 
 ## Log
 | Date | Slice | Result | Notes / files |
