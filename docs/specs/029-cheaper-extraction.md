@@ -113,6 +113,7 @@ Why: in the 026 test runs, Opus extraction cost $0.14 for the sample invoice, $0
 - `/api/pipeline/extract` keeps its statuses and stored value shape. Production cost per document drops.
 
 ## Open questions
+- **Stronger tiers postponed.** **Decided (2026-11-26, owner):** no customer will pay what Opus costs per document today, so slices 4–7 (Enhanced, High accuracy, Auto, re-extract, cost per document) wait until billing exists. Sonnet's price is known without a test run: $2 / $10 per million tokens, half of Opus ($4 / $20) and 20× Haiku ($0.10 / $0.50); on the 026 test documents that is about $0.03 for a receipt, $0.07 for the sample invoice and $0.17 for the 24-row scanned invoice. Slices 1–3 stay useful for Haiku but save little in absolute terms (Haiku is about $0.004 per document); they are not urgent.
 - **Model for now.** **Decided (2026-11-26, owner):** extraction runs on Haiku (`ANTHROPIC_MODEL_EXTRACT=claude-haiku-5-5`) from now on; the owner tests it by hand on real documents. Slice 4 confirms or reverses this with eval numbers instead of choosing from scratch.
 - **Row-level instead of cell-level confidence and source for tables?** A whole row shares one confidence and one highlight box in Review. Recommended: yes, since it's the biggest saving on long tables. If the eval shows calibration on cells getting clearly worse, keep per-cell confidence and move only `tokenIds` to the row.
 - **Escalation threshold.** Recommended: the app's own `LOW_CONFIDENCE` (0.9), so "Haiku wasn't sure" means the same thing as "the app would flag it".

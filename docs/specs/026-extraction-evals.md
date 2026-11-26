@@ -88,7 +88,7 @@ uv run python -m evals.analyze evals/runs/<run>  → metrics.json, report.md, ch
   - [x] `LOW_CONFIDENCE` is read from one Python constant whose comment points at `apps/web/src/lib/fields/confidence.ts`
 
 ### [ ] 5. Baseline, noise and docs
-- **Build:** run the full dataset with `--models opus,haiku --repeat 2`. Commit `evals/baseline/metrics.json` and `evals/baseline/report.md` (no per-document values, only aggregates). Write the findings in this spec's log: accuracy, the weakest fields, calibration, cost per document, Opus vs Haiku, and the run-to-run spread of each gated metric, which becomes 027's tolerance. `evals/README.md`: how to run, read and update the baseline. `docs/setup.md`: a short "Run the extraction evals" section. Diagrams: `structure.ts` gets `evals/` and `eval-extract`; `pipeline.ts` shows the core shared by the handler and the eval ([conventions](../conventions.md) → Architecture diagrams).
+- **Build:** run the full dataset with `--models haiku --repeat 2` (about $1; see Decided: baseline on Haiku only). Commit `evals/baseline/metrics.json` and `evals/baseline/report.md` (no per-document values, only aggregates). Write the findings in this spec's log: accuracy, the weakest fields, calibration, cost per document, Opus vs Haiku, and the run-to-run spread of each gated metric, which becomes 027's tolerance. `evals/README.md`: how to run, read and update the baseline. `docs/setup.md`: a short "Run the extraction evals" section. Diagrams: `structure.ts` gets `evals/` and `eval-extract`; `pipeline.ts` shows the core shared by the handler and the eval ([conventions](../conventions.md) → Architecture diagrams).
 - **Files:** `evals/baseline/*`, `evals/README.md`, `docs/setup.md`, `apps/web/src/features/architecture/diagrams/{structure,pipeline}.ts`
 - **Model:** sonnet
 - **Accept:**
@@ -100,6 +100,7 @@ uv run python -m evals.analyze evals/runs/<run>  → metrics.json, report.md, ch
 No new routes or tables. The refactor in slice 1 must leave `/api/pipeline/extract` behaving exactly as before.
 
 ## Open questions
+- **Baseline on Haiku only.** **Decided (2026-11-26, owner):** production extracts with Haiku, and the 5-document Opus vs Haiku check showed no accuracy difference, so the baseline runs on Haiku only (`--repeat 2`, about $1). No Opus baseline: its $11–13 isn't worth it while Opus isn't used. The Opus vs Haiku sections of the report stay for anyone who runs both later.
 - **How do the evals reach the pipeline?** **Decided (2026-11-25):** (a) a local entry point running the same code in-process, no database (`eval-extract`). It's fast and cheap, CI needs only the Anthropic key, model overrides are a flag, nothing pollutes `docspread-dev`, and latency is measured per step without queue waits. What it skips (upload, queue, cron) is covered by smoke-pipeline; `--via api` can come later.
 - **Refactor `extract-handler.ts`?** **Decided:** yes, a pure `classifyAndExtract` used by both the handler and the eval, checked by smoke-pipeline.
 - **What does "Haiku vs Opus" compare?** **Decided:** the extraction model; classification stays on Haiku as in production. `--classify-model` exists for an extra run if Haiku's classification turns out weak.
