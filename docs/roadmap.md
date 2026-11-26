@@ -34,7 +34,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 026 | [Extraction evals: runner, scoring and analysis](specs/026-extraction-evals.md) | in-progress | 025 |
 | 027 | [CI eval gate](specs/027-eval-ci-gate.md) | draft | 026 |
 | 028 | [Eval dashboard (optional, FastAPI)](specs/028-eval-dashboard.md) | draft | 026 |
-| 029 | [Cheaper extraction: same accuracy for a fraction of the cost](specs/029-cheaper-extraction.md) | draft | 026 |
+| 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | draft | 026 |
 
 Statuses: `draft` → `ready` → `in-progress` → `done` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 
