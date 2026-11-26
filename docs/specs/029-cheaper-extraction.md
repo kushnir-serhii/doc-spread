@@ -73,6 +73,7 @@ Why: in the 026 test runs, Opus extraction cost $0.14 for the sample invoice, $0
 No new routes or tables. `/api/pipeline/extract` keeps its behaviour, statuses and stored value shape. Production cost per document drops.
 
 ## Open questions
+- **Model for now.** **Decided (2026-11-26, owner):** extraction runs on Haiku (`ANTHROPIC_MODEL_EXTRACT=claude-haiku-5-5`) from now on; the owner tests it by hand on real documents. Slice 4 confirms or reverses this with eval numbers instead of choosing from scratch.
 - **Row-level instead of cell-level confidence and source for tables?** A whole row shares one confidence and one highlight box in Review. Recommended: yes, since it's the biggest saving on long tables. If the eval shows calibration on cells getting clearly worse, keep per-cell confidence and move only `tokenIds` to the row.
 - **Escalation threshold.** Recommended: the app's own `LOW_CONFIDENCE` (0.9), so "Haiku wasn't sure" means the same thing as "the app would flag it".
 - **Eval budget.** One full run costs about $0.40 on Haiku and $5–6 per repeat on Opus (less after slices 1–3). Slices 1–3 measure on Haiku plus one Opus run each, and slice 4 runs both with `--repeat 2`. Recommended cap for the whole spec: **$25**, with `--max-usd` on every run.
