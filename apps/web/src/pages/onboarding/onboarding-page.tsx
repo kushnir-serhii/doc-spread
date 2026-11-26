@@ -10,7 +10,7 @@ const OnboardingSteps = () => {
 
   if (searchParams.get('step') === 'types') {
     return (
-      <OnboardingCard width="wide" step={2} title="What documents do you process?">
+      <OnboardingCard width="wide" step={USE_MOCKS ? 2 : undefined} title="What documents do you process?">
         <TypesStep />
       </OnboardingCard>
     )
@@ -22,19 +22,20 @@ const OnboardingSteps = () => {
   )
 }
 
-/** Onboarding has no backend yet (sign-up already creates the company): with mocks off the page says so. */
-const OnboardingPage = () =>
-  USE_MOCKS ? (
-    <OnboardingSteps />
-  ) : (
+/** With mocks off only the types step is real (sign-up already created the company); the company step says so. */
+const OnboardingPage = () => {
+  const [searchParams] = useSearchParams()
+  if (USE_MOCKS || searchParams.get('step') === 'types') return <OnboardingSteps />
+  return (
     <div className="w-full max-w-sm">
       <NotAvailableYet
         title="Not available yet"
-        description="Setup steps are not available yet. Signing up already created your company."
-        backTo="/types"
-        backLabel="Go to document types"
+        description="Company setup is not available yet. Signing up already created your company; pick your document types in the next step."
+        backTo="/onboarding?step=types"
+        backLabel="Choose document types"
       />
     </div>
   )
+}
 
 export default OnboardingPage

@@ -33,9 +33,10 @@ A company that signs up for real (mocks off) can pick ready document types (Invo
 - **Files:** `apps/web/src/pages/onboarding/onboarding-page.tsx`, `apps/web/src/features/onboarding/types-step.tsx`, `apps/web/src/features/auth/sign-up-form.tsx`, `apps/web/src/features/document-types/{template-gallery,template-builder}.tsx` (only if a gap shows up)
 - **Model:** sonnet
 - **Accept:**
-  - [ ] a new real company signs up, lands on the types step, picks Invoice and Receipt and lands in the Inbox with both types (checked locally with `vercel dev` and mocks off); uploading the sample invoice gets it to `needs_review` (needs the Anthropic API: deferred to when its usage limit is lifted, noted in the Log)
-  - [ ] the same from `/types/new` for an existing company
-  - [ ] error state with retry; 375px and 1280px, light and dark
+  - [x] a new real company signs up, lands on the types step, picks Invoice and Receipt and lands in the Inbox with both types (checked locally with `vercel dev` and mocks off)
+  - [ ] uploading the sample invoice in that company gets it to `needs_review` (needs the Anthropic API: deferred until its usage limit is lifted)
+  - [x] the same from `/types/new` for an existing company
+  - [x] error state with retry; 375px and 1280px, light and dark
 
 ## Backend needs
 None new: types and versions are created through the existing RLS-protected tables.
@@ -50,3 +51,4 @@ None new: types and versions are created through the existing RLS-protected tabl
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-11-26 | 1 | done: templates moved to `lib/fields/templates.ts` (product data, not mock); `useTemplates` returns them with mocks off too; `/types/new?from=template` and the New type menu no longer treat templates as an AI feature (`new-type-page.tsx`, `new-type-options.ts`: only the sample routes stay gated). `pnpm --filter @docspread/api check-templates`: Invoice 11, Receipt 7, Contract 11 fields parse with `parseFieldDefs`. 90 pytest tests (eval drift test path updated). Typecheck, lint, build green. | `apps/web/src/lib/fields/templates.ts`, `apps/web/src/lib/mock/{api,document-types-seed,index}.ts`, `apps/web/src/lib/api/document-types.ts`, `apps/web/src/features/document-types/{template-card,type-draft,new-type-options}.ts(x)`, `apps/web/src/features/onboarding/selectable-template-card.tsx`, `apps/web/src/pages/types/new-type-page.tsx`, `evals/tests/test_types.py`, `services/api/{package.json,scripts/check-templates.ts}` |
+| 2026-11-26 | 2 (all but the upload check) | with mocks off: sign-up → `/onboarding?step=types`; bare `/onboarding` keeps "Not available yet" with a link to the types step; the sample link and Back are hidden, and so is the "Step 2 of 2" counter (no step 1 until 033). End-to-end on `vercel dev` (Playwright, no uploads, no AI calls): a new company picked Invoice and Receipt, landed on `/inbox`, `/types` listed both; `/types/new?from=template` saved Contract; no console errors, no horizontal scroll at 375px. The three test companies and their auth users were deleted from `docspread-dev` afterwards. Error with retry: the existing all-or-nothing create and its alert, reviewed in code. Open: the upload-to-`needs_review` check waits for the Anthropic usage limit (2026-12-01 or sooner). | `apps/web/src/pages/onboarding/onboarding-page.tsx`, `apps/web/src/features/onboarding/{types-step,onboarding-card}.tsx`, `apps/web/src/features/auth/sign-up-form.tsx` |
