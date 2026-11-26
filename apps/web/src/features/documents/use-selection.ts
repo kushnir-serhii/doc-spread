@@ -10,6 +10,8 @@ export interface Selection {
   toggle: (id: string) => void
   toggleAll: () => void
   clear: () => void
+  /** drop these ids (e.g. the ones just processed) and keep the rest */
+  deselect: (ids: readonly string[]) => void
 }
 
 /** Selection is kept as raw ids; rows that left the list (filter, approve) are ignored while computing. */
@@ -31,5 +33,6 @@ export const useSelection = (documents: Document[], initialIds: readonly string[
       }),
     toggleAll: () => setSelected(state === 'all' ? new Set() : new Set(documents.map((doc) => doc.id))),
     clear: () => setSelected(new Set()),
+    deselect: (drop) => setSelected((prev) => new Set([...prev].filter((id) => !drop.includes(id)))),
   }
 }

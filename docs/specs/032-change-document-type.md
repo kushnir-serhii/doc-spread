@@ -1,6 +1,6 @@
 # 032 — Change a document's type, and work the Unclassified bucket
 
-**Status:** in-progress · **Depends on:** 023, 031 (branched from it) · **Route(s):** `/documents/:documentId`, `/inbox?type=unclassified`
+**Status:** done · **Depends on:** 023, 031 (branched from it) · **Route(s):** `/documents/:documentId`, `/inbox?type=unclassified`
 
 ## Goal
 With mocks off, a user can fix a document the classifier got wrong (Review → **Change type**) and give a type to a document that landed in **Unclassified** (Inbox bucket and Review → **Choose a type**). The document is then extracted again with the chosen type. Today both controls exist and work on mocks, but with real data they fail with "not available yet", so a wrongly typed document is stuck for real customers.
@@ -38,13 +38,13 @@ With mocks off, a user can fix a document the classifier got wrong (Review → *
   - [x] mocks off against the local stack: Review → Change type and Unclassified → Assign type move the document to `processing` with the new type; errors are shown with `role="alert"`
   - [x] mock mode keeps working
 
-### [ ] 3. Assign one type to several unclassified documents
+### [x] 3. Assign one type to several unclassified documents
 - **Build:** checkboxes in the Unclassified bucket, a bar "Assign N to [type]" (one request per document; per-row result; failures stay selected with the reason).
 - **Files:** `apps/web/src/features/documents/{unclassified-view,…}.tsx`
 - **Model:** designer
 - **Accept:**
-  - [ ] select several, assign, each leaves the bucket or shows its error; announced in `role="status"`
-  - [ ] keyboard only, 375px and 1280px, light and dark; 50+ rows
+  - [x] select several, assign, each leaves the bucket or shows its error; announced in `role="status"`
+  - [x] keyboard only, 375px and 1280px, light and dark; 50+ rows
 
 ## Backend needs
 - `POST /api/documents/:id/type`; `documents.type_changes`.
@@ -60,3 +60,4 @@ With mocks off, a user can fix a document the classifier got wrong (Review → *
 | --- | --- | --- | --- |
 | 2026-11-26 | 1 | done on the local stack: migration `20261126130000_type_changes.sql` (`documents.type_changes`, default 0, >= 0; trigger `private.forbid_type_changes_update` refuses changes from `authenticated`/`anon` with `42501`); `POST /api/documents/:id/type` (`documents/change-type.ts`): `400 invalid_body`, `404 not_found` / `type_not_found`, `409 wrong_status` / `too_many_changes` / `same_type` (doesn't use a change) / `conflict`; a conditional claim sets the type and latest version, empty values, `overall_confidence` 0 (the column is not null), `processing`, counter + 1, then enqueues `extract` (rolled back if the enqueue fails); the extract step skips the classifier when a `processing` document has a `type_id`, and a type deleted in the meantime ends `unclassified`. `supabase test db` 95 tests (6 new), advisors clean, the new smoke checks pass (the 8 older local `42P10` storage failures are unchanged). Diagrams: pipeline, lifecycle, document flow, glossary. Note: the first two smoke runs went to `docspread-dev` because `services/api/.env.local` points there (only the older self-cleaning checks ran; the new ones skipped without the migration). | `supabase/migrations/20261126130000_type_changes.sql`, `supabase/tests/change_type.test.sql`, `services/api/src/{handler,documents/change-type}.ts`, `services/api/src/pipeline/{extract-core,extract-handler}.ts`, `services/api/scripts/smoke-api.ts`, `apps/web/src/features/architecture/diagrams/{pipeline,lifecycle,document-flow,glossary}.ts` |
 | 2026-11-26 | 2 | done: real `reassignDocumentType` (`apiFetch` to `POST /api/documents/:id/type`, then the fresh document; API codes mapped to messages: too many changes, wrong status, type gone, same type, conflict, not found); the mock follows the same rules (allowed statuses, same type refused, 3 changes per document). Lifecycle diagram: `error --> processing` removed (error documents can't be retyped). No UI changes needed. Checked: typecheck, lint, build; **real mode against the local stack** (Playwright, throwaway company, process env only): Review → Change type and Unclassified → Assign type set `processing`, the new type and `type_changes = 1`; at 3 changes the dialog shows the message in `role="alert"`. Not seen locally: the document coming back as `needs_review` (no cron or Anthropic call locally). | `apps/web/src/lib/real/documents.ts`, `apps/web/src/lib/api/documents.ts`, `apps/web/src/lib/mock/api.ts`, `apps/web/src/features/architecture/diagrams/{lifecycle,glossary}.ts` |
+| 2026-11-26 | 3 | done: checkboxes and select-all in the Unclassified bucket (the existing `DocumentList` selection), `UnclassifiedBulkBar` ("N selected", Type, "Assign N", Clear; sticky at 375px), `useBulkAssign` (one request after another, a failure doesn't stop the rest); successes leave the bucket and are deselected, failures stay selected with the reason on the row and in a `role="alert"` list; summary in the page's `role="status"`. Rows' single assign is disabled while a bulk run is in progress (no double assign). Checked in mock mode with Playwright: 3 assigned; a forced failure (temporary mock change, reverted); keyboard only; 54 rows (temporary seed, reverted) without horizontal scroll; 375/1280, light/dark. | `apps/web/src/features/documents/{unclassified-view,unclassified-bulk-bar,assign-type-cell}.tsx`, `apps/web/src/features/documents/{use-bulk-assign,use-selection}.ts` |
