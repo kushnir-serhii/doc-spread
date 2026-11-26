@@ -18,6 +18,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   file_type_not_allowed: 'Only PDF, JPG or PNG',
   content_type_mismatch: 'Only PDF, JPG or PNG',
   invalid_size: 'The file is empty',
+  limit_reached: 'Monthly limit reached',
 }
 
 const asUploadError = (error: unknown): Error => {

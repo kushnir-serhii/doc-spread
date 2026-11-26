@@ -471,6 +471,6 @@ export interface PlanUsage {
   plan: Plan
   documentsThisMonth: number
   types: number
-  /** ISO date, first day of the current month (local time) */
+  /** ISO date, first day of the current month (UTC) */
   periodStart: string
 }

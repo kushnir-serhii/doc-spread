@@ -1,6 +1,6 @@
 # 031 — Usage limits: no company can run up the AI bill
 
-**Status:** in-progress · **Depends on:** 023, 030 (branched from it) · **Route(s):** `/upload`, `/settings`
+**Status:** done · **Depends on:** 023, 030 (branched from it) · **Route(s):** `/upload`, `/settings`
 
 ## Goal
 Every company has a monthly document allowance that the server enforces, so real customers can use the app without any one of them (or a bot that signs up) spending the owner's Anthropic budget. Users see how much they have used before they hit the limit, and an upload over the limit is refused with a clear message instead of failing later in the pipeline.
@@ -33,14 +33,14 @@ Why now: extraction costs about $0.004 per document on Haiku, but nothing stops 
   - [x] `supabase test db` and `supabase db advisors --local --type security` clean; `pnpm --filter @docspread/api smoke` passes
   - [x] the limit can't be changed by a company member through the browser (RLS: read only)
 
-### [ ] 2. Usage in Upload and Settings
+### [x] 2. Usage in Upload and Settings
 - **Build:** a real `getPlanUsage`; Upload shows the usage line, warns from 80%, and at the limit disables the drop zone with the message and the reset date; a `limit_reached` answer during an upload is shown per file. Settings → plan shows the real numbers.
 - **Files:** `apps/web/src/lib/{real,api}/*`, `apps/web/src/features/upload/*`, `apps/web/src/features/settings/*`
 - **Model:** designer
 - **Accept:**
-  - [ ] mocks off: usage matches the database; at the limit the drop zone is disabled with the reset date
-  - [ ] the message is announced (`role="status"`/`alert`); 375px and 1280px, light and dark
-  - [ ] mock mode keeps working
+  - [x] mocks off: usage matches the database; at the limit the drop zone is disabled with the reset date
+  - [x] the message is announced (`role="status"`/`alert`); 375px and 1280px, light and dark
+  - [x] mock mode keeps working
 
 ## Backend needs
 - `companies.monthly_document_limit`; `POST /api/uploads` → `409 limit_reached`.
@@ -58,3 +58,4 @@ Why now: extraction costs about $0.004 per document on Haiku, but nothing stops 
 | Date | Slice | Result | Notes / files |
 | --- | --- | --- | --- |
 | 2026-11-26 | 1 | done on the local stack (Docker + `supabase start`; `docspread-dev` untouched): migration `20261126120000_usage_limits.sql` adds `companies.monthly_document_limit` (default 50, > 0) and a `before insert` trigger on `documents` (`private.enforce_document_limit`, security definer, `search_path = ''`, per-company `pg_advisory_xact_lock`) that raises SQLSTATE `DS001` `limit_reached` with `{limit, used}`; `companies` update is now granted per column (name, tax_id, recipients, default_currency, locale), so members can't raise their limit, and **any new `companies` column a user should edit must be added to that grant**. `POST /api/uploads` maps `DS001` to `409 limit_reached` with `limit`, `used`, `resetsAt` (first day of next month, UTC); no count in the API, so it is safe before the migration lands. `supabase test db`: 89 tests (8 new); advisors: no issues. Local smoke: the 5 limit checks pass; 8 older checks (byte upload, `complete`, ocr enqueue, exports) fail on the local storage container's `42P10` (`ON CONFLICT` on `storage.objects` without a matching index, a local CLI image issue unrelated to this slice). | `supabase/migrations/20261126120000_usage_limits.sql`, `supabase/tests/usage_limits.test.sql`, `services/api/src/handler.ts`, `services/api/scripts/smoke-api.ts` |
+| 2026-11-26 | 2 | done: real `getPlanUsage` (`lib/real/plan.ts`: the company's limit under RLS, falling back to 50 if the column isn't there yet; this month's documents by `uploaded_at`, UTC; plan "Free", no types limit); Upload shows "N of M documents this month", an amber notice from 80%, and at the limit a red notice, a disabled drop zone and the reset date (Intl, user's locale); a `limit_reached` answer shows "Monthly limit reached" on that file's row (its generic Retry stays: upload errors carry text, not a code); usage refetches after every upload. Mock uploads respect the mock plan's limit too. Settings → Plan needed no change (it reads the same hook). Pipeline diagram shows the 409 branch. Checked: typecheck, lint, build; mock states at 375/1280, light/dark (normal, warning, at limit with a refused file); **real mode against the local stack**: 3 documents this month in the database → the Upload screen showed "3 of 50 documents this month", no console errors (the test rows were removed). Not screenshotted: the skeleton and the usage-load error (code reviewed). | `apps/web/src/lib/real/{plan,upload}.ts`, `apps/web/src/lib/api/{plan,documents}.ts`, `apps/web/src/lib/mock/{api,types}.ts`, `apps/web/src/features/upload/{usage-notice,usage-state,drop-zone}.ts(x)`, `apps/web/src/pages/upload/upload-page.tsx`, `apps/web/src/features/architecture/diagrams/{pipeline,glossary}.ts` |

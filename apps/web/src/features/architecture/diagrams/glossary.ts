@@ -200,7 +200,7 @@ export const GLOSSARY: Record<GlossaryKey, GlossaryEntry> = {
     title: 'API router: /api/*',
     provider: 'vercel',
     summary: 'One function that receives every API request and dispatches it by path.',
-    role: 'A thin wrapper over services/api. It verifies the Supabase token, scopes the request to the caller’s company, creates upload records with signed upload URLs, and on completion moves a document to processing and into the ocr queue.',
+    role: 'A thin wrapper over services/api. It verifies the Supabase token, scopes the request to the caller’s company, creates upload records with signed upload URLs (answering 409 limit_reached when the company is at its monthly document limit), and on completion moves a document to processing and into the ocr queue.',
     where: ['apps/web/api/router.ts', 'services/api/src/handler.ts', 'services/api/src/auth.ts'],
     docsUrl: 'https://vercel.com/docs/functions',
   },
@@ -1040,7 +1040,7 @@ export const GLOSSARY: Record<GlossaryKey, GlossaryEntry> = {
     title: 'POST /api/uploads',
     provider: 'browser',
     summary: 'The browser asks to upload a file.',
-    role: 'Sends the file name, type and size with the bearer token and gets back a document id and a signed upload URL.',
+    role: 'Sends the file name, type and size with the bearer token and gets back a document id and a signed upload URL, or 409 limit_reached when the company is at its monthly limit.',
     where: ['apps/web/src/lib/real/upload.ts', 'services/api/src/handler.ts'],
   },
   flowSignedPut: {
