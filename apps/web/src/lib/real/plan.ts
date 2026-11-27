@@ -3,7 +3,7 @@ import { getCompanyId } from './company-id'
 import { getSupabase } from './client'
 
 /** The Free limit (spec 011, 031): used while `companies.monthly_document_limit` can't be read (the migration isn't there yet). */
-const FREE_DOCUMENTS_PER_MONTH = 50
+const FREE_DOCUMENTS_PER_MONTH = 10
 
 /** The company's limit under RLS, or the Free limit when the column is missing or can't be read. */
 const readLimit = async (companyId: string): Promise<number> => {

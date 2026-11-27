@@ -27,7 +27,7 @@ export const seedTeam: TeamMember[] = [
 
 // ---------- plans ----------
 export const PLANS: Record<PlanId, Plan> = {
-  free: { id: 'free', name: 'Free', documentsPerMonth: 50, typeLimit: 3 },
+  free: { id: 'free', name: 'Free', documentsPerMonth: 10, typeLimit: 3 },
   pro: { id: 'pro', name: 'Pro', documentsPerMonth: 1000, typeLimit: null },
   business: { id: 'business', name: 'Business', documentsPerMonth: 10000, typeLimit: null },
 }

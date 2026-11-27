@@ -9,7 +9,7 @@ insert into public.team_members (company_id, user_id, email, role, status) value
   ('aaaaaaaa-1111-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'a@example.test', 'admin', 'active');
 
 select is(
-  (select monthly_document_limit from public.companies where name = 'Limit Co A'), 50, 'the default limit is 50'
+  (select monthly_document_limit from public.companies where name = 'Limit Co A'), 10, 'the default limit is 10'
 );
 select throws_ok(
   $$update public.companies set monthly_document_limit = 0 where name = 'Limit Co A'$$,
