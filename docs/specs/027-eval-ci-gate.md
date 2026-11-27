@@ -9,14 +9,14 @@ When a pull request changes a prompt, the extraction schema, the value mapping o
 - In:
   - `evals/evals/gate.py`: compares a run's `metrics.json` with the baseline and decides pass, warn or fail, with pytest tests on fixture files.
   - A cheap workflow job on every PR that touches `evals/**`: `uv sync`, pytest, dataset validation. No secrets, no API spend.
-  - The eval workflow: on PRs that touch the paths below, and by hand (`workflow_dispatch`), it runs the full dataset on the production extraction model, runs the gate, writes the comparison to the job summary and one updated PR comment, and uploads the report as an artifact.
+  - The eval workflow: **only on demand** (decided 2026-11-27, owner: never on every PR, to keep the cost down): by hand (`workflow_dispatch`) or when a PR gets the label `run-evals`, it runs the full dataset on the production extraction model, runs the gate, writes the comparison to the job summary and one updated PR comment, and uploads the report as an artifact.
   - Spending limits: a dedicated Anthropic API key with its own monthly limit, the runner's `--max-usd`, one run per PR at a time (`concurrency`, older runs cancelled).
   - How to change the baseline on purpose, and how the owner accepts a known drop.
   - `docs/process.md`: the Definition of Done gains "a spec that changes prompts, schema or mapping passes the eval gate"; `docs/setup.md`: the secret.
-- Out: running evals on every PR (only relevant paths); Haiku in CI (the gate checks the model production uses; comparisons stay a local `--models` run); fork PRs (no secrets there; the repo has one owner); nightly runs (can be added with a `schedule:` line later).
+- Out: running evals on every PR or automatically on path changes (on demand only; the cheap no-secrets job above still runs on `evals/**`); Haiku in CI (the gate checks the model production uses; comparisons stay a local `--models` run); fork PRs (no secrets there; the repo has one owner); nightly runs (can be added with a `schedule:` line later).
 
 ## Data
-- Paths that start the eval job:
+- Paths the gate is about (a PR touching them should get the `run-evals` label before merge; the job no longer starts by itself):
   ```
   services/api/src/pipeline/{claude,extract-core,extract-schema,extract-map,field-types,ocr-*,page-types}.ts
   services/api/scripts/eval-extract.ts
@@ -77,7 +77,7 @@ None.
 - **What does the gate compare against?** (a) the baseline on the base branch; (b) the baseline in the PR.
   - Recommended: (a). With (b) a PR could lower its own baseline and pass.
 - **How strict?** Recommended: thresholds from 026's measured noise (placeholders above); verified precision gets an absolute floor (95 %) because it is what users trust without checking.
-- **Cost?** Roughly $3–6 per run at today's Opus prices (026 measures the real figure), only on PRs touching the listed paths. Recommended: a separate key with a monthly limit (for example $50) plus `--max-usd 15` per run.
+- **Cost?** Production extracts with Haiku, so a run costs about $0.40–1 (026 measures the real figure), and only when someone asks for it (by hand or the `run-evals` label). **Decided (2026-11-27):** on demand only; a separate key with a small monthly limit (for example $10) plus `--max-usd 3` per run.
 - **Who can accept a drop?** Recommended: the owner, with the `eval-drop-accepted` label; the comment records it.
 - **Branch?** `eval-gate-027`, after 026 is merged.
 
