@@ -47,7 +47,7 @@ Why now: extraction costs about $0.004 per document on Haiku, but nothing stops 
 - Reading usage: a count the browser can read under RLS (or a small `GET /api/usage`).
 
 ## Open questions
-- **Default limit?** **Decided (2026-11-26):** **50 documents per month**, the same as the demo's Free plan (about $0.20 of Haiku per company); raised by hand (SQL) until billing exists.
+- **Default limit?** **Decided (2026-11-26):** **50 documents per month**, the same as the demo's Free plan (about $0.20 of Haiku per company); raised by hand (SQL) until billing exists. **Changed (2026-11-27, owner): 10 documents per month** (migration `20261127090000_usage_limit_10.sql`: new default 10, companies still at 50 moved to 10, hand-raised limits kept; the browser fallback and the mock Free plan say 10).
 - **Enforcement?** **Decided:** in the database (trigger with a per-company lock), so parallel uploads can't overshoot.
 - **Count rejected or failed documents?** **Decided:** yes, every upload counts; a multi-file upload accepts files until the limit and refuses the rest per file. A document deleted later stops counting (the count is of existing rows): acceptable until billing.
 - **Types limit, plan name?** **Decided:** no limit on types until billing; Settings → Plan shows "Free" with the real usage.
