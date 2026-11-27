@@ -35,6 +35,8 @@ The single source of truth for what is done, what is next, and in which order. `
 | 027 | [CI eval gate](specs/027-eval-ci-gate.md) | postponed | 026 |
 | 028 | [Eval dashboard (optional, FastAPI)](specs/028-eval-dashboard.md) | postponed | 026 |
 | 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | postponed | 026 |
+| — | Email: password reset | not in the MVP: needs a custom SMTP provider (Supabase's built-in email sends 2 per hour, only to the project team); Google sign-in needs no reset (2026-11-27) | users with a password ask for it, or after the MVP |
+| — | Team and invites | not in the MVP; one person per company is enough for launch (2026-11-27) | a customer needs several people in one company |
 | 030 | [Templates in the real app](specs/030-real-templates.md) | in-progress | 023 |
 | 031 | [Usage limits: no company can run up the AI bill](specs/031-usage-limits.md) | done | 023 |
 | 032 | [Change a document's type, and work the Unclassified bucket](specs/032-change-document-type.md) | done | 023, 031 |
@@ -64,15 +66,18 @@ Read top to bottom; the next spec is the first one that isn't `done`. **Goal of 
 | 15 | 032 |
 | 16 | 026 (last slice only: the Haiku baseline, about $1, once the Anthropic usage limit is lifted; it blocks nothing above) |
 
-### Next, after 032 (specs not written yet; drafted one at a time, in this order)
+### Next, after 032: the production MVP (specs not written yet; drafted one at a time, in this order)
+
+Decided 2026-11-27 (owner): no email in the MVP (no password reset, no invites); sign-in with Google is free and needs no email service.
 
 | Order | Spec to write | Why |
 | --- | --- | --- |
-| 033 | Email: password reset and editing the company | needs an email service (Supabase Auth email or a provider) |
+| 033 | Sign in with Google, and editing the company | free (Supabase Auth + Google OAuth), no email service needed; editing the company is mock-only today |
 | 034 | Groups with real data | today mock-only |
-| 035 | Team and invites | needs 033's email |
-| 036 | Launch: mocks off on production, error monitoring, Privacy and Terms | the switch to real customers |
-| 037 | Billing: paid plans (only once you decide to charge) | raises the 031 limits for paying companies; brings 029 back |
+| 035 | Guest mode: try without signing up | a guest (Supabase anonymous sign-in) gets **3 documents per 10 days**, counted per IP as well (hashed, not stored raw) and protected by a captcha (Cloudflare Turnstile, free), so trying is easy but signing up pays off |
+| 036 | Launch: mocks off on production, error monitoring, Privacy and Terms | the switch to real customers; Privacy mentions the hashed IP from 035 |
+
+After the MVP (not in the plan): billing with paid plans (only once you decide to charge; raises the 031 limits, brings 029 back).
 
 ## Postponed
 
@@ -80,9 +85,9 @@ Decided not now. The loop never picks these; only the owner moves one back into 
 
 | # | Spec | Why postponed (decided) | Comes back when |
 | --- | --- | --- | --- |
-| 027 | [CI eval gate](specs/027-eval-ci-gate.md) | not needed for launch; prompts don't change often (2026-11-26) | after 036, once prompt changes are frequent |
+| 027 | [CI eval gate](specs/027-eval-ci-gate.md) | not needed for launch; prompts don't change often (2026-11-26). When it comes back it runs **only on demand** (by hand or a `run-evals` label on a PR), never on every PR, about $0.40–1 per run on Haiku (2026-11-27) | after 036, once prompt changes are frequent |
 | 028 | [Eval dashboard](specs/028-eval-dashboard.md) | optional; `report.md` is enough (2026-11-26) | evals are run often by more than one person |
-| 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | Opus and Sonnet cost 20–40× Haiku and no customer pays for that; Haiku already costs about $0.004 per document (2026-11-26) | billing exists (a paid plan can include the stronger tiers); slices 1–3 only if Haiku cost matters |
+| 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | Opus and Sonnet cost 20–40× Haiku and no customer pays for that; Haiku already costs about $0.004 per document (2026-11-26) | billing exists (a paid plan can include the stronger tiers); slices 1–3 only if Haiku cost matters. Costs nothing while postponed (2026-11-27) |
 
 Dropped for good (don't bring back without a new reason): an Opus baseline for the evals ($11–13; 2026-11-26, 026 runs on Haiku only); a test run just to price Sonnet (its price is published: $2 / $10 per million tokens).
 
