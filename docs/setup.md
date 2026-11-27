@@ -131,7 +131,7 @@ pnpm --filter @docspread/api eval-extract --file apps/web/public/mock/sample-inv
 
 # the dataset (or a subset), from evals/
 cd evals
-uv run python -m evals.run --models opus,haiku --subset 'inv-00*' --max-usd 5
+uv run python -m evals.run --models haiku --subset 'inv-00*' --max-usd 1
 uv run python -m evals.analyze runs/<run>      # metrics.json, report.md, charts/
 ```
 

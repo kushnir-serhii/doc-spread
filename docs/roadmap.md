@@ -31,13 +31,13 @@ The single source of truth for what is done, what is next, and in which order. `
 | 023 | [First real flow](specs/023-first-real-flow.md) | done | 022 |
 | 024 | [UML diagrams: system, user and document flows (dev only)](specs/024-uml-diagrams.md) | done | 021 |
 | 025 | [Golden dataset: invoices and receipts with known answers](specs/025-golden-dataset.md) | done | 023 |
-| 026 | [Extraction evals: runner, scoring and analysis](specs/026-extraction-evals.md) | in-progress | 025 |
+| 026 | [Extraction evals: runner, scoring and analysis](specs/026-extraction-evals.md) | done | 025 |
 | 027 | [CI eval gate](specs/027-eval-ci-gate.md) | postponed | 026 |
 | 028 | [Eval dashboard (optional, FastAPI)](specs/028-eval-dashboard.md) | postponed | 026 |
 | 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | postponed | 026 |
 | — | Email: password reset | not in the MVP: needs a custom SMTP provider (Supabase's built-in email sends 2 per hour, only to the project team); Google sign-in needs no reset (2026-11-27) | users with a password ask for it, or after the MVP |
 | — | Team and invites | not in the MVP; one person per company is enough for launch (2026-11-27) | a customer needs several people in one company |
-| 030 | [Templates in the real app](specs/030-real-templates.md) | in-progress | 023 |
+| 030 | [Templates in the real app](specs/030-real-templates.md) | done | 023 |
 | 031 | [Usage limits: no company can run up the AI bill](specs/031-usage-limits.md) | done | 023 |
 | 032 | [Change a document's type, and work the Unclassified bucket](specs/032-change-document-type.md) | done | 023, 031 |
 
@@ -64,7 +64,7 @@ Read top to bottom; the next spec is the first one that isn't `done`. **Goal of 
 | 13 | 030 |
 | 14 | 031 |
 | 15 | 032 |
-| 16 | 026 (last slice only: the Haiku baseline, about $1, once the Anthropic usage limit is lifted; it blocks nothing above) |
+| 16 | 026 (last slice only: the Haiku baseline; done 2026-11-27, $0.30) |
 
 ### Next, after 032: the production MVP (specs not written yet; drafted one at a time, in this order)
 

@@ -19,7 +19,7 @@ Spec: `docs/specs/026-extraction-evals.md`. Needs `ANTHROPIC_API_KEY` in `servic
 
 ```sh
 uv run python -m evals.run --subset 'inv-00*' --models haiku        # 9 invoices on Haiku, about $0.04
-uv run python -m evals.run --models opus,haiku --repeat 2 --max-usd 20
+uv run python -m evals.run --models haiku --repeat 2 --max-usd 3          # the full baseline, about $0.30
 uv run python -m evals.run --resume runs/<run> --max-usd 20         # continue a killed or capped run
 ```
 
@@ -37,12 +37,12 @@ Scores every result against its truth file (no API calls). `metrics.json` and `r
 
 ## Extraction evals
 
-What they measure: how well the real OCR, classify and extract code reads the golden dataset. Per field and document type (accuracy, hallucinated and missed values), whether the confidence the model reports can be trusted, cost and latency per document, and Opus against Haiku. A change to a prompt, schema or model comes with these numbers. Spec: `docs/specs/026-extraction-evals.md`.
+What they measure: how well the real OCR, classify and extract code reads the golden dataset. Per field and document type (accuracy, hallucinated and missed values), whether the confidence the model reports can be trusted, cost and latency per document, and two models against each other when a run has both (the baseline is Haiku only, the production model). A change to a prompt, schema or model comes with these numbers. Spec: `docs/specs/026-extraction-evals.md`.
 
 Run (needs `ANTHROPIC_API_KEY` in `services/api/.env.local`; real runs cost money):
 
 ```sh
-uv run python -m evals.run --models opus,haiku [--subset 'inv-00*,scanned'] [--repeat k] [--max-usd 10]
+uv run python -m evals.run --models haiku [--subset 'inv-00*,scanned'] [--repeat k] [--max-usd 10]
 uv run python -m evals.run --resume runs/<run> [--max-usd 20]   # continue a killed, capped or stopped run
 ```
 
@@ -59,14 +59,14 @@ uv run python -m evals.analyze runs/<run> --compare runs/<other>   # also prints
 
 Reading the report: start with its "How to read" section, which defines every metric. The two numbers the product relies on: **verified precision** is the share of values at or above `LOW_CONFIDENCE` (0.9, shown as fine in the app) that are correct; **error-catch rate** is the share of wrong values that the app flags below 0.9.
 
-Cost: Opus about $0.12 per document on average (up to $0.34 for a scanned 2-page invoice), Haiku about $0.004; the full baseline (`--models opus,haiku --repeat 2`, 43 documents) about $11 to $13.
+Cost: Haiku about $0.0035 per document on average ($0.01 at p95); the full baseline (`--models haiku --repeat 2`, 43 documents, 86 results) $0.30 on 2026-11-27, about 15 minutes. Opus costs about $0.12 per document (up to $0.34 for a scanned 2-page invoice); it is not part of the baseline (decided 2026-11-26).
 
 ### Update the baseline
 
-The first baseline is pending. To make or refresh it:
+The committed baseline (`evals/baseline/`) is from 2026-11-27, Haiku, 2 repeats. To refresh it (after a prompt, schema, model or dataset change):
 
 ```sh
-uv run python -m evals.run --models opus,haiku --repeat 2 --label baseline --max-usd 20
+uv run python -m evals.run --models haiku --repeat 2 --label baseline --max-usd 3
 uv run python -m evals.analyze runs/<run> --out baseline
 ```
 

@@ -1,0 +1,233 @@
+{
+  "schema": 1,
+  "run": {
+    "label": "baseline",
+    "gitSha": "a3b6a3659712d4046acfdb1cf7a9b09102247230",
+    "dirty": false,
+    "datasetHash": "043b1c64150b4fa809d88ee43990d4ad8be56d9576eb683968e6c843ebd56889",
+    "promptHash": "29969e002fd64e008db508253d325947ced3604ae8d19e340fc15567efe9d83e",
+    "started": "2026-11-27T11:13:43Z",
+    "finished": "2026-11-27T11:21:51Z",
+    "documents": 43,
+    "repeat": 2
+  },
+  "models": {
+    "haiku": {
+      "modelId": "claude-haiku-5-5",
+      "documents": 43,
+      "outcomes": {
+        "needs_review": 76,
+        "unclassified": 10
+      },
+      "fieldAccuracy": {
+        "overall": 0.8498,
+        "byField": {
+          "due_date": 1.0,
+          "gross_total": 0.86,
+          "invoice_number": 1.0,
+          "issue_date": 1.0,
+          "items": 1.0,
+          "items.description": 1.0,
+          "items.price": 0.7,
+          "items.quantity": 1.0,
+          "line_items": 1.0,
+          "line_items.description": 1.0,
+          "line_items.gross": 0.6622,
+          "line_items.net": 0.6641,
+          "line_items.quantity": 1.0,
+          "line_items.unit": 1.0,
+          "line_items.unit_net": 0.6641,
+          "line_items.vat": 0.6641,
+          "line_items.vat_rate": 1.0,
+          "merchant": 1.0,
+          "merchant_tax_id": 0.9231,
+          "net_total": 0.86,
+          "payment_method": 0.8077,
+          "payment_term_days": 0.92,
+          "receipt_date": 1.0,
+          "sale_date": 1.0,
+          "supplier_name": 1.0,
+          "supplier_tax_id": 1.0,
+          "tax_total": 0.6538,
+          "total": 0.9615,
+          "vat_total": 0.86
+        },
+        "byType": {
+          "invoice": 0.8445,
+          "receipt": 0.8977
+        },
+        "byTag": {
+          "chf": 0.6839,
+          "computed-not-printed": 0.8203,
+          "date-dmy": 0.8143,
+          "date-iso": 0.8311,
+          "date-localized-month": 0.755,
+          "date-long": 0.997,
+          "date-mdy": 0.9432,
+          "eur": 0.9138,
+          "gbp": 0.9829,
+          "jpg": 0.8815,
+          "jpy": 0.5654,
+          "lang-de": 0.8586,
+          "lang-en": 0.8751,
+          "lang-es": 0.9244,
+          "lang-fr": 0.9773,
+          "lang-pl": 1.0,
+          "lang-sv": 0.5522,
+          "layout-a": 0.8391,
+          "layout-b": 0.7869,
+          "layout-c": 0.9978,
+          "missing-optional": 0.8148,
+          "mock-sample": 1.0,
+          "multi-page": 0.8443,
+          "no-currency": 0.9961,
+          "photo": 0.8977,
+          "photo-hard": 0.8922,
+          "photo-light": 0.8478,
+          "photo-medium": 0.9254,
+          "png": 0.9444,
+          "scanned": 0.8644,
+          "sek": 0.5817,
+          "text-pdf": 0.8409,
+          "usd": 1.0
+        }
+      },
+      "documentExactMatch": 0.8947,
+      "classificationAccuracy": 1.0,
+      "classificationConfusion": {
+        "invoice": {
+          "invoice": 50
+        },
+        "none": {
+          "unclassified": 10
+        },
+        "receipt": {
+          "receipt": 26
+        }
+      },
+      "hallucinationRate": 0.0,
+      "missRate": 0.0012,
+      "values": {
+        "correct": 4079,
+        "wrong": 777,
+        "missed": 6,
+        "hallucinated": 0,
+        "correct_absent": 350
+      },
+      "calibration": {
+        "ece": 0.0424,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.5,
+            "count": 3,
+            "meanConfidence": 0.3333,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.7,
+            "count": 1518,
+            "meanConfidence": 0.5018,
+            "accuracy": 0.496
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.9,
+            "count": 143,
+            "meanConfidence": 0.7906,
+            "accuracy": 0.972
+          },
+          {
+            "lo": 0.9,
+            "hi": 0.97,
+            "count": 2783,
+            "meanConfidence": 0.9414,
+            "accuracy": 0.9982
+          },
+          {
+            "lo": 0.97,
+            "hi": 1.0,
+            "count": 409,
+            "meanConfidence": 0.9706,
+            "accuracy": 1.0
+          }
+        ],
+        "verifiedPrecision": 0.9984,
+        "errorCatchRate": 0.9936
+      },
+      "costUsd": {
+        "mean": 0.003507,
+        "p50": 0.002505,
+        "p95": 0.009717,
+        "total": 0.301643
+      },
+      "latencyMs": {
+        "ocr": {
+          "p50": 1410.5,
+          "p95": 7978.0
+        },
+        "classify": {
+          "p50": 1272.0,
+          "p95": 2085.2
+        },
+        "extract": {
+          "p50": 13070.0,
+          "p95": 43649.8
+        },
+        "total": {
+          "p50": 17477.5,
+          "p95": 47496.8
+        }
+      },
+      "spread": {
+        "fieldAccuracy": {
+          "min": 0.8127,
+          "max": 0.8868,
+          "std": 0.0524
+        },
+        "documentExactMatch": {
+          "min": 0.8947,
+          "max": 0.8947,
+          "std": 0.0
+        },
+        "classificationAccuracy": {
+          "min": 1.0,
+          "max": 1.0,
+          "std": 0.0
+        },
+        "hallucinationRate": {
+          "min": 0.0,
+          "max": 0.0,
+          "std": 0.0
+        },
+        "missRate": {
+          "min": 0.0012,
+          "max": 0.0012,
+          "std": 0.0
+        },
+        "ece": {
+          "min": 0.0585,
+          "max": 0.0632,
+          "std": 0.0033
+        },
+        "verifiedPrecision": {
+          "min": 0.998,
+          "max": 0.9988,
+          "std": 0.0006
+        },
+        "errorCatchRate": {
+          "min": 0.9932,
+          "max": 0.9938,
+          "std": 0.0004
+        },
+        "costUsdMean": {
+          "min": 0.003504,
+          "max": 0.003511,
+          "std": 5e-06
+        }
+      }
+    }
+  },
+  "comparison": null
+}
