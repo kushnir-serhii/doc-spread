@@ -14,19 +14,18 @@ export const LIFECYCLE_DIAGRAM = `stateDiagram-v2
 
   [*] --> uploaded : file transferred (uploadDocument)
   uploaded --> processing : pipeline starts (runPipeline)
-  processing --> needs_review : type chosen or classified, fields extracted (applyExtraction)
+  processing --> needs_review : type chosen or classified, fields extracted (applyExtraction; a chosen type skips classification)
   processing --> unclassified : no type matched (runPipeline)
-  unclassified --> processing : user assigns a type (reassignDocumentType)
-  needs_review --> processing : user changes the type (reassignDocumentType)
+  unclassified --> processing : user assigns a type (POST /api/documents/:id/type)
+  needs_review --> processing : user changes the type (POST /api/documents/:id/type)
   needs_review --> approved : user approves (approveDocuments)
   needs_review --> rejected : user rejects (rejectDocument)
   unclassified --> rejected : user rejects (rejectDocument)
   approved --> rejected : user rejects (rejectDocument)
   rejected --> approved : user approves again (approveDocuments)
   approved --> exported : export job created (createExportJob)
-  approved --> processing : user changes the type (reassignDocumentType)
-  rejected --> processing : user changes the type (reassignDocumentType)
-  error --> processing : user assigns a type (reassignDocumentType)
+  approved --> processing : user changes the type (POST /api/documents/:id/type)
+  rejected --> processing : user changes the type (POST /api/documents/:id/type)
   exported --> [*]
 `
 

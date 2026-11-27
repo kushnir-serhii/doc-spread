@@ -15,11 +15,11 @@ import {
   approveDocuments as realApproveDocuments,
   getDocument as realGetDocument,
   listDocuments as realListDocuments,
+  reassignDocumentType as realReassignDocumentType,
   rejectDocument as realRejectDocument,
   updateDocumentValues as realUpdateDocumentValues,
 } from '@/lib/real/documents'
 import { getDocumentPages as realGetDocumentPages } from '@/lib/real/pages'
-import { notAvailableYet } from '@/lib/real/not-available'
 import { uploadDocument as realUploadDocument } from '@/lib/real/upload'
 import { planKeys } from './plan'
 import type { Document, FieldValue, ListDocumentsParams } from '@/lib/mock/types'
@@ -136,7 +136,7 @@ export const useReassignDocumentType = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, typeId }: { id: string; typeId: string }) =>
-      USE_MOCKS ? mockReassignDocumentType(id, typeId) : Promise.reject(notAvailableYet('Changing the type')),
+      USE_MOCKS ? mockReassignDocumentType(id, typeId) : realReassignDocumentType(id, typeId),
     onSuccess: (_data, { id }) => invalidateAfterChange(queryClient, [id]),
   })
 }

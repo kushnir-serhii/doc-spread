@@ -37,6 +37,7 @@ The single source of truth for what is done, what is next, and in which order. `
 | 029 | [Cheaper extraction and an accuracy choice per type](specs/029-cheaper-extraction.md) | postponed | 026 |
 | 030 | [Templates in the real app](specs/030-real-templates.md) | in-progress | 023 |
 | 031 | [Usage limits: no company can run up the AI bill](specs/031-usage-limits.md) | done | 023 |
+| 032 | [Change a document's type, and work the Unclassified bucket](specs/032-change-document-type.md) | done | 023, 031 |
 
 Statuses: `draft` → `ready` → `in-progress` → `done`, or `postponed` (meaning in [process.md](process.md#statuses)). The status here and in the spec's header must match.
 
@@ -60,13 +61,13 @@ Read top to bottom; the next spec is the first one that isn't `done`. **Goal of 
 | 12 | 025 |
 | 13 | 030 |
 | 14 | 031 |
-| 15 | 026 (last slice only: the Haiku baseline, about $1, once the Anthropic usage limit is lifted; it blocks nothing above) |
+| 15 | 032 |
+| 16 | 026 (last slice only: the Haiku baseline, about $1, once the Anthropic usage limit is lifted; it blocks nothing above) |
 
-### Next, after 031 (specs not written yet; drafted one at a time, in this order)
+### Next, after 032 (specs not written yet; drafted one at a time, in this order)
 
 | Order | Spec to write | Why |
 | --- | --- | --- |
-| 032 | Change a document's type, and work the Unclassified bucket | a wrongly typed document can't be fixed with mocks off |
 | 033 | Email: password reset and editing the company | needs an email service (Supabase Auth email or a provider) |
 | 034 | Groups with real data | today mock-only |
 | 035 | Team and invites | needs 033's email |

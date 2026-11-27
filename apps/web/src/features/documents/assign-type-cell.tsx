@@ -6,10 +6,12 @@ interface AssignTypeCellProps {
   types: DocumentType[]
   isPending: boolean
   onAssign: (id: string, typeId: string) => void
+  /** why the last bulk assign failed for this row */
+  error?: string
 }
 
 /** Sits above the stretched row link (relative z-10). */
-export const AssignTypeCell = ({ doc, types, isPending, onAssign }: AssignTypeCellProps) => (
+export const AssignTypeCell = ({ doc, types, isPending, onAssign, error }: AssignTypeCellProps) => (
   <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1">
     <select
       aria-label={`Assign type to ${doc.file.name}`}
@@ -34,5 +36,6 @@ export const AssignTypeCell = ({ doc, types, isPending, onAssign }: AssignTypeCe
     >
       Create type from this
     </Link>
+    {error && <p className="basis-full text-sm text-destructive">Couldn't assign: {error}</p>}
   </div>
 )
